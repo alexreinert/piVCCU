@@ -3,12 +3,10 @@
 
 set -e
 
-DKMS_VERSION={PKG_VERSION}
-
 case "$1" in
   configure)
     if [ ! -e /pivccu.createimage ]; then
-      dkms install -m pivccu -v $DKMS_VERSION -k `uname -r` || true
+      /var/lib/piVCCU/dkms/ensure_modules.sh
     fi
 
     systemctl enable pivccu-dkms.service
