@@ -1,6 +1,6 @@
 # piVCCU
 
-piVCCU is a project to install the Homematic CCU2 on an Raspberry Pi running Raspbian Jessie or Stretch.
+piVCCU is a project to install the original Homematic CCU2 firmware on a Raspberry Pi running Raspbian Jessie or Stretch inside a virtualized container (lxc).
 
 # Prequisites
 
@@ -27,25 +27,80 @@ piVCCU is a project to install the Homematic CCU2 on an Raspberry Pi running Ras
    sudo apt install raspberrypi-kernel-homematic
    ```
 
-4. Disable serial console and bluetooth
+4. Enable UART GPIO pins
+   * Option 1: Raspberry Pi 2
+      ```bash
+      sudo bash -c 'cat << EOT >> /boot/config.txt
+      enable_uart=1
+      EOT'
+      ```
+      
+   * Option 2: Raspberry Pi 3 with disabled bluetooth (prefered)
+      ```bash
+      sudo bash -c 'cat << EOT >> /boot/config.txt
+      enable_uart=1
+      dtoverlay=pi3_disable_bt
+      EOT'
+      sudo systemctl disable hciuart.service
+      ```
 
-   _TBD_
+   * Option 3: Raspberry Pi 3 with bluetooth wired to mini uart
+      ```bash
+      sudo bash -c 'cat << EOT >> /boot/config.txt
+      enable_uart=1
+      dtoverlay=pi3_miniuart_bt
+      force_turbo=1
+      EOT'
+      ```
 
-5. Add network bridge
+5. Disable serial console in command line
+      ```bash
+      sudo sed -i cmdline.txt -e "s/console=serial0,[0-9]\+ //"
+      sudo sed -i cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
+      ```
 
-   _TBD_
+6. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
+   ```bash
+   sudo apt-get purge dhcpcd5
+   sudo bash -c 'cat << EOT > /etc/network/interfaces
+   auto lo
+   iface lo inet loopback
+   
+   iface eth0 inet manual
+   
+   auto br0
+   iface br0 inet dhcp
+     bridge_ports eth0
+   EOT'
+   ```
 
-6. Reboot the system
+7. Reboot the system
 
-7. Install CCU container
+8. Install CCU2 container
    ```bash
    sudo apt install pivccu
    ```
 
-8. Start using your new virtualized CCU2, you can get the IP using
+9. Start using your new virtualized CCU2, you can get the IP of the container using
    ```bash
    sudo pivccu-info
    ```
+
+# Migration from other systems
+1. Original CCU2
+
+   Just restore a backup
+
+2. RaspberryMatic
+
+   _tbd_
+
+3. YAHM
+
+   _tbd_
+
+# Using CUxD and USB devices
+_tbd_
 
 # Build packages
 If you like to build the .deb package by yourself
