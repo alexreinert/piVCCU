@@ -26,7 +26,9 @@ UART_MAJOR=`cat /sys/devices/virtual/bcm2835-raw-uart/bcm2835-raw-uart/dev | cut
 mkdir -p /var/lib/piVCCU/lxc
 
 BRIDGE=`brctl show | sed -n 2p | awk '{print $1}'`
-MAC=`ifconfig | grep -m 1 'ether' | awk '{print $2}' | md5sum | sed 's/\(.\)\(..\)\(..\)\(..\)\(..\)\(..\).*/\1a:\2:\3:\4:\5:\6/'`
+MAIN_INTERFACE=`route | grep 'default' | awk '{print $8}'`
+HOST_MAC=`cat /sys/class/net/$MAIN_INTERFACE/address`
+MAC=`echo $HOST_MAC | md5sum | sed 's/\(.\)\(..\)\(..\)\(..\)\(..\)\(..\).*/\1a:\2:\3:\4:\5:\6/'`
 
 if [ -z "$BRIDGE" ]; then
   logger -t piVCCU -p user.warning -s "No network bridge could be detected." 1>&2
