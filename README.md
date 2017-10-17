@@ -20,7 +20,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware on a Raspber
    sudo bash -c 'echo "deb http://alexreinert.github.io/piVCCU stable main" >> /etc/apt/sources.list'
    sudo apt update
    ```
-   Instead of `stable` you can also use the `testing` branch.
+   Instead of `stable` you can also use the `testing` tree, but be aware testing sometimes means not that stable.
 
 3. Install custom kernel with the neccessary kernel modules for Homematic
    ```bash
