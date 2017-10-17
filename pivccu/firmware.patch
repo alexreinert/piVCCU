@@ -1,0 +1,534 @@
+diff -ruN orgroot/etc/fstab rootfs/etc/fstab
+--- orgroot/etc/fstab	2017-10-13 20:45:02.551649760 +0200
++++ rootfs/etc/fstab	2017-10-13 20:45:36.131871874 +0200
+@@ -1,13 +1,3 @@
+ # /etc/fstab: static file system information.
+ #
+ # <file system> <mount pt>     <type>   <options>         <dump> <pass>
+-/dev/root       /              ext2     rw,noauto         0      1
+-proc            /proc          proc     defaults          0      0
+-devpts          /dev/pts       devpts   defaults,gid=5,mode=620   0      0
+-tmpfs           /dev/shm       tmpfs    mode=0777         0      0
+-tmpfs           /tmp           tmpfs    defaults          0      0
+-mediafs         /media         tmpfs    defaults          0      0
+-sysfs           /sys           sysfs    defaults          0      0
+-varfs           /var           tmpfs    defaults,size=196M 0      0
+-debugfs 	/sys/kernel/debug debugfs 		  0 	0
+-ubi1:user	/usr/local	ubifs	defaults,noatime,rw,sync	0 0
+diff -ruN orgroot/etc/init.d/S00eQ3SystemStart rootfs/etc/init.d/S00eQ3SystemStart
+--- orgroot/etc/init.d/S00eQ3SystemStart	2017-10-13 20:45:02.551649760 +0200
++++ rootfs/etc/init.d/S00eQ3SystemStart	2017-10-13 20:45:36.131871874 +0200
+@@ -4,20 +4,9 @@
+ #
+ 
+ CFG_TEMPLATE_DIR=/etc/config_templates
+-SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
++SERIAL=$(cat /tmp/hm-mod-rpi-pcb/parameters/board_serial)
+ 
+ init() {
+-	# power led on
+-	echo 255 > /sys/class/leds/power/brightness
+-	echo default-on > /sys/class/leds/power/trigger
+-	# internet led off
+-	echo none > /sys/class/leds/internet/trigger
+-	# info led fast
+-	echo timer > /sys/class/leds/info/trigger
+-	echo 255 > /sys/class/leds/info/brightness
+-	echo 100 > /sys/class/leds/info/delay_off
+-	echo 100 > /sys/class/leds/info/delay_on
+-
+         chmod 775 /var
+         mkdir /var/log
+         chmod 775 /var/log
+@@ -74,27 +63,6 @@
+ 		cp $CFG_TEMPLATE_DIR/shadow /usr/local/etc/config/shadow
+ 	fi
+ 
+-	modprobe spidev
+-        modprobe ic200_spi
+-        modprobe spi_eq3_gpio
+-        modprobe spi_bitbang
+-        mknod spidev0.0 c 153 0
+-        modprobe gpio-keys
+-        modprobe fsl_usb2_udc.ko
+-	if grep -q "eQ3Mode=production" /proc/cmdline ; then
+-          modprobe g_multi luns=1 cdrom=1 ro=1 removable=0,0 file=/usr/share/eq3/install.iso host_addr=00:1a:22:00:05:86 dev_addr=00:1a:22:00:05:87 iManufacturer="eQ-3" iProduct="CCU2" idVendor="0x1b1f" idProduct="0xc016" iSerialNumber="$SERIAL"
+-	fi
+-	
+-	# Tunneling
+-        modprobe tun
+-       
+-	# USB
+-        modprobe ehci-hcd
+-
+-	# HM/HmIP Dual Protocol
+-	modprobe mxs_raw_auart
+-	modprobe eq3_char_loop
+-	 
+ 	if [ ! -d /usr/local/etc/config ] ; then
+                 mkdir -p /usr/local/etc/config
+         	chmod 775 /usr/local/etc/config
+@@ -129,7 +97,7 @@
+ 
+ stop () {
+ 	start-stop-daemon -K -q -p /var/run/crond.pid
+-	/bin/update_firmware_pre
++	/etc/piVCCU/install_pending_addon.sh
+ }
+ 
+ restart() {
+diff -ruN orgroot/etc/init.d/S10udev rootfs/etc/init.d/S10udev
+--- orgroot/etc/init.d/S10udev	2017-10-13 20:45:02.551649760 +0200
++++ rootfs/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
+@@ -1,48 +0,0 @@
+-#!/bin/sh
+-#
+-# udev	This is a minimal non-LSB version of a UDEV startup script.  It
+-#	was derived by stripping down the udev-058 LSB version for use
+-#	with buildroot on embedded hardware using Linux 2.6.34+ kernels.
+-#
+-#	You may need to customize this for your system's resource limits
+-#	(including startup time!) and administration.  For example, if
+-#	your early userspace has a custom initramfs or initrd you might
+-#	need /dev much earlier; or without hotpluggable busses (like USB,
+-#	PCMCIA, MMC/SD, and so on) your /dev might be static after boot.
+-#
+-#	This script assumes your system boots right into the eventual root
+-#	filesystem, and that init runs this udev script before any programs
+-#	needing more device nodes than the bare-bones set -- /dev/console,
+-#	/dev/zero, /dev/null -- that's needed to boot and run this script.
+-#
+-
+-# Check for missing binaries
+-UDEV_BIN=/lib/udev/udevd
+-test -x $UDEV_BIN || exit 5
+-
+-# Check for config file and read it
+-UDEV_CONFIG=/etc/udev/udev.conf
+-test -r $UDEV_CONFIG || exit 6
+-. $UDEV_CONFIG
+-
+-case "$1" in
+-    start)
+-        echo -n "Populating ${udev_root:-/dev} using udev: "
+-        echo -e '\000\000\000\000' > /proc/sys/kernel/hotplug
+-        $UDEV_BIN -d || (echo "FAIL" && exit 1)
+-        udevadm trigger
+-        echo "done"
+-        ;;
+-    stop)
+-        # Stop execution of events
+-        udevadm control --stop-exec-queue
+-        killall udevd
+-        ;;
+-    *)
+-        echo "Usage: $0 {start|stop}"
+-        exit 1
+-        ;;
+-esac
+-
+-
+-exit 0
+diff -ruN orgroot/etc/init.d/S15watchdog rootfs/etc/init.d/S15watchdog
+--- orgroot/etc/init.d/S15watchdog	2017-10-13 20:45:02.551649760 +0200
++++ rootfs/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
+@@ -1,20 +0,0 @@
+-#!/bin/sh
+-#
+-# Start watchdog
+-#
+-
+-case "$1" in
+- start)
+-	echo "Starting watchdog..."
+-	watchdog -t 30 /dev/watchdog
+-	;;
+-  stop)
+-	;;
+-  restart|reload)
+-	;;
+-  *)
+-	echo $"Usage: $0 {start|stop|restart}"
+-	exit 1
+-esac
+-
+-exit $?
+diff -ruN orgroot/etc/init.d/S20urandom rootfs/etc/init.d/S20urandom
+--- orgroot/etc/init.d/S20urandom	2017-10-13 20:45:02.551649760 +0200
++++ rootfs/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
+@@ -1,54 +0,0 @@
+-#! /bin/sh
+-#
+-# urandom	This script saves the random seed between reboots.
+-#		It is called from the boot, halt and reboot scripts.
+-#
+-# Version:	@(#)urandom  1.33  22-Jun-1998  miquels@cistron.nl
+-#
+-
+-[ -c /dev/urandom ] || exit 0
+-#. /etc/default/rcS
+-
+-case "$1" in
+-	start|"")
+-		if [ "$VERBOSE" != no ]
+-		then
+-			echo -n "Initializing random number generator... "
+-		fi
+-		# Load and then save 512 bytes,
+-		# which is the size of the entropy pool
+-		if [ -f /etc/random-seed ]
+-		then
+-			cat /etc/random-seed >/dev/urandom
+-		fi
+-		# check for read only file system
+-		if ! touch /etc/random-seed 2>/dev/null
+-		then
+-			echo "read-only file system detected...done"
+-			exit
+-		fi
+-		rm -f /etc/random-seed
+-		umask 077
+-		dd if=/dev/urandom of=/etc/random-seed count=1 \
+-			>/dev/null 2>&1 || echo "urandom start: failed."
+-		umask 022
+-		[ "$VERBOSE" != no ] && echo "done."
+-		;;
+-	stop)
+-		if ! touch /etc/random-seed 2>/dev/null
+-                then
+-                        exit
+-                fi
+-		# Carry a random seed from shut-down to start-up;
+-		# see documentation in linux/drivers/char/random.c
+-		[ "$VERBOSE" != no ] && echo -n "Saving random seed... "
+-		umask 077
+-		dd if=/dev/urandom of=/etc/random-seed count=1 \
+-			>/dev/null 2>&1 || echo "urandom stop: failed."
+-		[ "$VERBOSE" != no ] && echo "done."
+-		;;
+-	*)
+-		echo "Usage: urandom {start|stop}" >&2
+-		exit 1
+-		;;
+-esac
+diff -ruN orgroot/etc/init.d/S40UsbNetwork rootfs/etc/init.d/S40UsbNetwork
+--- orgroot/etc/init.d/S40UsbNetwork	2017-10-13 20:45:02.551649760 +0200
++++ rootfs/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
+@@ -1,52 +0,0 @@
+-#!/bin/sh
+-#
+-# Starts Ethernet over USB
+-#
+-
+-
+-start() {
+-	export TZ=`cat /etc/config/TZ`
+-
+-	echo -n "Starting network over usb: "
+-		
+-	if [ ! -f /etc/udhcpd.usb0.conf ]; then
+-		echo "ERROR (file /etc/udhcp.usb0.conf not found)"
+-	elif [ ! -f /etc/dnsd.conf ]; then
+-		echo "ERROR (file /etc/dnsd.conf not found)"
+-	else
+-		ifconfig usb0 10.101.82.51 netmask 255.255.255.0
+-		udhcpd -S /etc/udhcpd.usb0.conf
+-		# disable DNS Server; CCU can only be access by ip address
+-		#dnsd -d -c /etc/dnsd.conf -i 10.101.82.51
+-		echo "OK"	
+-	fi		
+-}
+-
+-stop() {
+-	echo -n "Stopping network over usb: "
+-	killall udhcpd
+-	killall dnsd	
+-	echo "OK"
+-}
+-restart() {
+-	stop
+-	start
+-}
+-
+-case "$1" in
+-  start)
+-	start
+-	;;
+-  stop)
+-	stop
+-	;;
+-  restart|reload)
+-	restart
+-	;;
+-  *)
+-	echo "Usage: $0 {start|stop|restart}"
+-	exit 1
+-esac
+-
+-exit $?
+-
+diff -ruN orgroot/etc/init.d/S50eq3configd rootfs/etc/init.d/S50eq3configd
+--- orgroot/etc/init.d/S50eq3configd	2017-10-13 20:45:02.551649760 +0200
++++ rootfs/etc/init.d/S50eq3configd	2017-10-13 20:45:36.131871874 +0200
+@@ -3,8 +3,8 @@
+ # Starts eq3configd.
+ #
+ init () {
+-	radio_mac=$(cat /sys/module/plat_eq3ccu2/parameters/radio_mac)
+-	board_serial=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
++	radio_mac=$(cat /tmp/hm-mod-rpi-pcb/parameters/radio_mac)
++	board_serial=$(cat /tmp/hm-mod-rpi-pcb/parameters/board_serial)
+ 	echo "BidCoS-Address=$radio_mac" > /var/ids
+ 	echo "SerialNumber=$board_serial" >> /var/ids
+ 	if [ ! -e /etc/config/ids ] ; then
+diff -ruN orgroot/etc/init.d/S60multimacd rootfs/etc/init.d/S60multimacd
+--- orgroot/etc/init.d/S60multimacd	2017-10-13 20:45:02.551649760 +0200
++++ rootfs/etc/init.d/S60multimacd	2017-10-13 20:45:36.131871874 +0200
+@@ -32,7 +32,7 @@
+ 	fi
+ }
+ check_rf_address(){
+-        sed 1q /sys/module/plat_eq3ccu2/parameters/radio_mac > /var/log/rf_address
++        sed 1q /tmp/hm-mod-rpi-pcb/parameters/radio_mac > /var/log/rf_address
+         /bin/eq3configcmd read-default-rf-address -l 0 -v -h -f /dev/mxs_auart_raw.0 | grep -q -F -f /var/log/rf_address
+         if ! [ 0 -eq $? ];
+         then
+diff -ruN orgroot/etc/init.d/S99eQ3SystemStarted rootfs/etc/init.d/S99eQ3SystemStarted
+--- orgroot/etc/init.d/S99eQ3SystemStarted	2017-10-13 20:45:02.551649760 +0200
++++ rootfs/etc/init.d/S99eQ3SystemStarted	2017-10-13 20:45:36.131871874 +0200
+@@ -4,19 +4,10 @@
+ #
+ 
+ CFG_TEMPLATE_DIR=/etc/config_templates
+-SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
++SERIAL=$(cat /tmp/hm-mod-rpi-pcb/parameters/board_serial)
+ 
+ init() {
+ 	export TZ=`cat /etc/config/TZ`
+-
+-	# power led on
+-	echo 255 > /sys/class/leds/power/brightness
+-	echo default-on > /sys/class/leds/power/trigger
+-	# internet led off
+-	echo none > /sys/class/leds/internet/trigger
+-	# info led off
+-	echo none > /sys/class/leds/info/trigger
+-	/bin/hss_led 2>&1 > /dev/null  &
+ }
+ 
+ start() {
+diff -ruN orgroot/etc/inittab rootfs/etc/inittab
+--- orgroot/etc/inittab	2017-10-13 20:45:02.551649760 +0200
++++ rootfs/etc/inittab	2017-10-13 20:45:36.131871874 +0200
+@@ -14,25 +14,15 @@
+ # process   == program to run
+ 
+ # Startup the system
+-null::sysinit:/bin/mount -t proc proc /proc
+ #null::sysinit:/bin/mount -o remount,rw / # REMOUNT_ROOTFS_RW
+-null::sysinit:/bin/mkdir -p /dev/pts
+-null::sysinit:/bin/mkdir -p /dev/shm
+ null::sysinit:/bin/mount -a
+ null::sysinit:/bin/hostname -F /etc/hostname
+ # now run any rc scripts
+ ::sysinit:/etc/init.d/rcS
+ 
+-# Put a getty on the serial port
+-ttyAMA0::respawn:/sbin/getty -L ttyAMA0 115200 vt100 # GENERIC_SERIAL
+-ttyGS0::respawn:/sbin/getty -L ttyGS0 115200 vt100 # USB SERIAL
+-
+ # Stuff to do for the 3-finger salute
+ ::ctrlaltdel:/sbin/reboot
+ 
+-# Stuff to do for SIGQUIT 
+-::restart:/bin/update_firmware_run
+-
+ # Stuff to do before rebooting
+ ::shutdown:/etc/init.d/rcK
+ null::shutdown:/bin/umount -a -r
+diff -ruN orgroot/opt/HMServer/pages/StorageSettingsDialog.ftl rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl
+--- orgroot/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-13 20:45:02.567649867 +0200
++++ rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-13 20:47:02.152440777 +0200
+@@ -168,23 +168,6 @@
+ 						<td class="CLASS21112">${"$"}{dialogSettingsSDCardStatus}:</td>
+ 						<td>${SDCardStatus}</td>
+ 					</tr>
+-					<tr>
+-						<td align="center" class="CLASS21112" colspan="2" >
+-							<div class="popupControls CLASS21107">
+-								<table>
+-								<tr>
+-									<td align="right">
+-										<div id="initaliseSDCardButton" class="StdButton CLASS04907" onClick="OnInitaliseSDCard()">${"$"}{dialogSettingsStorageSettingsBtnInitaliseSDCard}</div>
+-									</td>
+-									<td align="right">
+-										<div id="backupSDCardButton" class="StdButton CLASS04907" onClick="OnBackupSDCard()">${"$"}{dialogSettingsStorageSettingsBtnBackup}</div>
+-									</td>
+-								</tr>
+-								</table>
+-							</div>
+-								<!--<div id="ejectSDCardButton" class="StdButton" onClick="OnEjectSDCard()">${"$"}{dialogSettingsStorageSettingsBtnEjectSDCard}</div> -->
+-						</td>
+-					</tr>
+ 				</table>
+ 			</td>
+ 			<td class="CLASS21113" align="left">
+diff -ruN orgroot/www/config/cp_maintenance.cgi rootfs/www/config/cp_maintenance.cgi
+--- orgroot/www/config/cp_maintenance.cgi	2017-10-13 20:45:02.731650952 +0200
++++ rootfs/www/config/cp_maintenance.cgi	2017-10-13 20:49:22.437368417 +0200
+@@ -350,103 +350,10 @@
+                                 puts "$cur_version"
+                             }
+                         }
+-                        table_row {
+-                            table_data {align="left"} {colspan="2"} {
+-                                puts "\${dialogSettingsCMLblAvailableSoftwareVersion}"
+-                            }
+-                            table_data {id="availableSWVersion"} {
+-                                # This doesn´t work properly
+-                                # puts [iframe "$REMOTE_FIRMWARE_SCRIPT?cmd=check_version&version=$cur_version&serial=$serial&lang=de&product=HM-CCU2" marginheight=0 marginwidth=0 frameborder=0 width=100 height=20 {scrolling="no"} ]
+-                                # The available version will be set further down with "jQuery('#availableSWVersion').html(homematic.com.getLatestVersion());"
+-                            }
+-                        }
+-                        table_row {
+-                            table_data {align="left"} {colspan="3"} {
+-                                #puts "[bold "Software-Update durchführen"]"
+-                                puts "<b>\${dialogSettingsCMLblPerformSoftwareUpdate}</b>"
+-                            }
+-                        }
+-                        table_row {
+-                            td {width="20"} {}
+-                            table_data {align="left"} {
+-                                puts "\${dialogSettingsCMLblPerformSoftwareUpdateStep1}"
+-                            }
+-                            table_data {
+-                                division {class="popupControls CLASS20905"} {
+-                                    table {
+-                                        table_row {
+-                                            table_data {
+-                                                division {class="CLASS20908" style="display: none"} {id="btnFwDownload"} {} "onClick=\"window.location.href='$REMOTE_FIRMWARE_SCRIPT?cmd=download&version=$cur_version&serial=$serial&lang=de&product=HM-CCU2';\"" {}
+-                                                division {class="CLASS20908"}  "onClick=\"showCCULicense();\"" {puts "\${dialogSettingsCMBtnPerformSoftwareUpdateDownload}"}
+-                                            }
+-                                        }
+-                                    }
+-                                }
+-                            }
+-                        }
+-                        table_row {
+-                            td {width="20"} {}
+-                            table_data {align="left"} {colspan="2"} {
+-                                puts "\${dialogSettingsCMLblPerformSoftwareUpdateStep2}"
+-                            }
+-                        }
+-                        table_row {
+-                            td {width="20"} {}
+-                            table_data {colspan="2"} {
+-                                form "$env(SCRIPT_NAME)?sid=$sid" name=firmware_form {target=firmware_upload_iframe} enctype=multipart/form-data method=post {
+-                                    export action=firmware_upload
+-                                    export downloadOnly=$downloadOnly
+-                                    file_button firmware_file size=30 maxlength=1000000
+-                                }
+-                                puts {<iframe name="firmware_upload_iframe" style="display: none;"></iframe>}
+-                            }
+-                        }
+-                        table_row {
+-                            td {width="20"} {}
+-                            table_data {align="left"} {
+-                                puts "\${dialogSettingsCMLblPerformSoftwareUpdateStep3}"
+-                            }
+-                            table_data {
+-                                division {class="popupControls CLASS20905"} {
+-                                    table {
+-                                        table_row {
+-                                            table_data {
+-                                                division {class="CLASS20919"} {onClick="document.firmware_form.submit();showUserHint();"} {
+-                                                  puts "\${dialogSettingsCMBtnPerformSoftwareUpdateUpload}"
+-                                                }
+-                                            }
+-                                        }
+-                                    }
+-                                }
+-                            }
+-                        }
+-                        table_row {
+-                            td {width="20"} {}
+-                            table_data {align="left"} {colspan="2"} {class="CLASS20920"} {
+-                                puts "\${dialogSettingsCMLblPerformSoftwareUpdateStep4}"
+-                            }
+-                        }
+                     }
+                 }
+-                table_data {align="left"} {class="CLASS20921"} {
+-                    puts "\${dialogSettingsCMHintSoftwareUpdate1}"
+-                    number_list {class="j_noForcedUpdate"} {
+-                        li {
+-                          ${dialogSettingsCMHintSoftwareUpdate2}                        }
+-                        li {
+-                             ${dialogSettingsCMHintSoftwareUpdate3}
+-                        }
+-                        set bat_level [get_bat_level]
+-                        if {$bat_level < 50} {
+-                            set msg " \${dialogSettingsCMHintSoftwareUpdate4a} $bat_level%. "
+-                            append msg  \${dialogSettingsCMHintSoftwareUpdate4b}
+-                            li $msg
+-                        }
+-                    }
+-
+-                    division {class="j_forcedUpdate" style="padding:10px;"} {
+-                      puts "<br/>\${dialogSettingsCMHintSoftwareUpdate3}"
+-                    }
++                table_data {align="left"} {class="CLASS20904"} {
++                    puts " "
+                 }
+             }
+             table_row {class="CLASS20902 j_noForcedUpdate j_fwUpdateOnly"} {
+@@ -787,10 +694,6 @@
+     cgi_javascript {
+       puts "translatePage('#messagebox');"
+       puts "jQuery('#messagebox').show();"
+-      puts "var latestVersion = translateKey('lblAvailableFirmwareVersionNotKnown');"
+-      puts "latestVersion = homematic.com.getLatestVersion();"
+-      puts "if (latestVersion == undefined || isNaN(parseInt(latestVersion.split('.')\[0\]))) {latestVersion = translateKey('lblAvailableFirmwareVersionNotKnown');}"
+-      puts "jQuery('#availableSWVersion').html(latestVersion);"
+ 
+       # Hide all elements with class j_noForcedUpdate when an update is enforced
+       puts "if (forceUpdate) {"
+diff -ruN orgroot/www/config/cp_security.cgi rootfs/www/config/cp_security.cgi
+--- orgroot/www/config/cp_security.cgi	2017-10-13 20:45:02.731650952 +0200
++++ rootfs/www/config/cp_security.cgi	2017-10-13 20:50:28.665806298 +0200
+@@ -476,13 +476,7 @@
+     }
+     
+   if { "false" == $ccu1_backup } {  # backup for version >= 2
+-    exec umount /usr/local
+-          exec /usr/sbin/ubidetach -p /dev/mtd6
+-          exec /usr/sbin/ubiformat /dev/mtd6 -y
+-          exec /usr/sbin/ubiattach -p /dev/mtd6
+-          exec /usr/sbin/ubimkvol /dev/ubi1 -N user -m
+-          exec mount /usr/local
+-
++          exec rm -rf /usr/local/*
+     if { [catch {exec tar xzf /tmp/usr_local.tar.gz} errorMessage] } {
+       # set msg "Beim Einspielen des Systembackups ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut. "
+       # append msg "Falls dieser Fehler wiederholt Auftritt, wenden Sie sich bitte mit der folgenden Fehlermeldung an den Kundenservice:\n<br>"
+@@ -568,8 +561,6 @@
+   }
+   
+   if { "false" == $backuperror } {
+-        exec mount -o remount,ro /usr/local
+-        exec mount -o remount,rw /usr/local
+         division {class="popupTitle"} {
+             puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
+         }
+diff -ruN orgroot/www/config/cp_software.cgi rootfs/www/config/cp_software.cgi
+--- orgroot/www/config/cp_software.cgi	2017-10-13 20:45:02.731650952 +0200
++++ rootfs/www/config/cp_software.cgi	2017-10-13 20:50:59.974013295 +0200
+@@ -507,7 +507,7 @@
+     if {[isOldCCU]} {
+         exec /sbin/init -q
+     } else {
+-        exec /bin/kill -SIGQUIT 1
++        exec /sbin/reboot
+     }
+ }
+ 
