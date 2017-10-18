@@ -86,15 +86,11 @@ piVCCU is a project to install the original Homematic CCU2 firmware on a Raspber
    ```
 
 # Migration from other systems
-1. Original CCU2
+1. Original CCU2 or RaspberryMatic
 
-   Just restore a backup
+   Just restore a normal system backup *__(to be verified)__*
 
-2. RaspberryMatic
-
-   *__tbd__*
-
-3. YAHM
+2. YAHM
 
    *__tbd__*
 
