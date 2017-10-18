@@ -1,6 +1,6 @@
 # piVCCU
 
-piVCCU is a project to install the original Homematic CCU2 firmware on a Raspberry Pi running Raspbian Jessie or Stretch inside a virtualized container (lxc).
+piVCCU is a project to install the original Homematic CCU2 firmware inside a virtualized container (lxc) on a Raspberry Pi running Raspbian Jessie or Stretch.
 
 # Prequisites
 
@@ -104,3 +104,5 @@ If you like to build the .deb package by yourself
 * Clone source
 * create_kernel.sh builds the custom kernel package
 * create_pivccu.sh builds the container package
+* Deploy the .deb files to an apt repository e.g. using reprepro
+
