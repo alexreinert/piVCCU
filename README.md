@@ -28,7 +28,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware on a Raspber
    ```
 
 4. Enable UART GPIO pins
-   * Option 1: Raspberry Pi 2
+   * Option 1: Raspberry Pi 2 *__(to be verified)__*
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
       enable_uart=1
@@ -92,18 +92,19 @@ piVCCU is a project to install the original Homematic CCU2 firmware on a Raspber
 
 2. RaspberryMatic
 
-   _tbd_
+   *__tbd__*
 
 3. YAHM
 
-   _tbd_
+   *__tbd__*
 
 # Using CUxD and USB devices
-_tbd_
+*__tbd__*
 
 # Build packages
 If you like to build the .deb package by yourself
-* Install prequisites
+* Use Ubuntu 16.04 as build system
+* Install prequisites *__tbd__*
 * Clone source
 * create_kernel.sh builds the custom kernel package
 * create_pivccu.sh builds the container package
