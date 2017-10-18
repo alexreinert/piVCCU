@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# test if hardware uart is assigned to gpio pins
+if ! cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
+  logger -t piVCCU -p user.err -s "Hardware UART is not assigned to GPIO pins." 1>&2
+  exit 1
+fi
+
 # load modules
 modprobe -a eq3_char_loop bcm2835_raw_uart
 if [ $? -ne 0 ]; then
