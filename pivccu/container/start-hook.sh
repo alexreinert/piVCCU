@@ -14,6 +14,10 @@ if [ ! -e /dev/net/tun ]; then
   mknod -m 666 /dev/net/tun c 10 200
 fi
 
+if [ ! -e /dev/ptmx ]; then
+  mknod -m 666 /dev/ptmx c 5 2
+fi
+
 # get radio mac and serial
 mkdir -p /tmp/hm-mod-rpi-pcb/parameters
 /bin/eq3configcmd update-coprocessor -p /dev/mxs_auart_raw.0 -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5 > /tmp/hm-mod-rpi-pcb/parameters/board_serial
