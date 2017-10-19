@@ -105,11 +105,11 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    ```
 
 ### Migration from other systems
-1. Original CCU2 or RaspberryMatic
+* Original CCU2 or RaspberryMatic
 
    Just restore a normal system backup using the CCU web interface
 
-2. YAHM
+* YAHM
    1. Create full backup of your SD card
    2. Create system backup using CCU web interface
    3. Remove YAHM
