@@ -88,11 +88,10 @@ systemctl enable pivccu.service
 systemctl start pivccu.service || true
 
 if [ ! -e /bin/pivccu-attach ]; then
-  ln -s /var/lib/piVCCU/attach_container.sh /bin/pivccu-attach
+  ln -s /var/lib/piVCCU/pivccu-attach.sh /bin/pivccu-attach
 fi
-
 if [ ! -e /bin/pivccu-info ]; then
-  ln -s /var/lib/piVCCU/info_container.sh /bin/pivccu-info
+  ln -s /var/lib/piVCCU/pivccu-info.sh /bin/pivccu-info
 fi
 
 BRIDGE=\`brctl show | sed -n 2p | awk '{print $1}'\`
@@ -105,11 +104,11 @@ chmod +x $TARGET_DIR/DEBIAN/postinst
 
 cat <<EOT >> $TARGET_DIR/DEBIAN/prerm
 #!/bin/sh
-rm -f /bin/pivccu-attach
-rm -f /bin/pivccu-info
-
 systemctl stop pivccu.service
 systemctl disable pivccu.service
+
+rm -f /bin/pivccu-attach
+rm -f /bin/pivccu-info
 EOT
 
 chmod +x $TARGET_DIR/DEBIAN/prerm
