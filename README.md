@@ -60,6 +60,8 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       ```bash
       sudo apt-get purge dhcpcd5
       sudo bash -c 'cat << EOT > /etc/network/interfaces
+      source-directory /etc/network/interfaces.d
+
       auto lo
       iface lo inet loopback
    
@@ -74,6 +76,8 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       ```bash
       sudo apt-get purge dhcpcd5
       sudo bash -c 'cat << EOT > /etc/network/interfaces
+      source-directory /etc/network/interfaces.d
+
       auto lo
       iface lo inet loopback
    
