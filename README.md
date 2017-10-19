@@ -4,9 +4,9 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 
 # Prequisites
 
-* Raspberry Pi 2 or 3 (only 3 is tested right now)
-* EQ3 HM-Mod-RPI-PCB
-* Raspbian Jessie or Stretch
+* Raspberry Pi 2 or 3 (Zero and Zero W should work too, but they are untested.)
+* HM-MOD-RPI-PCB
+* Raspbian Stretch or Jessie
 
 # Installation
 
@@ -27,15 +27,8 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    sudo apt install raspberrypi-kernel-homematic
    ```
 
-4. Enable UART GPIO pins
-   * Option 1: Raspberry Pi 2 *__(to be verified)__*
-      ```bash
-      sudo bash -c 'cat << EOT >> /boot/config.txt
-      enable_uart=1
-      EOT'
-      ```
-      
-   * Option 2: Raspberry Pi 3 with disabled bluetooth (prefered)
+4. Enable UART GPIO pins (only on Raspberry Pi 3)
+   * Option 1: Raspberry Pi 3 with disabled bluetooth (prefered)
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
       dtoverlay=pi3_disable_bt
@@ -43,7 +36,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       sudo systemctl disable hciuart.service
       ```
 
-   * Option 3: Raspberry Pi 3 with bluetooth wired to mini uart
+   * Option 2: Raspberry Pi 3 with bluetooth wired to mini uart
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
       dtoverlay=pi3_miniuart_bt
@@ -59,21 +52,47 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       ```
 
 6. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
-   ```bash
-   sudo apt-get purge dhcpcd5
-   sudo bash -c 'cat << EOT > /etc/network/interfaces
-   auto lo
-   iface lo inet loopback
+   * Verify, that *eth0* is the name of your primary network interface:
+      ```bash
+      sudo ifconfig
+      ```
+   * Update your config. (Replace *eth0* if necessary)
+      ```bash
+      sudo apt-get purge dhcpcd5
+      sudo bash -c 'cat << EOT > /etc/network/interfaces
+      auto lo
+      iface lo inet loopback
    
-   iface eth0 inet manual
+      iface eth0 inet manual
    
-   auto br0
-   iface br0 inet dhcp
-     bridge_ports eth0
-   EOT'
-   ```
+      auto br0
+      iface br0 inet dhcp
+        bridge_ports eth0
+      EOT'
+      ```
+   * You can use an static IP address, too. In that case use instead:
+      ```bash
+      sudo apt-get purge dhcpcd5
+      sudo bash -c 'cat << EOT > /etc/network/interfaces
+      auto lo
+      iface lo inet loopback
+   
+      iface eth0 inet manual
+   
+      auto br0
+      iface br0 inet static
+        bridge_ports eth0
+        address <address>
+        netmask <netmask>
+        gateway <gateway>
+        dns-nameservers <dns1> <dns2>
+      EOT'
+      ```
 
 7. Reboot the system
+   ```bash
+   sudo reboot
+   ```
 
 8. Install CCU2 container
    ```bash
