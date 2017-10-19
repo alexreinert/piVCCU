@@ -1,6 +1,7 @@
 #!/bin/sh
 
-. /etc/piVCCU/device_majors
+EQ3LOOP_MAJOR=`cat /sys/module/plat_eq3ccu2/parameters/eq3charloop_major`
+UART_MAJOR=`cat /sys/module/plat_eq3ccu2/parameters/uart_major`
 
 # generate/update dev nodes
 
@@ -24,9 +25,8 @@ if [ ! -e /dev/ptmx ]; then
 fi
 
 # get radio mac and serial
-mkdir -p /tmp/hm-mod-rpi-pcb/parameters
-/bin/eq3configcmd update-coprocessor -p /dev/mxs_auart_raw.0 -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5 > /tmp/hm-mod-rpi-pcb/parameters/board_serial
-/bin/eq3configcmd read-default-rf-address -f /dev/mxs_auart_raw.0 -h | grep "^0x" > /tmp/hm-mod-rpi-pcb/parameters/radio_mac
+/bin/eq3configcmd update-coprocessor -p /dev/mxs_auart_raw.0 -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5 > /sys/module/plat_eq3ccu2/parameters/board_serial
+/bin/eq3configcmd read-default-rf-address -f /dev/mxs_auart_raw.0 -h | grep "^0x" > /sys/module/plat_eq3ccu2/parameters/radio_mac
 
 # emulate initialised SD card
 mkdir -p /var/status

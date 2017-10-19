@@ -7,9 +7,9 @@ if ! cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; t
 fi
 
 # load modules
-modprobe -a eq3_char_loop bcm2835_raw_uart
+modprobe -a plat_eq3ccu2 eq3_char_loop bcm2835_raw_uart
 if [ $? -ne 0 ]; then
-  logger -t piVCCU -p user.err -s "Could not load kernel modules eq3_char_loop and bcm2835_raw_uart." 1>&2
+  logger -t piVCCU -p user.err -s "Could not load kernel modules plat_eq3ccu2, eq3_char_loop and bcm2835_raw_uart." 1>&2
   exit 1
 fi
 
@@ -48,10 +48,9 @@ sed -i $CONFIG_FILE -e "s/<bridge_auto>/$BRIDGE/"
 sed -i $CONFIG_FILE -e "s/<eq3loop_major>/$EQ3LOOP_MAJOR/"
 sed -i $CONFIG_FILE -e "s/<uart_major>/$UART_MAJOR/"
 
-DEVICES_FILE=/var/lib/piVCCU/lxc/device_majors
-rm -f $DEVICES_FILE
-echo "EQ3LOOP_MAJOR=$EQ3LOOP_MAJOR" >> $DEVICES_FILE
-echo "UART_MAJOR=$UART_MAJOR" >> $DEVICES_FILE
+echo -n $EQ3LOOP_MAJOR > /sys/module/plat_eq3ccu2/parameters/eq3charloop_major
+echo -n $UART_MAJOR > /sys/module/plat_eq3ccu2/parameters/uart_major
 
 # start container
 /usr/bin/lxc-start --lxcpath /var/lib/piVCCU --name lxc --pidfile /var/run/pivccu.pid --daemon
+

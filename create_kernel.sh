@@ -1,12 +1,11 @@
 #!/bin/bash
 KERNEL_TAG=1.20170811-1
 
-PKG_BUILD=1
+PKG_BUILD=2
 
 PKG_VERSION=$KERNEL_TAG-$PKG_BUILD
 
 KERNEL_SRC_URL=https://github.com/raspberrypi/linux/archive/raspberrypi-kernel_$KERNEL_TAG.tar.gz
-KERNEL_MODULES_BASE_URL=https://raw.githubusercontent.com/jens-maus/RaspberryMatic/master/buildroot-external/package/occu/kernel-modules
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -23,20 +22,19 @@ mv linux-raspberrypi-kernel_$KERNEL_TAG linux
 SRC_DIR=$WORK_DIR/linux
 
 # add homematic kernel module sources
-cd $SRC_DIR
-cd $SRC_DIR/drivers/char
-wget $KERNEL_MODULES_BASE_URL/eq3_char_loop/eq3_char_loop.c
-echo "obj-m += eq3_char_loop.o" >> Makefile
-cd $SRC_DIR/drivers/char/broadcom
-wget $KERNEL_MODULES_BASE_URL/bcm2835_raw_uart/bcm2835_raw_uart.c
-echo "obj-m += bcm2835_raw_uart.o" >> Makefile
-cd $SRC_DIR
+cp $CURRENT_DIR/kernel/eq3_char_loop.c $SRC_DIR/drivers/char
+echo "obj-m += eq3_char_loop.o" >> $SRC_DIR/drivers/char/Makefile
+cp $CURRENT_DIR/kernel/bcm2835_raw_uart.c $SRC_DIR/drivers/char/broadcom
+echo "obj-m += bcm2835_raw_uart.o" >> $SRC_DIR/drivers/char/broadcom/Makefile
+cp $CURRENT_DIR/kernel/plat_eq3ccu2.c $SRC_DIR/drivers/misc
+echo "obj-m += plat_eq3ccu2.o" >> $SRC_DIR/drivers/misc/Makefile
 
 # create kernel config
+cd $SRC_DIR
 make -C $SRC_DIR ARCH="arm" CROSS_COMPILE="arm-linux-gnueabihf-" bcm2709_defconfig
 sed -i .config -e "s/CONFIG_SERIAL_AMBA_PL011=y/CONFIG_SERIAL_AMBA_PL011=n/"
 sed -i .config -e "s/CONFIG_SERIAL_AMBA_PL011_CONSOLE=y/CONFIG_SERIAL_AMBA_PL011_CONSOLE=n/"
-sed -i .config -e "s/CONFIG_LOCALVERSION=.*/CONFIG_LOCALVERSION=\"-v7-homematic\"/"
+sed -i .config -e "s/CONFIG_LOCALVERSION=.*/CONFIG_LOCALVERSION=\"-v7-pivccu\"/"
 
 # build kernel
 make -C $SRC_DIR -j$(grep -c processor /proc/cpuinfo) ARCH="arm" CROSS_COMPILE="arm-linux-gnueabihf-" zImage modules dtbs
@@ -51,7 +49,7 @@ cd $SRC_DIR
 KERNEL_VERSION=`make kernelversion`
 KERNEL_RELEASE=`cat "$SRC_DIR/include/config/kernel.release"`
 
-TARGET_DIR=$WORK_DIR/raspberrypi-kernel-homematic-$PKG_VERSION
+TARGET_DIR=$WORK_DIR/raspberrypi-kernel-pivccu-$PKG_VERSION
 
 # create package
 mkdir -p $TARGET_DIR
@@ -85,7 +83,7 @@ EOT
 mkdir -p $TARGET_DIR/DEBIAN
 
 cat <<EOT >> $TARGET_DIR/DEBIAN/control
-Package: raspberrypi-kernel-homematic
+Package: raspberrypi-kernel-pivccu
 Version: $PKG_VERSION
 Architecture: armhf
 Maintainer: Alexander Reinert <alex@areinert.de>
@@ -143,7 +141,7 @@ done
 
 cd $WORK_DIR
 
-dpkg-deb --build raspberrypi-kernel-homematic-$PKG_VERSION
+dpkg-deb --build raspberrypi-kernel-pivccu-$PKG_VERSION
 
-cp raspberrypi-kernel-homematic-*.deb $CURRENT_DIR
+cp raspberrypi-kernel-pivccu-*.deb $CURRENT_DIR
 

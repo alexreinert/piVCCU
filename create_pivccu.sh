@@ -4,7 +4,7 @@ CCU_VERSION=2.29.23
 CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=268"
 CCU_DOWNLOAD_URL="http://www.eq-3.de/Downloads/Software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tar.gz"
 
-PKG_BUILD=6
+PKG_BUILD=7
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -71,8 +71,8 @@ Package: pivccu
 Version: $PKG_VERSION
 Architecture: armhf
 Maintainer: Alexander Reinert <alex@areinert.de>
-Depends: raspberrypi-kernel-homematic, systemd
-Pre-Depends: lxc, bridge-utils
+Depends: raspberrypi-kernel-pivccu
+Pre-Depends: lxc, bridge-utils, systemd
 Section: misc
 Priority: extra
 Homepage: https://github.com/alexreinert/

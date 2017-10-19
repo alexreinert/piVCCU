@@ -18,64 +18,60 @@ diff -ruN orgroot/etc/fstab rootfs/etc/fstab
 diff -ruN orgroot/etc/init.d/S00eQ3SystemStart rootfs/etc/init.d/S00eQ3SystemStart
 --- orgroot/etc/init.d/S00eQ3SystemStart	2017-10-13 20:45:02.551649760 +0200
 +++ rootfs/etc/init.d/S00eQ3SystemStart	2017-10-13 20:45:36.131871874 +0200
-@@ -4,20 +4,9 @@
- #
- 
- CFG_TEMPLATE_DIR=/etc/config_templates
--SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
-+SERIAL=$(cat /tmp/hm-mod-rpi-pcb/parameters/board_serial)
- 
+@@ -7,17 +7,6 @@
+ SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
+
  init() {
--	# power led on
--	echo 255 > /sys/class/leds/power/brightness
--	echo default-on > /sys/class/leds/power/trigger
--	# internet led off
--	echo none > /sys/class/leds/internet/trigger
--	# info led fast
--	echo timer > /sys/class/leds/info/trigger
--	echo 255 > /sys/class/leds/info/brightness
--	echo 100 > /sys/class/leds/info/delay_off
--	echo 100 > /sys/class/leds/info/delay_on
+-       # power led on
+-       echo 255 > /sys/class/leds/power/brightness
+-       echo default-on > /sys/class/leds/power/trigger
+-       # internet led off
+-       echo none > /sys/class/leds/internet/trigger
+-       # info led fast
+-       echo timer > /sys/class/leds/info/trigger
+-       echo 255 > /sys/class/leds/info/brightness
+-       echo 100 > /sys/class/leds/info/delay_off
+-       echo 100 > /sys/class/leds/info/delay_on
 -
          chmod 775 /var
          mkdir /var/log
          chmod 775 /var/log
-@@ -74,27 +63,6 @@
- 		cp $CFG_TEMPLATE_DIR/shadow /usr/local/etc/config/shadow
- 	fi
- 
--	modprobe spidev
+@@ -73,27 +62,6 @@
+        if [ ! -e /usr/local/etc/config/shadow ] ; then
+                cp $CFG_TEMPLATE_DIR/shadow /usr/local/etc/config/shadow
+        fi
+-
+-       modprobe spidev
 -        modprobe ic200_spi
 -        modprobe spi_eq3_gpio
 -        modprobe spi_bitbang
 -        mknod spidev0.0 c 153 0
 -        modprobe gpio-keys
 -        modprobe fsl_usb2_udc.ko
--	if grep -q "eQ3Mode=production" /proc/cmdline ; then
+-       if grep -q "eQ3Mode=production" /proc/cmdline ; then
 -          modprobe g_multi luns=1 cdrom=1 ro=1 removable=0,0 file=/usr/share/eq3/install.iso host_addr=00:1a:22:00:05:86 dev_addr=00:1a:22:00:05:87 iManufacturer="eQ-3" iProduct="CCU2" idVendor="0x1b1f" idProduct="0xc016" iSerialNumber="$SERIAL"
--	fi
--	
--	# Tunneling
+-       fi
+-
+-       # Tunneling
 -        modprobe tun
--       
--	# USB
+-
+-       # USB
 -        modprobe ehci-hcd
 -
--	# HM/HmIP Dual Protocol
--	modprobe mxs_raw_auart
--	modprobe eq3_char_loop
--	 
- 	if [ ! -d /usr/local/etc/config ] ; then
+-       # HM/HmIP Dual Protocol
+-       modprobe mxs_raw_auart
+-       modprobe eq3_char_loop
+
+        if [ ! -d /usr/local/etc/config ] ; then
                  mkdir -p /usr/local/etc/config
-         	chmod 775 /usr/local/etc/config
 @@ -129,7 +97,7 @@
- 
+
  stop () {
- 	start-stop-daemon -K -q -p /var/run/crond.pid
--	/bin/update_firmware_pre
-+	/etc/piVCCU/install_pending_addon.sh
+        start-stop-daemon -K -q -p /var/run/crond.pid
+-       /bin/update_firmware_pre
++       /etc/piVCCU/install_pending_addon.sh
  }
- 
+
  restart() {
 diff -ruN orgroot/etc/init.d/S10udev rootfs/etc/init.d/S10udev
 --- orgroot/etc/init.d/S10udev	2017-10-13 20:45:02.551649760 +0200
@@ -267,55 +263,24 @@ diff -ruN orgroot/etc/init.d/S40UsbNetwork rootfs/etc/init.d/S40UsbNetwork
 -
 -exit $?
 -
-diff -ruN orgroot/etc/init.d/S50eq3configd rootfs/etc/init.d/S50eq3configd
---- orgroot/etc/init.d/S50eq3configd	2017-10-13 20:45:02.551649760 +0200
-+++ rootfs/etc/init.d/S50eq3configd	2017-10-13 20:45:36.131871874 +0200
-@@ -3,8 +3,8 @@
- # Starts eq3configd.
- #
- init () {
--	radio_mac=$(cat /sys/module/plat_eq3ccu2/parameters/radio_mac)
--	board_serial=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
-+	radio_mac=$(cat /tmp/hm-mod-rpi-pcb/parameters/radio_mac)
-+	board_serial=$(cat /tmp/hm-mod-rpi-pcb/parameters/board_serial)
- 	echo "BidCoS-Address=$radio_mac" > /var/ids
- 	echo "SerialNumber=$board_serial" >> /var/ids
- 	if [ ! -e /etc/config/ids ] ; then
-diff -ruN orgroot/etc/init.d/S60multimacd rootfs/etc/init.d/S60multimacd
---- orgroot/etc/init.d/S60multimacd	2017-10-13 20:45:02.551649760 +0200
-+++ rootfs/etc/init.d/S60multimacd	2017-10-13 20:45:36.131871874 +0200
-@@ -32,7 +32,7 @@
- 	fi
- }
- check_rf_address(){
--        sed 1q /sys/module/plat_eq3ccu2/parameters/radio_mac > /var/log/rf_address
-+        sed 1q /tmp/hm-mod-rpi-pcb/parameters/radio_mac > /var/log/rf_address
-         /bin/eq3configcmd read-default-rf-address -l 0 -v -h -f /dev/mxs_auart_raw.0 | grep -q -F -f /var/log/rf_address
-         if ! [ 0 -eq $? ];
-         then
 diff -ruN orgroot/etc/init.d/S99eQ3SystemStarted rootfs/etc/init.d/S99eQ3SystemStarted
 --- orgroot/etc/init.d/S99eQ3SystemStarted	2017-10-13 20:45:02.551649760 +0200
 +++ rootfs/etc/init.d/S99eQ3SystemStarted	2017-10-13 20:45:36.131871874 +0200
-@@ -4,19 +4,10 @@
- #
- 
- CFG_TEMPLATE_DIR=/etc/config_templates
--SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
-+SERIAL=$(cat /tmp/hm-mod-rpi-pcb/parameters/board_serial)
- 
+@@ -8,15 +8,6 @@
+
  init() {
- 	export TZ=`cat /etc/config/TZ`
+        export TZ=`cat /etc/config/TZ`
 -
--	# power led on
--	echo 255 > /sys/class/leds/power/brightness
--	echo default-on > /sys/class/leds/power/trigger
--	# internet led off
--	echo none > /sys/class/leds/internet/trigger
--	# info led off
--	echo none > /sys/class/leds/info/trigger
--	/bin/hss_led 2>&1 > /dev/null  &
+-       # power led on
+-       echo 255 > /sys/class/leds/power/brightness
+-       echo default-on > /sys/class/leds/power/trigger
+-       # internet led off
+-       echo none > /sys/class/leds/internet/trigger
+-       # info led off
+-       echo none > /sys/class/leds/info/trigger
+-       /bin/hss_led 2>&1 > /dev/null  &
  }
- 
+
  start() {
 diff -ruN orgroot/etc/inittab rootfs/etc/inittab
 --- orgroot/etc/inittab	2017-10-13 20:45:02.551649760 +0200

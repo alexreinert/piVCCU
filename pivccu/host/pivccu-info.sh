@@ -17,8 +17,11 @@ else
 fi
 echo "UART:           $UART_STATE"
 
-if [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU/ --name lxc --state --no-humanize` = "RUNNING" ]; then
-  BOARD_SERIAL=`/usr/bin/lxc-attach --lxcpath /var/lib/piVCCU/ --name lxc -- cat /tmp/hm-mod-rpi-pcb/parameters/board_serial`
+if [ -f /sys/module/plat_eq3ccu2/parameters/board_serial ]; then
+  BOARD_SERIAL=`cat /sys/module/plat_eq3ccu2/parameters/board_serial | sed 1q`
+  if [ -z "$BOARD_SERIAL" ]; then
+    BOARD_SERIAL="Unknown"
+  fi
 else
   BOARD_SERIAL="Unknown"
 fi
