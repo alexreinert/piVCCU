@@ -3,7 +3,12 @@
 . /etc/piVCCU/device_majors
 
 # generate/update dev nodes
-rm -f /dev/{eq3loop,ttyS0,mmd_bidcos,mxs_auart_raw.0}
+
+rm -f /dev/eq3loop
+rm -f /dev/ttyS0
+rm -f /dev/mmd_bidcos
+rm -f /dev/mxs_auart_raw.0
+
 mknod -m 666 /dev/eq3loop c $EQ3LOOP_MAJOR 0
 mknod -m 666 /dev/ttyS0 c $EQ3LOOP_MAJOR 1
 mknod -m 666 /dev/mmd_bidcos c $EQ3LOOP_MAJOR 2
