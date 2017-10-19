@@ -110,9 +110,21 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    Just restore a normal system backup *__(to be verified)__*
 
 2. YAHM
+   1. Create full backup of your SD card
+   2. Create system backup using CCU webinterface
+   3. Remove YAHM *__tbd__*
+   4. Install piVCCU as described above
+   5. Remove YAHM specific configuration stuff
+      ```bash
+      sudo systemctl stop pivccu.service
 
-   *__tbd__*
+      sudo rm -f /var/lib/piVCCU/userfs/etc/config/no-coprocessor-update
+      sudo sed -i /var/lib/piVCCU/userfs/etc/config/rfd.conf -e 's/Improved Coprocessor Initialization = false/Improved Coprocessor Initialization = true/'
+      sudo sed -i /var/lib/piVCCU/userfs/etc/config/multimacd.conf -e 's/bcm2835-raw-uart/mxs_auart_raw.0/'
 
+      sudo systemctl start pivccu.service
+      ```
+      
 ### Using CUxD and USB devices
 *__tbd__*
 
