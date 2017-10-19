@@ -31,7 +31,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    * Option 1: Disabled bluetooth (prefered)
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
-      dtoverlay=pi3_disable_bt
+      dtoverlay=pi3-disable-bt
       EOT'
       sudo systemctl disable hciuart.service
       ```
@@ -39,7 +39,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    * Option 2: Bluetooth attached to mini uart
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
-      dtoverlay=pi3_miniuart_bt
+      dtoverlay=pi3-miniuart-bt
       enable_uart=1
       force_turbo=1
       EOT'
@@ -121,10 +121,15 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       sudo rm -rf /opt/YAHM
       sudo rm -rf /var/lib/lxc/yahm
 
+      sudo sed -i /boot/config.txt -e '/dtoverlay=pi3-miniuart-bt/d'
+      sudo sed -i /boot/config.txt -e '/dtoverlay=pi3-miniuart-bt-overlay/d'
+      sudo sed -i /boot/config.txt -e '/enable_uart=1/d'
+      sudo sed -i /boot/config.txt -e '/force_turbo=1/d'
+
       sudo sed -i /etc/modules -e '/#*eq3_char_loop/d'
       sudo sed -i /etc/modules -e '/#*bcm2835_raw_uart/d'
       ```
-   4. Install piVCCU as described above skipping step 4. as the changes to the config.txt are already done by YAHM
+   4. Install piVCCU as described above
    5. Restore the system backup using the CCU web interface
    6. Remove YAHM specific configuration stuff
       ```bash
