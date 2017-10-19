@@ -24,7 +24,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 
 3. Install custom kernel with the neccessary kernel modules for Homematic
    ```bash
-   sudo apt install raspberrypi-kernel-homematic
+   sudo apt install raspberrypi-kernel-pivccu
    ```
 
 4. Enable UART GPIO pins (only on Raspberry Pi 3)
@@ -167,5 +167,5 @@ Please consider sending me a donation to not only help me to compensate for expe
 
 ### License
 piVCCU itself – the source files found in this git repository – are licensed under the conditions of the [Apache License 2.0](https://opensource.org/licenses/Apache-2.0).
-The generated kernel .deb files (raspberrypi-kernel-homematic) are containing the Linux kernel with modification for the Raspberry Pi and additional kernel modules for Homematic, which are all licensed under the [GPLv2](http://www.gnu.org/licenses/gpl-2.0.html) license instead.
+The kernel module source files (folder kernel) and the generated kernel .deb files (raspberrypi-kernel-pivccu) licensed under the [GPLv2](http://www.gnu.org/licenses/gpl-2.0.html) license instead.
 The generated CCU container .deb files (pivccu) are containing the original CCU2 firmware, containing multiple different licenses. Please refer to [eQ-3](http://www.eq-3.com) for more information.
