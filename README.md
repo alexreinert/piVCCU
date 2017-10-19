@@ -36,7 +36,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       sudo systemctl disable hciuart.service
       ```
 
-   * Option 2: Raspberry Pi 3 with bluetooth wired to mini uart
+   * Option 2: Raspberry Pi 3 with bluetooth attached to mini uart
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
       dtoverlay=pi3_miniuart_bt
