@@ -24,6 +24,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 
 3. Install custom kernel with the neccessary kernel modules for Homematic
    ```bash
+   sudo apt remove raspberrypi-kernel
    sudo apt install raspberrypi-kernel-pivccu
    ```
 
