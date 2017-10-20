@@ -4,7 +4,7 @@ CCU_VERSION=2.29.23
 CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=268"
 CCU_DOWNLOAD_URL="http://www.eq-3.de/Downloads/Software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tar.gz"
 
-PKG_BUILD=8
+PKG_BUILD=9
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -87,11 +87,14 @@ cat <<EOT >> $TARGET_DIR/DEBIAN/postinst
 systemctl enable pivccu.service
 systemctl start pivccu.service || true
 
-if [ ! -e /bin/pivccu-attach ]; then
-  ln -s /var/lib/piVCCU/pivccu-attach.sh /bin/pivccu-attach
+if [ ! -e /usr/sbin/pivccu-attach ]; then
+  ln -s /var/lib/piVCCU/pivccu-attach.sh /usr/sbin/pivccu-attach
 fi
-if [ ! -e /bin/pivccu-info ]; then
-  ln -s /var/lib/piVCCU/pivccu-info.sh /bin/pivccu-info
+if [ ! -e /usr/sbin/pivccu-info ]; then
+  ln -s /var/lib/piVCCU/pivccu-info.sh /usr/sbin/pivccu-info
+fi
+if [ ! -e /usr/sbin/pivccu-device ]; then
+  ln -s /var/lib/piVCCU/pivccu-device.sh /usr/sbin/pivccu-device
 fi
 
 BRIDGE=\`brctl show | sed -n 2p | awk '{print $1}'\`
@@ -107,8 +110,9 @@ cat <<EOT >> $TARGET_DIR/DEBIAN/prerm
 systemctl stop pivccu.service
 systemctl disable pivccu.service
 
-rm -f /bin/pivccu-attach
-rm -f /bin/pivccu-info
+rm -f /usr/sbin/pivccu-attach
+rm -f /usr/sbin/pivccu-info
+rm -f /usr/sbin/pivccu-device
 EOT
 
 chmod +x $TARGET_DIR/DEBIAN/prerm

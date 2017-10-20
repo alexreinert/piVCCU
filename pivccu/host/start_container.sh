@@ -51,6 +51,14 @@ sed -i $CONFIG_FILE -e "s/<uart_major>/$UART_MAJOR/"
 echo -n $EQ3LOOP_MAJOR > /sys/module/plat_eq3ccu2/parameters/eq3charloop_major
 echo -n $UART_MAJOR > /sys/module/plat_eq3ccu2/parameters/uart_major
 
+if [ -e /etc/piVCCU/pre-start.sh ]; then
+  /etc/piVCCU/pre-start.sh
+fi
+
 # start container
 /usr/bin/lxc-start --lxcpath /var/lib/piVCCU --name lxc --pidfile /var/run/pivccu.pid --daemon
+
+if [ -e /etc/piVCCU/post-start.sh ]; then
+  /etc/piVCCU/post-start.sh
+fi
 
