@@ -263,6 +263,16 @@ diff -ruN orgroot/etc/init.d/S40UsbNetwork rootfs/etc/init.d/S40UsbNetwork
 -
 -exit $?
 -
+--- orgroot/etc/init.d/S50eq3configd            2017-10-20 06:28:06.231593425 +0000
++++ rootfs/etc/init.d/S50eq3configd             2017-10-20 06:28:47.712073049 +0000
+@@ -17,6 +17,7 @@
+ }
+
+ start() {
++       sleep 5 # Wait some time to get the network interface complettly up
+        echo -n "Starting eq3configd: "
+        init
+        start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
 diff -ruN orgroot/etc/init.d/S99eQ3SystemStarted rootfs/etc/init.d/S99eQ3SystemStarted
 --- orgroot/etc/init.d/S99eQ3SystemStarted	2017-10-13 20:45:02.551649760 +0200
 +++ rootfs/etc/init.d/S99eQ3SystemStarted	2017-10-13 20:45:36.131871874 +0200
