@@ -4,7 +4,7 @@ CCU_VERSION=2.29.23
 CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=268"
 CCU_DOWNLOAD_URL="http://www.eq-3.de/Downloads/Software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tar.gz"
 
-PKG_BUILD=9
+PKG_BUILD=10
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
