@@ -9,7 +9,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 * Raspbian Stretch or Jessie
 
 ### Installation
-
+0. Create full backup of your SD card
 1. Add the public key of the repository
    ```bash
    wget -q -O - http://alexreinert.github.io/piVCCU/public.key | sudo apt-key add -
@@ -48,8 +48,8 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 
 5. Disable serial console in command line
       ```bash
-      sudo sed -i cmdline.txt -e "s/console=serial0,[0-9]\+ //"
-      sudo sed -i cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
+      sudo sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
+      sudo sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
       ```
 
 6. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
@@ -59,7 +59,8 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       ```
    * Update your config. (Replace *eth0* if necessary)
       ```bash
-      sudo apt-get purge dhcpcd5
+      sudo apt remove dhcpcd5
+      sudo apt install bridge-utils
       sudo bash -c 'cat << EOT > /etc/network/interfaces
       source-directory /etc/network/interfaces.d
 
@@ -75,7 +76,8 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       ```
    * You can use an static IP address, too. In that case use instead:
       ```bash
-      sudo apt-get purge dhcpcd5
+      sudo apt remove dhcpcd5
+      sudo apt install bridge-utils
       sudo bash -c 'cat << EOT > /etc/network/interfaces
       source-directory /etc/network/interfaces.d
 
@@ -119,9 +121,9 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    2. Reinstall all addons using the CCU web interface
 
 * YAHM
-   1. Create full backup of your SD card
-   2. Create system backup using CCU web interface
-   3. Remove YAHM
+   0. Create full backup of your SD card
+   1. Create system backup using CCU web interface
+   2. Remove YAHM
       ```bash
       sudo lxc-stop -n yahm
       sudo rm -f /etc/bash_completion.d/yahm_completion
@@ -138,9 +140,9 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       sudo sed -i /etc/modules -e '/#*eq3_char_loop/d'
       sudo sed -i /etc/modules -e '/#*bcm2835_raw_uart/d'
       ```
-   4. Install piVCCU as described above
-   5. Restore the system backup using the CCU web interface
-   6. Remove YAHM specific configuration stuff
+   3. Install piVCCU as described above
+   4. Restore the system backup using the CCU web interface
+   5. Remove YAHM specific configuration stuff
       ```bash
       sudo systemctl stop pivccu.service
 
