@@ -154,7 +154,17 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       ```
       
 ### Using CUxD and USB devices
-*__tbd__*
+1. Create a hook script
+   ```bash
+   echo '#!/bin/bash' | sudo tee -a /etc/piVCCU/post-start.sh
+   sudo chmod +x /etc/piVCCU/post-start.sh
+   ```
+2. For each device add an entry to this hook file, e.g. here for ```/dev/ttyUSB0```
+   ```bash
+   echo 'pivccu-device add /dev/ttyUSB0' | sudo tee -a /etc/piVCCU/post-start.sh
+   ```
+3. The devices will now be available inside the container, just use them like it is described in the CUxD documentation
+
 
 ### Build packages by your own
 If you like to build the .deb package by yourself
