@@ -1,6 +1,6 @@
-diff -ruN orgroot/etc/fstab rootfs/etc/fstab
---- orgroot/etc/fstab	2017-10-13 20:45:02.551649760 +0200
-+++ rootfs/etc/fstab	2017-10-13 20:45:36.131871874 +0200
+diff -ruN rootfs.orig/etc/fstab rootfs/etc/fstab
+--- rootfs.orig/etc/fstab	2017-10-21 04:53:42.024700198 +0200
++++ rootfs/etc/fstab	2017-10-21 04:57:48.210292627 +0200
 @@ -1,13 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -15,66 +15,66 @@ diff -ruN orgroot/etc/fstab rootfs/etc/fstab
 -varfs           /var           tmpfs    defaults,size=196M 0      0
 -debugfs 	/sys/kernel/debug debugfs 		  0 	0
 -ubi1:user	/usr/local	ubifs	defaults,noatime,rw,sync	0 0
-diff -ruN orgroot/etc/init.d/S00eQ3SystemStart rootfs/etc/init.d/S00eQ3SystemStart
---- orgroot/etc/init.d/S00eQ3SystemStart	2017-10-13 20:45:02.551649760 +0200
-+++ rootfs/etc/init.d/S00eQ3SystemStart	2017-10-13 20:45:36.131871874 +0200
+diff -ruN rootfs.orig/etc/init.d/S00eQ3SystemStart rootfs/etc/init.d/S00eQ3SystemStart
+--- rootfs.orig/etc/init.d/S00eQ3SystemStart	2017-10-21 04:53:42.024700198 +0200
++++ rootfs/etc/init.d/S00eQ3SystemStart	2017-10-21 04:57:48.250292884 +0200
 @@ -7,17 +7,6 @@
  SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
-
+ 
  init() {
--       # power led on
--       echo 255 > /sys/class/leds/power/brightness
--       echo default-on > /sys/class/leds/power/trigger
--       # internet led off
--       echo none > /sys/class/leds/internet/trigger
--       # info led fast
--       echo timer > /sys/class/leds/info/trigger
--       echo 255 > /sys/class/leds/info/brightness
--       echo 100 > /sys/class/leds/info/delay_off
--       echo 100 > /sys/class/leds/info/delay_on
+-	# power led on
+-	echo 255 > /sys/class/leds/power/brightness
+-	echo default-on > /sys/class/leds/power/trigger
+-	# internet led off
+-	echo none > /sys/class/leds/internet/trigger
+-	# info led fast
+-	echo timer > /sys/class/leds/info/trigger
+-	echo 255 > /sys/class/leds/info/brightness
+-	echo 100 > /sys/class/leds/info/delay_off
+-	echo 100 > /sys/class/leds/info/delay_on
 -
          chmod 775 /var
          mkdir /var/log
          chmod 775 /var/log
 @@ -73,27 +62,6 @@
-        if [ ! -e /usr/local/etc/config/shadow ] ; then
-                cp $CFG_TEMPLATE_DIR/shadow /usr/local/etc/config/shadow
-        fi
+ 	if [ ! -e /usr/local/etc/config/shadow ] ; then
+ 		cp $CFG_TEMPLATE_DIR/shadow /usr/local/etc/config/shadow
+ 	fi
 -
--       modprobe spidev
+-	modprobe spidev
 -        modprobe ic200_spi
 -        modprobe spi_eq3_gpio
 -        modprobe spi_bitbang
 -        mknod spidev0.0 c 153 0
 -        modprobe gpio-keys
 -        modprobe fsl_usb2_udc.ko
--       if grep -q "eQ3Mode=production" /proc/cmdline ; then
+-	if grep -q "eQ3Mode=production" /proc/cmdline ; then
 -          modprobe g_multi luns=1 cdrom=1 ro=1 removable=0,0 file=/usr/share/eq3/install.iso host_addr=00:1a:22:00:05:86 dev_addr=00:1a:22:00:05:87 iManufacturer="eQ-3" iProduct="CCU2" idVendor="0x1b1f" idProduct="0xc016" iSerialNumber="$SERIAL"
--       fi
--
--       # Tunneling
+-	fi
+-	
+-	# Tunneling
 -        modprobe tun
--
--       # USB
+-       
+-	# USB
 -        modprobe ehci-hcd
 -
--       # HM/HmIP Dual Protocol
--       modprobe mxs_raw_auart
--       modprobe eq3_char_loop
-
-        if [ ! -d /usr/local/etc/config ] ; then
+-	# HM/HmIP Dual Protocol
+-	modprobe mxs_raw_auart
+-	modprobe eq3_char_loop
+ 	 
+ 	if [ ! -d /usr/local/etc/config ] ; then
                  mkdir -p /usr/local/etc/config
 @@ -129,7 +97,7 @@
-
+ 
  stop () {
-        start-stop-daemon -K -q -p /var/run/crond.pid
--       /bin/update_firmware_pre
+ 	start-stop-daemon -K -q -p /var/run/crond.pid
+-	/bin/update_firmware_pre
 +       /etc/piVCCU/install_pending_addon.sh
  }
-
+ 
  restart() {
-diff -ruN orgroot/etc/init.d/S10udev rootfs/etc/init.d/S10udev
---- orgroot/etc/init.d/S10udev	2017-10-13 20:45:02.551649760 +0200
+diff -ruN rootfs.orig/etc/init.d/S10udev rootfs/etc/init.d/S10udev
+--- rootfs.orig/etc/init.d/S10udev	2017-10-21 04:53:42.020700172 +0200
 +++ rootfs/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
 @@ -1,48 +0,0 @@
 -#!/bin/sh
@@ -125,8 +125,8 @@ diff -ruN orgroot/etc/init.d/S10udev rootfs/etc/init.d/S10udev
 -
 -
 -exit 0
-diff -ruN orgroot/etc/init.d/S15watchdog rootfs/etc/init.d/S15watchdog
---- orgroot/etc/init.d/S15watchdog	2017-10-13 20:45:02.551649760 +0200
+diff -ruN rootfs.orig/etc/init.d/S15watchdog rootfs/etc/init.d/S15watchdog
+--- rootfs.orig/etc/init.d/S15watchdog	2017-10-21 04:53:42.024700198 +0200
 +++ rootfs/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
 @@ -1,20 +0,0 @@
 -#!/bin/sh
@@ -149,8 +149,8 @@ diff -ruN orgroot/etc/init.d/S15watchdog rootfs/etc/init.d/S15watchdog
 -esac
 -
 -exit $?
-diff -ruN orgroot/etc/init.d/S20urandom rootfs/etc/init.d/S20urandom
---- orgroot/etc/init.d/S20urandom	2017-10-13 20:45:02.551649760 +0200
+diff -ruN rootfs.orig/etc/init.d/S20urandom rootfs/etc/init.d/S20urandom
+--- rootfs.orig/etc/init.d/S20urandom	2017-10-21 04:53:42.024700198 +0200
 +++ rootfs/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
 @@ -1,54 +0,0 @@
 -#! /bin/sh
@@ -207,8 +207,8 @@ diff -ruN orgroot/etc/init.d/S20urandom rootfs/etc/init.d/S20urandom
 -		exit 1
 -		;;
 -esac
-diff -ruN orgroot/etc/init.d/S40UsbNetwork rootfs/etc/init.d/S40UsbNetwork
---- orgroot/etc/init.d/S40UsbNetwork	2017-10-13 20:45:02.551649760 +0200
+diff -ruN rootfs.orig/etc/init.d/S40UsbNetwork rootfs/etc/init.d/S40UsbNetwork
+--- rootfs.orig/etc/init.d/S40UsbNetwork	2017-10-21 04:53:42.024700198 +0200
 +++ rootfs/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
 @@ -1,52 +0,0 @@
 -#!/bin/sh
@@ -263,38 +263,39 @@ diff -ruN orgroot/etc/init.d/S40UsbNetwork rootfs/etc/init.d/S40UsbNetwork
 -
 -exit $?
 -
---- orgroot/etc/init.d/S50eq3configd            2017-10-20 06:28:06.231593425 +0000
-+++ rootfs/etc/init.d/S50eq3configd             2017-10-20 06:28:47.712073049 +0000
+diff -ruN rootfs.orig/etc/init.d/S50eq3configd rootfs/etc/init.d/S50eq3configd
+--- rootfs.orig/etc/init.d/S50eq3configd	2017-10-21 04:53:42.020700172 +0200
++++ rootfs/etc/init.d/S50eq3configd	2017-10-21 04:57:48.254292910 +0200
 @@ -17,6 +17,7 @@
  }
-
+ 
  start() {
 +       sleep 5 # Wait some time to get the network interface complettly up
-        echo -n "Starting eq3configd: "
-        init
-        start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
-diff -ruN orgroot/etc/init.d/S99eQ3SystemStarted rootfs/etc/init.d/S99eQ3SystemStarted
---- orgroot/etc/init.d/S99eQ3SystemStarted	2017-10-13 20:45:02.551649760 +0200
-+++ rootfs/etc/init.d/S99eQ3SystemStarted	2017-10-13 20:45:36.131871874 +0200
+ 	echo -n "Starting eq3configd: "
+ 	init
+ 	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
+diff -ruN rootfs.orig/etc/init.d/S99eQ3SystemStarted rootfs/etc/init.d/S99eQ3SystemStarted
+--- rootfs.orig/etc/init.d/S99eQ3SystemStarted	2017-10-21 04:53:42.024700198 +0200
++++ rootfs/etc/init.d/S99eQ3SystemStarted	2017-10-21 04:57:48.254292910 +0200
 @@ -8,15 +8,6 @@
-
+ 
  init() {
-        export TZ=`cat /etc/config/TZ`
+ 	export TZ=`cat /etc/config/TZ`
 -
--       # power led on
--       echo 255 > /sys/class/leds/power/brightness
--       echo default-on > /sys/class/leds/power/trigger
--       # internet led off
--       echo none > /sys/class/leds/internet/trigger
--       # info led off
--       echo none > /sys/class/leds/info/trigger
--       /bin/hss_led 2>&1 > /dev/null  &
+-	# power led on
+-	echo 255 > /sys/class/leds/power/brightness
+-	echo default-on > /sys/class/leds/power/trigger
+-	# internet led off
+-	echo none > /sys/class/leds/internet/trigger
+-	# info led off
+-	echo none > /sys/class/leds/info/trigger
+-	/bin/hss_led 2>&1 > /dev/null  &
  }
-
+ 
  start() {
-diff -ruN orgroot/etc/inittab rootfs/etc/inittab
---- orgroot/etc/inittab	2017-10-13 20:45:02.551649760 +0200
-+++ rootfs/etc/inittab	2017-10-13 20:45:36.131871874 +0200
+diff -ruN rootfs.orig/etc/inittab rootfs/etc/inittab
+--- rootfs.orig/etc/inittab	2017-10-21 04:53:42.024700198 +0200
++++ rootfs/etc/inittab	2017-10-21 04:57:48.266292987 +0200
 @@ -14,25 +14,15 @@
  # process   == program to run
  
@@ -321,9 +322,9 @@ diff -ruN orgroot/etc/inittab rootfs/etc/inittab
  # Stuff to do before rebooting
  ::shutdown:/etc/init.d/rcK
  null::shutdown:/bin/umount -a -r
-diff -ruN orgroot/opt/HMServer/pages/StorageSettingsDialog.ftl rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl
---- orgroot/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-13 20:45:02.567649867 +0200
-+++ rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-13 20:47:02.152440777 +0200
+diff -ruN rootfs.orig/opt/HMServer/pages/StorageSettingsDialog.ftl rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl
+--- rootfs.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-21 04:53:42.096700663 +0200
++++ rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-21 04:57:48.266292987 +0200
 @@ -168,23 +168,6 @@
  						<td class="CLASS21112">${"$"}{dialogSettingsSDCardStatus}:</td>
  						<td>${SDCardStatus}</td>
@@ -348,9 +349,9 @@ diff -ruN orgroot/opt/HMServer/pages/StorageSettingsDialog.ftl rootfs/opt/HMServ
  				</table>
  			</td>
  			<td class="CLASS21113" align="left">
-diff -ruN orgroot/www/config/cp_maintenance.cgi rootfs/www/config/cp_maintenance.cgi
---- orgroot/www/config/cp_maintenance.cgi	2017-10-13 20:45:02.731650952 +0200
-+++ rootfs/www/config/cp_maintenance.cgi	2017-10-13 20:49:22.437368417 +0200
+diff -ruN rootfs.orig/www/config/cp_maintenance.cgi rootfs/www/config/cp_maintenance.cgi
+--- rootfs.orig/www/config/cp_maintenance.cgi	2017-10-21 04:53:43.028706692 +0200
++++ rootfs/www/config/cp_maintenance.cgi	2017-10-21 04:57:48.266292987 +0200
 @@ -350,103 +350,10 @@
                                  puts "$cur_version"
                              }
@@ -468,10 +469,21 @@ diff -ruN orgroot/www/config/cp_maintenance.cgi rootfs/www/config/cp_maintenance
  
        # Hide all elements with class j_noForcedUpdate when an update is enforced
        puts "if (forceUpdate) {"
-diff -ruN orgroot/www/config/cp_security.cgi rootfs/www/config/cp_security.cgi
---- orgroot/www/config/cp_security.cgi	2017-10-13 20:45:02.731650952 +0200
-+++ rootfs/www/config/cp_security.cgi	2017-10-13 20:50:28.665806298 +0200
-@@ -476,13 +476,7 @@
+diff -ruN rootfs.orig/www/config/cp_security.cgi rootfs/www/config/cp_security.cgi
+--- rootfs.orig/www/config/cp_security.cgi	2017-10-21 04:53:43.032706717 +0200
++++ rootfs/www/config/cp_security.cgi	2017-10-21 05:00:20.319276716 +0200
+@@ -202,8 +202,8 @@
+         # exec /usr/sbin/ubiattach -p /dev/mtd6
+         # exec /usr/sbin/ubimkvol /dev/ubi1 -N user -m
+         # exec mount /usr/local
+-        exec touch /var/doFactoryReset
+-        exec kill -SIGQUIT 1
++        eval [list exec rm -rf] [glob /usr/local/*]
++        exec /sbin/reboot
+     }]} {
+ 
+       # TWIST-22
+@@ -476,12 +476,7 @@
      }
      
    if { "false" == $ccu1_backup } {  # backup for version >= 2
@@ -481,12 +493,11 @@ diff -ruN orgroot/www/config/cp_security.cgi rootfs/www/config/cp_security.cgi
 -          exec /usr/sbin/ubiattach -p /dev/mtd6
 -          exec /usr/sbin/ubimkvol /dev/ubi1 -N user -m
 -          exec mount /usr/local
--
-+          exec rm -rf /usr/local/*
++    eval [list exec rm -rf] [glob /usr/local/*]
+ 
      if { [catch {exec tar xzf /tmp/usr_local.tar.gz} errorMessage] } {
        # set msg "Beim Einspielen des Systembackups ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut. "
-       # append msg "Falls dieser Fehler wiederholt Auftritt, wenden Sie sich bitte mit der folgenden Fehlermeldung an den Kundenservice:\n<br>"
-@@ -568,8 +561,6 @@
+@@ -568,8 +563,6 @@
    }
    
    if { "false" == $backuperror } {
@@ -495,9 +506,9 @@ diff -ruN orgroot/www/config/cp_security.cgi rootfs/www/config/cp_security.cgi
          division {class="popupTitle"} {
              puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
          }
-diff -ruN orgroot/www/config/cp_software.cgi rootfs/www/config/cp_software.cgi
---- orgroot/www/config/cp_software.cgi	2017-10-13 20:45:02.731650952 +0200
-+++ rootfs/www/config/cp_software.cgi	2017-10-13 20:50:59.974013295 +0200
+diff -ruN rootfs.orig/www/config/cp_software.cgi rootfs/www/config/cp_software.cgi
+--- rootfs.orig/www/config/cp_software.cgi	2017-10-21 04:53:43.028706692 +0200
++++ rootfs/www/config/cp_software.cgi	2017-10-21 04:57:48.266292987 +0200
 @@ -507,7 +507,7 @@
      if {[isOldCCU]} {
          exec /sbin/init -q
