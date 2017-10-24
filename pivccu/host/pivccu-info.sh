@@ -1,12 +1,9 @@
 #!/bin/bash
-if [ -e /lib/modules/$(uname -r)/kernel/drivers/char/eq3_char_loop.ko ]; then
-  if [ `lsmod | grep "eq3_char_loop" -c` -eq 1 ]; then
-    MODULE_STATE="Loaded"
-  else
-    MODULE_STATE="Available, but not loaded"
-  fi
+modprobe -a plat_eq3ccu2 eq3_char_loop bcm2835_raw_uart
+if [ $? -ne 0 ]; then
+  MODULE_STATE="Available"
 else
-  MODULE_STATE="Not existing"
+  MODULE_STATE="Not available"
 fi
 echo "Kernel modules: $MODULE_STATE"
 

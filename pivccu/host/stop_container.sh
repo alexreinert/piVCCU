@@ -24,5 +24,5 @@ then
 fi
 
 # unload kernel modules
-rmmod plat_eq3ccu2 eq3_char_loop bcm2835_raw_uart || true
+rmmod plat_eq3ccu2 || true
 

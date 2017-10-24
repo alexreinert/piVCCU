@@ -1,7 +1,7 @@
 #!/bin/bash
 KERNEL_TAG=1.20170811-1
 
-PKG_BUILD=2
+PKG_BUILD=3
 
 PKG_VERSION=$KERNEL_TAG-$PKG_BUILD
 
@@ -92,7 +92,7 @@ Breaks: raspberrypi-kernel
 Provides: linux-image
 Section: kernel
 Priority: extra
-Homepage: https://github.com/alexreinert/
+Homepage: https://github.com/alexreinert/piVCCU
 Description: Raspberry Pi Kernel with modifications needed for Homematic
   This package contains the Raspberry Pi Linux kernel with modifications needed for Homematic.
 EOT
