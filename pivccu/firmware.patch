@@ -1,6 +1,6 @@
 diff -ruN rootfs.orig/etc/fstab rootfs/etc/fstab
---- rootfs.orig/etc/fstab	2017-10-21 04:53:42.024700198 +0200
-+++ rootfs/etc/fstab	2017-10-21 04:57:48.210292627 +0200
+--- rootfs.orig/etc/fstab	2017-10-25 07:50:59.725908702 +0200
++++ rootfs/etc/fstab	2017-10-25 07:52:10.458372939 +0200
 @@ -1,13 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -16,8 +16,8 @@ diff -ruN rootfs.orig/etc/fstab rootfs/etc/fstab
 -debugfs 	/sys/kernel/debug debugfs 		  0 	0
 -ubi1:user	/usr/local	ubifs	defaults,noatime,rw,sync	0 0
 diff -ruN rootfs.orig/etc/init.d/S00eQ3SystemStart rootfs/etc/init.d/S00eQ3SystemStart
---- rootfs.orig/etc/init.d/S00eQ3SystemStart	2017-10-21 04:53:42.024700198 +0200
-+++ rootfs/etc/init.d/S00eQ3SystemStart	2017-10-21 04:57:48.250292884 +0200
+--- rootfs.orig/etc/init.d/S00eQ3SystemStart	2017-10-25 07:50:59.721908676 +0200
++++ rootfs/etc/init.d/S00eQ3SystemStart	2017-10-25 07:52:10.466372991 +0200
 @@ -7,17 +7,6 @@
  SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
  
@@ -74,7 +74,7 @@ diff -ruN rootfs.orig/etc/init.d/S00eQ3SystemStart rootfs/etc/init.d/S00eQ3Syste
  
  restart() {
 diff -ruN rootfs.orig/etc/init.d/S10udev rootfs/etc/init.d/S10udev
---- rootfs.orig/etc/init.d/S10udev	2017-10-21 04:53:42.020700172 +0200
+--- rootfs.orig/etc/init.d/S10udev	2017-10-25 07:50:59.721908676 +0200
 +++ rootfs/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
 @@ -1,48 +0,0 @@
 -#!/bin/sh
@@ -126,7 +126,7 @@ diff -ruN rootfs.orig/etc/init.d/S10udev rootfs/etc/init.d/S10udev
 -
 -exit 0
 diff -ruN rootfs.orig/etc/init.d/S15watchdog rootfs/etc/init.d/S15watchdog
---- rootfs.orig/etc/init.d/S15watchdog	2017-10-21 04:53:42.024700198 +0200
+--- rootfs.orig/etc/init.d/S15watchdog	2017-10-25 07:50:59.721908676 +0200
 +++ rootfs/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
 @@ -1,20 +0,0 @@
 -#!/bin/sh
@@ -150,7 +150,7 @@ diff -ruN rootfs.orig/etc/init.d/S15watchdog rootfs/etc/init.d/S15watchdog
 -
 -exit $?
 diff -ruN rootfs.orig/etc/init.d/S20urandom rootfs/etc/init.d/S20urandom
---- rootfs.orig/etc/init.d/S20urandom	2017-10-21 04:53:42.024700198 +0200
+--- rootfs.orig/etc/init.d/S20urandom	2017-10-25 07:50:59.721908676 +0200
 +++ rootfs/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
 @@ -1,54 +0,0 @@
 -#! /bin/sh
@@ -208,7 +208,7 @@ diff -ruN rootfs.orig/etc/init.d/S20urandom rootfs/etc/init.d/S20urandom
 -		;;
 -esac
 diff -ruN rootfs.orig/etc/init.d/S40UsbNetwork rootfs/etc/init.d/S40UsbNetwork
---- rootfs.orig/etc/init.d/S40UsbNetwork	2017-10-21 04:53:42.024700198 +0200
+--- rootfs.orig/etc/init.d/S40UsbNetwork	2017-10-25 07:50:59.721908676 +0200
 +++ rootfs/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
 @@ -1,52 +0,0 @@
 -#!/bin/sh
@@ -264,8 +264,8 @@ diff -ruN rootfs.orig/etc/init.d/S40UsbNetwork rootfs/etc/init.d/S40UsbNetwork
 -exit $?
 -
 diff -ruN rootfs.orig/etc/init.d/S50eq3configd rootfs/etc/init.d/S50eq3configd
---- rootfs.orig/etc/init.d/S50eq3configd	2017-10-21 04:53:42.020700172 +0200
-+++ rootfs/etc/init.d/S50eq3configd	2017-10-21 04:57:48.254292910 +0200
+--- rootfs.orig/etc/init.d/S50eq3configd	2017-10-25 07:50:59.721908676 +0200
++++ rootfs/etc/init.d/S50eq3configd	2017-10-25 07:52:10.486373122 +0200
 @@ -17,6 +17,7 @@
  }
  
@@ -274,9 +274,26 @@ diff -ruN rootfs.orig/etc/init.d/S50eq3configd rootfs/etc/init.d/S50eq3configd
  	echo -n "Starting eq3configd: "
  	init
  	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
+diff -ruN rootfs.orig/etc/init.d/S60multimacd rootfs/etc/init.d/S60multimacd
+--- rootfs.orig/etc/init.d/S60multimacd	2017-10-25 07:50:59.721908676 +0200
++++ rootfs/etc/init.d/S60multimacd	2017-10-25 07:54:42.839373050 +0200
+@@ -10,11 +10,11 @@
+ update() {        
+ 	if [ ! -e /etc/config/no-coprocessor-update ] ; then
+ 		echo "checking if firmware update is needed..."
+-		/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u
++		/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -t HM-MOD-UART
+ 		if ! [ $? -eq 0 ] ; then
+ 			echo "error while updating coprocessor, recovering..."
+ 			avrprog --bo
+-			/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f
++			/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f -t HM-MOD-UART
+ 			sleep 1
+ 		else
+ 			echo "done"
 diff -ruN rootfs.orig/etc/init.d/S99eQ3SystemStarted rootfs/etc/init.d/S99eQ3SystemStarted
---- rootfs.orig/etc/init.d/S99eQ3SystemStarted	2017-10-21 04:53:42.024700198 +0200
-+++ rootfs/etc/init.d/S99eQ3SystemStarted	2017-10-21 04:57:48.254292910 +0200
+--- rootfs.orig/etc/init.d/S99eQ3SystemStarted	2017-10-25 07:50:59.721908676 +0200
++++ rootfs/etc/init.d/S99eQ3SystemStarted	2017-10-25 07:52:10.494373175 +0200
 @@ -8,15 +8,6 @@
  
  init() {
@@ -294,8 +311,8 @@ diff -ruN rootfs.orig/etc/init.d/S99eQ3SystemStarted rootfs/etc/init.d/S99eQ3Sys
  
  start() {
 diff -ruN rootfs.orig/etc/inittab rootfs/etc/inittab
---- rootfs.orig/etc/inittab	2017-10-21 04:53:42.024700198 +0200
-+++ rootfs/etc/inittab	2017-10-21 04:57:48.266292987 +0200
+--- rootfs.orig/etc/inittab	2017-10-25 07:50:59.725908702 +0200
++++ rootfs/etc/inittab	2017-10-25 07:52:10.502373227 +0200
 @@ -14,25 +14,15 @@
  # process   == program to run
  
@@ -322,9 +339,22 @@ diff -ruN rootfs.orig/etc/inittab rootfs/etc/inittab
  # Stuff to do before rebooting
  ::shutdown:/etc/init.d/rcK
  null::shutdown:/bin/umount -a -r
+diff -ruN rootfs.orig/firmware/fwmap rootfs/firmware/fwmap
+--- rootfs.orig/firmware/fwmap	2017-10-25 07:51:02.117924406 +0200
++++ rootfs/firmware/fwmap	2017-10-25 07:53:36.474937481 +0200
+@@ -17,7 +17,8 @@
+ 
+ #Coprozessor
+ ARM7                    hss_comm.enc                                    0.056
+-CCU2                    coprocessor_update.eq3                          2.8.5          # Dual CoProzessor CCU2  
++#CCU2                    coprocessor_update.eq3                          2.8.5          # Dual CoProzessor CCU2  
++CCU2                    dualcopro_si1002_update_blhm.eq3                2.8.5          # Dual CoProzessor CCU2  
+ # CCU2                    coprocessor_update_hm_only.eq3                1.4.1          # HM only CoProzessor CCU2  
+ CCU2-RFLGW				coprocessor_update_hm_only.eq3					1.4.1          # HM only CoProzessor CCU2 for HomeMatic RF Lan Gateway
+ 
 diff -ruN rootfs.orig/opt/HMServer/pages/StorageSettingsDialog.ftl rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl
---- rootfs.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-21 04:53:42.096700663 +0200
-+++ rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-21 04:57:48.266292987 +0200
+--- rootfs.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-25 07:50:59.801909201 +0200
++++ rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-25 07:52:10.502373227 +0200
 @@ -168,23 +168,6 @@
  						<td class="CLASS21112">${"$"}{dialogSettingsSDCardStatus}:</td>
  						<td>${SDCardStatus}</td>
@@ -350,8 +380,8 @@ diff -ruN rootfs.orig/opt/HMServer/pages/StorageSettingsDialog.ftl rootfs/opt/HM
  			</td>
  			<td class="CLASS21113" align="left">
 diff -ruN rootfs.orig/www/config/cp_maintenance.cgi rootfs/www/config/cp_maintenance.cgi
---- rootfs.orig/www/config/cp_maintenance.cgi	2017-10-21 04:53:43.028706692 +0200
-+++ rootfs/www/config/cp_maintenance.cgi	2017-10-21 04:57:48.266292987 +0200
+--- rootfs.orig/www/config/cp_maintenance.cgi	2017-10-25 07:51:01.793922275 +0200
++++ rootfs/www/config/cp_maintenance.cgi	2017-10-25 07:52:10.502373227 +0200
 @@ -350,103 +350,10 @@
                                  puts "$cur_version"
                              }
@@ -470,8 +500,8 @@ diff -ruN rootfs.orig/www/config/cp_maintenance.cgi rootfs/www/config/cp_mainten
        # Hide all elements with class j_noForcedUpdate when an update is enforced
        puts "if (forceUpdate) {"
 diff -ruN rootfs.orig/www/config/cp_security.cgi rootfs/www/config/cp_security.cgi
---- rootfs.orig/www/config/cp_security.cgi	2017-10-21 04:53:43.032706717 +0200
-+++ rootfs/www/config/cp_security.cgi	2017-10-21 05:00:20.319276716 +0200
+--- rootfs.orig/www/config/cp_security.cgi	2017-10-25 07:51:01.809922380 +0200
++++ rootfs/www/config/cp_security.cgi	2017-10-25 07:52:10.502373227 +0200
 @@ -202,8 +202,8 @@
          # exec /usr/sbin/ubiattach -p /dev/mtd6
          # exec /usr/sbin/ubimkvol /dev/ubi1 -N user -m
@@ -507,8 +537,8 @@ diff -ruN rootfs.orig/www/config/cp_security.cgi rootfs/www/config/cp_security.c
              puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
          }
 diff -ruN rootfs.orig/www/config/cp_software.cgi rootfs/www/config/cp_software.cgi
---- rootfs.orig/www/config/cp_software.cgi	2017-10-21 04:53:43.028706692 +0200
-+++ rootfs/www/config/cp_software.cgi	2017-10-21 04:57:48.266292987 +0200
+--- rootfs.orig/www/config/cp_software.cgi	2017-10-25 07:51:01.777922170 +0200
++++ rootfs/www/config/cp_software.cgi	2017-10-25 07:52:10.502373227 +0200
 @@ -507,7 +507,7 @@
      if {[isOldCCU]} {
          exec /sbin/init -q
