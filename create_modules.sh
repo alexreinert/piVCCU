@@ -26,7 +26,7 @@ cd $SRC_DIR
 make -C $SRC_DIR ARCH="arm" CROSS_COMPILE="arm-linux-gnueabihf-" bcm2709_defconfig
 
 # build kernel
-make -C $SRC_DIR -j$(grep -c processor /proc/cpuinfo) ARCH="arm" CROSS_COMPILE="arm-linux-gnueabihf-" modules_prepare
+make -C $SRC_DIR -j$(grep -c processor /proc/cpuinfo) ARCH="arm" CROSS_COMPILE="arm-linux-gnueabihf-" LOCALVERSION="+" modules_prepare
 
 MOD_DIR=$WORK_DIR/modules
 mkdir -p $MOD_DIR
@@ -35,15 +35,15 @@ cp -p $CURRENT_DIR/kernel/*.c $MOD_DIR
 cp -p $CURRENT_DIR/kernel/Makefile $MOD_DIR
 
 cd $MOD_DIR
-make -C $SRC_DIR -j$(grep -c processor /proc/cpuinfo) ARCH="arm" CROSS_COMPILE="arm-linux-gnueabihf-" KERNEL_DIR="$SRC_DIR" M="$MOD_DIR" modules
+make -C $SRC_DIR -j$(grep -c processor /proc/cpuinfo) ARCH="arm" CROSS_COMPILE="arm-linux-gnueabihf-" KERNEL_DIR="$SRC_DIR" M="$MOD_DIR" LOCALVERSION="+" modules
 
 cd $SRC_DIR
 KERNEL_RELEASE=`cat "$SRC_DIR/include/config/kernel.release"`
 
 TARGET_DIR=$WORK_DIR/pivccu-modules-raspberrypi-$PKG_VERSION
 
-mkdir -p $TARGET_DIR/lib/modules/$KERNEL_RELEASE+/kernel/drivers/pivccu
-cp $MOD_DIR/*.ko $TARGET_DIR/lib/modules/$KERNEL_RELEASE+/kernel/drivers/pivccu
+mkdir -p $TARGET_DIR/lib/modules/$KERNEL_RELEASE/kernel/drivers/pivccu
+cp $MOD_DIR/*.ko $TARGET_DIR/lib/modules/$KERNEL_RELEASE/kernel/drivers/pivccu
 
 mkdir -p $TARGET_DIR/boot/overlays
 
@@ -74,7 +74,7 @@ for file in preinst postinst prerm postrm; do
 done
 
 for file in postinst postrm; do
-  echo "depmod -a" >> $TARGET_DIR/DEBIAN/$file
+  echo "depmod -a $KERNEL_RELEASE" >> $TARGET_DIR/DEBIAN/$file
 
   cat <<EOF >> $TARGET_DIR/DEBIAN/$file
 sed -i /boot/config.txt -e '/dtoverlay=bcm2835-raw-uart/d'
