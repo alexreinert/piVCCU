@@ -23,10 +23,15 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    Instead of `stable` you can also use the `testing` tree, but be aware testing sometimes means not that stable.
 
 3. Install custom kernel with the neccessary kernel modules for Homematic
-   ```bash
-   sudo apt remove raspberrypi-kernel
-   sudo apt install raspberrypi-kernel-pivccu
-   ```
+   * Option 1: Stable branch
+      ```bash
+      sudo apt remove raspberrypi-kernel
+      sudo apt install raspberrypi-kernel-pivccu
+      ```
+   * Option 2: Testing branch (Using original rapbian kernel, custom modules and device tree overlay)
+      ```bash
+      sudo apt install pivccu-modules-raspberrypi
+      ```
 
 4. Enable UART GPIO pins (only on Raspberry Pi 3)
    * Option 1: Disabled bluetooth (prefered)
@@ -111,6 +116,27 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    sudo pivccu-info
    ```
 
+### Migrating from custom kernel to original Raspbian kernel with custom modules and device tree overlay (Testing branch only right now)
+0. Create full backup of your SD card
+1. Upgrade to latest pivccu package
+   ```bash
+   sudo apt update
+   sudo apt upgrade
+   ```
+2. Verify, that at least Version 2.29.23-12 is installed
+   ```bash
+   sudo dpkg -s pivccu | grep 'Version'
+   ```
+3. Install original Raspbian kernel and additional custom kernel modules
+   ```bash
+   sudo apt install pivccu-modules-raspberrypi raspberrypi-kernel
+   ```
+   (In this step, the two packages should be get installed and the package raspberrypi-kernel-pivccu should be get removed)
+4. Reboot the system
+   ```bash
+   sudo reboot
+   ```
+
 ### Migration from other systems
 * Original CCU2
 
@@ -164,7 +190,6 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    echo 'pivccu-device add /dev/ttyUSB0' | sudo tee -a /etc/piVCCU/post-start.sh
    ```
 3. The devices will now be available inside the container, just use them like it is described in the CUxD documentation
-
 
 ### Build packages by your own
 If you like to build the .deb package by yourself
