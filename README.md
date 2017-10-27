@@ -22,13 +22,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    ```
    Instead of `stable` you can also use the `testing` tree, but be aware testing sometimes means not that stable.
 
-3. Install custom kernel with the neccessary kernel modules for Homematic
-   * Option 1: Stable branch
-      ```bash
-      sudo apt remove raspberrypi-kernel
-      sudo apt install raspberrypi-kernel-pivccu
-      ```
-   * Option 2: Testing branch (Using original rapbian kernel, custom modules and device tree overlay)
+3. Install the neccessary kernel modules for the low level communication with the HM-MOD-RPI-PCB
       ```bash
       sudo apt install pivccu-modules-raspberrypi
       ```
@@ -116,7 +110,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
    sudo pivccu-info
    ```
 
-### Migrating from custom kernel to original Raspbian kernel with custom modules and device tree overlay (Testing branch only right now)
+### Migrating from custom kernel to original Raspbian kernel with custom modules and device tree overlay
 0. Create full backup of your SD card
 1. Upgrade to latest pivccu package
    ```bash
