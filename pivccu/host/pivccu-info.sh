@@ -1,6 +1,6 @@
 #!/bin/bash
-modprobe -a plat_eq3ccu2 eq3_char_loop bcm2835_raw_uart
-if [ $? -ne 0 ]; then
+modprobe -a plat_eq3ccu2 eq3_char_loop bcm2835_raw_uart &> /dev/log
+if [ $? -eq 0 ]; then
   MODULE_STATE="Available"
 else
   MODULE_STATE="Not available"
