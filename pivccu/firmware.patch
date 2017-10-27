@@ -548,3 +548,22 @@ diff -ruN rootfs.orig/www/config/cp_software.cgi rootfs/www/config/cp_software.c
      }
  }
  
+diff -ruN rootfs.orig/www/config/control_panel.cgi rootfs/www/config/control_panel.cgi
+--- rootfs.orig/www/config/control_panel.cgi	2017-10-27 10:28:16.992432949 +0200
++++ rootfs/www/config/control_panel.cgi	2017-10-27 10:32:46.014174918 +0200
+@@ -183,9 +183,12 @@
+ 
+ if { "[read_var /etc/config/tweaks CP_DEVCONFIG]" != "" } {
+   puts "<!-- devconfig -->"
+-  puts "<td>"
+-  puts "<div class=\"StdTableBtn CLASS21701\" onclick=\"window.open('/tools/devconfig.cgi?sid=$sid');\">devconfig</div>"
+-  puts "</td><td class=\"StdTableBtnHelp\"></td>"
++    puts "<td>"
++      puts "<div class=\"cpButton\">"
++      puts "<div class=\"StdTableBtn CLASS21701\" onclick=\"window.open('/tools/devconfig.cgi?sid=$sid');\">DevConfig</div>"
++      puts "<div class=\"StdTableBtnHelp\"></div>"
++    puts "</div>"
++  puts "</td>"
+   incr i
+ }
+ 
