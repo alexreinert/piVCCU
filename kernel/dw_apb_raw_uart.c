@@ -86,7 +86,7 @@ static inline unsigned int dw_apb_readb(int offset)
   return readl(dw_apb_port->membase + (offset << dw_apb_port->regshift));
 }
 
-static int dw_apb_raw_uart_init_uart(void)
+static void dw_apb_raw_uart_init_uart(void)
 {
   long rate; 
 

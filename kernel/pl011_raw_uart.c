@@ -266,6 +266,7 @@ static int pl011_raw_uart_probe(struct platform_device *pdev)
   }
 
   /* Get mapbase and membase */
+  ioresource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
   if (ioresource) {
     pl011_port->mapbase = ioresource->start;
     pl011_port->membase = ioremap(ioresource->start, resource_size(ioresource));

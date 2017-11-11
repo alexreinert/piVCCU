@@ -32,6 +32,7 @@ MOD_DIR=$WORK_DIR/modules
 mkdir -p $MOD_DIR
 
 cp -p $CURRENT_DIR/kernel/*.c $MOD_DIR
+cp -p $CURRENT_DIR/kernel/*.h $MOD_DIR
 cp -p $CURRENT_DIR/kernel/Makefile $MOD_DIR
 
 cd $MOD_DIR
