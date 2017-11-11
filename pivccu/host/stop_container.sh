@@ -13,16 +13,6 @@ if [ -e /etc/piVCCU/post-stop.sh ]; then
   /etc/piVCCU/post-stop.sh
 fi
 
-# reset homematic board
-if [ -d /sys/class/gpio/gpio18 ]
-then
-  echo 0 > /sys/class/gpio/gpio18/value
-  sleep 0.1
-  echo 1 > /sys/class/gpio/gpio18/value
-
-  echo 18 > /sys/class/gpio/unexport
-fi
-
 # unload kernel modules
 rmmod plat_eq3ccu2 || true
-
+rmmod eq3_char_loop || true

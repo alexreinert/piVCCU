@@ -1,7 +1,7 @@
 #!/bin/bash
 KERNEL_TAG=1.20171029-1
 
-PKG_BUILD=1
+PKG_BUILD=2
 
 PKG_VERSION=$KERNEL_TAG-$PKG_BUILD
 
@@ -48,9 +48,7 @@ cp $MOD_DIR/*.ko $TARGET_DIR/lib/modules/$KERNEL_RELEASE/kernel/drivers/pivccu
 mkdir -p $TARGET_DIR/boot/overlays
 
 cd $CURRENT_DIR/dts
-for dts in $(find *.dts -type f); do
-  dtc -@ -I dts -O dtb -o $TARGET_DIR/boot/overlays/${dts%.dts}.dtbo $dts
-done
+dtc -@ -I dts -O dtb -o $TARGET_DIR/boot/overlays/pivccu-bcm2835.dtbo pivccu-bcm2835.dts
 
 mkdir -p $TARGET_DIR/DEBIAN
 
@@ -77,13 +75,13 @@ for file in postinst postrm; do
   echo "depmod -a $KERNEL_RELEASE" >> $TARGET_DIR/DEBIAN/$file
 
   cat <<EOF >> $TARGET_DIR/DEBIAN/$file
-sed -i /boot/config.txt -e '/dtoverlay=bcm2835-raw-uart/d'
+sed -i /boot/config.txt -e '/dtoverlay=pivccu-bcm2835/d'
 EOF
 
 done
 
 cat <<EOF >> $TARGET_DIR/DEBIAN/postinst
-echo "dtoverlay=bcm2835-raw-uart" >> /boot/config.txt
+echo "dtoverlay=pivccu-bcm2835" >> /boot/config.txt
 EOF
 
 cd $TARGET_DIR/boot

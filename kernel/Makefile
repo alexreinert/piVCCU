@@ -1,9 +1,20 @@
-obj-m += bcm2835_raw_uart.o
 obj-m += eq3_char_loop.o
 obj-m += plat_eq3ccu2.o
+obj-m += generic_raw_uart.o
+obj-m += pl011_raw_uart.o
+obj-m += dw_apb_raw_uart.o
 
-modules:
-	make -C $(KERNEL_DIR) M=$(PWD) modules
+ifeq ($(KERNELRELEASE),)
+  KERNELRELEASE := $(shell uname -r)
+endif
+
+ifeq ($(KERNEL_DIR),)
+  KERNEL_DIR := /lib/modules/$(KERNELRELEASE)/build
+endif
+
+all:
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
 
 clean:
-	make -C $(KERNEL_DIR) M=$(PWD) clean
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
+

@@ -72,7 +72,7 @@ Package: pivccu
 Version: $PKG_VERSION
 Architecture: armhf
 Maintainer: Alexander Reinert <alex@areinert.de>
-Depends: pivccu-kernel-modules|raspberrypi-kernel-pivccu
+Depends: pivccu-kernel-modules
 Pre-Depends: lxc, bridge-utils, systemd
 Section: misc
 Priority: extra

@@ -6,7 +6,8 @@
     fragment@0 {
         target = <&uart0>;
         __overlay__ {
-            compatible = "brcm,bcm2835-raw-uart";
+            compatible = "pivccu,pl011";
+            pivccu,gpio_pin = <18>;
         };
     };
 };

@@ -1,32 +1,28 @@
 #!/bin/bash
 
-# test if hardware uart is assigned to gpio pins
-if ! cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
-  logger -t piVCCU -p user.err -s "Hardware UART is not assigned to GPIO pins." 1>&2
+# test if hardware uart of Raspberry Pi 3 is assigned to gpio pins
+if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tree/model` == 1 ]; then
+  if ! cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
+    logger -t piVCCU -p user.err -s "Hardware UART is not assigned to GPIO pins." 1>&2
+    exit 1
+  fi
+fi
+
+if [ ! -e /sys/devices/virtual/raw-uart]; then
+  logger -t piVCCU -p user.err -s "Could not locate raw uart interface. Are the kernel modules and the device tree overlays installed?" 1>&2
   exit 1
 fi
 
 # load modules
-modprobe -a plat_eq3ccu2 eq3_char_loop bcm2835_raw_uart
+modprobe -a plat_eq3ccu2 eq3_char_loop &> /dev/null
 if [ $? -ne 0 ]; then
-  logger -t piVCCU -p user.err -s "Could not load kernel modules plat_eq3ccu2, eq3_char_loop and bcm2835_raw_uart." 1>&2
+  logger -t piVCCU -p user.err -s "Could not load kernel modules plat_eq3ccu2 and eq3_char_loop." 1>&2
   exit 1
 fi
 
-# reset homematic board
-if [ ! -d /sys/class/gpio/gpio18 ]
-then
-  echo 18 > /sys/class/gpio/export
-  echo out > /sys/class/gpio/gpio18/direction
-fi
-
-echo 0 > /sys/class/gpio/gpio18/value
-sleep 0.1
-echo 1 > /sys/class/gpio/gpio18/value
-
 # determine char major number
 EQ3LOOP_MAJOR=`cat /sys/devices/virtual/eq3loop/eq3loop/dev | cut -d: -f1`
-UART_MAJOR=`cat /sys/devices/virtual/bcm2835-raw-uart/bcm2835-raw-uart/dev | cut -d: -f1`
+UART_MAJOR=`cat /sys/devices/virtual/raw-uart/raw-uart/dev | cut -d: -f1`
 
 # create config file
 mkdir -p /var/lib/piVCCU/lxc
@@ -54,6 +50,9 @@ echo -n $UART_MAJOR > /sys/module/plat_eq3ccu2/parameters/uart_major
 if [ -e /etc/piVCCU/pre-start.sh ]; then
   /etc/piVCCU/pre-start.sh
 fi
+
+# multimacd needs rt scheduling to work
+sysctl -w kernel.sched_rt_runtime_us=-1
 
 # start container
 /usr/bin/lxc-start --lxcpath /var/lib/piVCCU --name lxc --pidfile /var/run/pivccu.pid --daemon
