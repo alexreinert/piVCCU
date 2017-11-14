@@ -8,7 +8,7 @@ if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tr
   fi
 fi
 
-if [ ! -e /sys/devices/virtual/raw-uart]; then
+if [ ! -e /sys/devices/virtual/raw-uart ]; then
   logger -t piVCCU -p user.err -s "Could not locate raw uart interface. Are the kernel modules and the device tree overlays installed?" 1>&2
   exit 1
 fi

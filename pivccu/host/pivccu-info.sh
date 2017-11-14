@@ -9,7 +9,7 @@ else
 fi
 echo "Kernel modules: $MODULE_STATE"
 
-if [ ! -e /sys/devices/virtual/raw-uart]; then
+if [ -e /sys/devices/virtual/raw-uart ]; then
   RAW_UART_STATE="Available"
 else
   RAW_UART_STATE="Not available"
