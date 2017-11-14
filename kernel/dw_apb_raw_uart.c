@@ -37,7 +37,7 @@
 
 
 #define MODULE_NAME "dw_apb_raw_uart"
-#define TX_CHUNK_SIZE 21
+#define TX_CHUNK_SIZE 23
 
 #define DW_UART_USR           0x1f /* UART Status register */
 #define DW_UART_USR_BUSY         1 /* UART Busy */
@@ -125,7 +125,7 @@ static int dw_apb_raw_uart_start_connection(void)
   dw_apb_writeb(UART_IER_RDI | DW_UART_IER_PTIME, UART_IER);
 
   /* enable FIFO */
-  dw_apb_writeb(UART_FCR_ENABLE_FIFO | UART_FCR_T_TRIG_01, UART_FCR);
+  dw_apb_writeb(UART_FCR_ENABLE_FIFO | UART_FCR_T_TRIG_10, UART_FCR);
 
   return 0;
 }
