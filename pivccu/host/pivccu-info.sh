@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "piVCCU version: `dpkg -s pivccu | grep '^Version: ' | cut -d' ' -f2`"
+
 modprobe -a plat_eq3ccu2 eq3_char_loop &> /dev/null
 if [ $? -eq 0 ]; then
   MODULE_STATE="Available"
