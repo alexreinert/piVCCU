@@ -13,8 +13,27 @@ TARGET_DIR=$WORK_DIR/pivccu-modules-dkms-$PKG_VERSION
 mkdir -p $TARGET_DIR/usr/src/pivccu-$PKG_VERSION
 cp $CURRENT_DIR/kernel/* $TARGET_DIR/usr/src/pivccu-$PKG_VERSION
 
-cd $CURRENT_DIR/dts
-dtc -@ -I dts -O dtb -o $TARGET_DIR/boot/overlays/pivccu-bcm2835.dtbo pivccu-bcm2835.dts
+DKMS_CONF_FILE=$TARGET_DIR/usr/src/pivccu-$PKG_VERSION/dkms.conf
+
+cat <<EOF >> $DKMS_CONF_FILE
+PACKAGE_NAME="pivccu"
+PACKAGE_VERSION="$PKG_VERSION"
+
+MAKE="make all"
+CLEAN="make clean"
+
+AUTOINSTALL="yes"
+
+EOF
+
+index=0
+for file in $TARGET_DIR/usr/src/pivccu-$PKG_VERSION/*.c; do
+  modname=$(basename "$file" .c)
+  echo "BUILT_MODULE_NAME[$index]=\"$modname\"" >> $DKMS_CONF_FILE
+  echo "DEST_MODULE_LOCATION[$index]=\"/kernel/drivers/pivccu\"" >> $DKMS_CONF_FILE
+  index=$(expr $index + 1)
+done
+
 
 mkdir -p $TARGET_DIR/DEBIAN
 
@@ -25,6 +44,7 @@ Architecture: armhf
 Maintainer: Alexander Reinert <alex@areinert.de>
 Provides: pivccu-kernel-modules
 Pre-Depends: dkms, build-essential
+Depends: pivccu-devicetree
 Section: kernel
 Priority: extra
 Homepage: https://github.com/alexreinert/piVCCU
@@ -37,15 +57,48 @@ for file in preinst postinst prerm postrm; do
   chmod 755 $TARGET_DIR/DEBIAN/$file
 done
 
-for file in postinst postrm; do
-  cat <<EOF >> $TARGET_DIR/DEBIAN/$file
-sed -i /boot/config.txt -e '/dtoverlay=pivccu-bcm2835/d'
+cat <<EOF >> $TARGET_DIR/DEBIAN/postinst
+set -e
+
+DKMS_NAME=pivccu
+DKMS_PACKAGE_NAME=\$DKMS_NAME-dkms
+DKMS_VERSION=$PKG_VERSION
+
+postinst_found=0
+
+case "\$1" in
+        configure)
+                for DKMS_POSTINST in /usr/lib/dkms/common.postinst /usr/share/\$DKMS_PACKAGE_NAME/postinst; do
+                        if [ -f \$DKMS_POSTINST ]; then
+                                \$DKMS_POSTINST \$DKMS_NAME \$DKMS_VERSION /usr/share/\$DKMS_PACKAGE_NAME "" \$2
+                                postinst_found=1
+                                break
+                        fi
+                done
+                if [ "\$postinst_found" -eq 0 ]; then
+                        echo "ERROR: DKMS version is too old and \$DKMS_PACKAGE_NAME was not"
+                        echo "built with legacy DKMS support."
+                        echo "You must either rebuild \$DKMS_PACKAGE_NAME with legacy postinst"
+                        echo "support or upgrade DKMS to a more current version."
+                        exit 1
+                fi
+        ;;
+esac
 EOF
 
-done
+cat <<EOF >> $TARGET_DIR/DEBIAN/prerm
+set -e
 
-cat <<EOF >> $TARGET_DIR/DEBIAN/postinst
-echo "dtoverlay=pivccu-bcm2835" >> /boot/config.txt
+DKMS_NAME=pivccu
+DKMS_VERSION=$PKG_VERSION
+
+case "\$1" in
+    remove|upgrade|deconfigure)
+      if [  "\$(dkms status -m \$DKMS_NAME -v \$DKMS_VERSION)" ]; then
+         dkms remove -m \$DKMS_NAME -v \$DKMS_VERSION --all
+      fi
+    ;;
+esac
 EOF
 
 cd $WORK_DIR
