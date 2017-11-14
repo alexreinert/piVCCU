@@ -4,7 +4,7 @@ CCU_VERSION=2.29.23
 CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=268"
 CCU_DOWNLOAD_URL="http://www.eq-3.de/Downloads/Software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tar.gz"
 
-PKG_BUILD=13
+PKG_BUILD=14
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -82,6 +82,7 @@ Description: piVCCU - Homematic CCU LXC container
 EOT
 
 echo /etc/piVCCU/lxc.config >> $TARGET_DIR/DEBIAN/conffiles
+echo /lib/systemd/system/pivccu.service >> $TARGET_DIR/DEBIAN/conffiles
 
 cat <<EOT >> $TARGET_DIR/DEBIAN/postinst
 #!/bin/sh
