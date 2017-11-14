@@ -37,7 +37,7 @@
 
 
 #define MODULE_NAME "dw_apb_raw_uart"
-#define TX_CHUNK_SIZE 23
+#define TX_CHUNK_SIZE 9
 
 #define DW_UART_USR           0x1f /* UART Status register */
 #define DW_UART_USR_BUSY         1 /* UART Busy */
@@ -125,7 +125,7 @@ static int dw_apb_raw_uart_start_connection(void)
   dw_apb_writeb(UART_IER_RDI | DW_UART_IER_PTIME, UART_IER);
 
   /* enable FIFO */
-  dw_apb_writeb(UART_FCR_ENABLE_FIFO | UART_FCR_T_TRIG_10, UART_FCR);
+  dw_apb_writeb(UART_FCR_ENABLE_FIFO | UART_FCR_T_TRIG_01, UART_FCR);
 
   return 0;
 }
@@ -139,7 +139,7 @@ static void dw_apb_raw_uart_stop_connection(void)
   }
 
   /* disable interrupts */
-  dw_apb_writeb(DW_UART_IER_PTIME, UART_IER);
+  dw_apb_writeb(0, UART_IER);
   free_irq(dw_apb_port->irq, dw_apb_port);
 
   /* clear and disable fifo */
@@ -174,10 +174,8 @@ static void dw_apb_raw_uart_rx_chars(void)
 
   status = dw_apb_readb(UART_LSR);
 
-  do
+  while (status & UART_LSR_DR)
   {
-    data = dw_apb_readb(UART_RX);
-
     /* Error handling */
     if(status & UART_LSR_BI)
     {
@@ -199,10 +197,12 @@ static void dw_apb_raw_uart_rx_chars(void)
       }
     }
 
+    data = dw_apb_readb(UART_RX);
+
     generic_raw_uart_handle_rx_char(flags, (unsigned char)data);
 
     status = dw_apb_readb(UART_LSR);
-  } while (status & UART_LSR_DR);
+  }
 
   generic_raw_uart_rx_completed();
 }
