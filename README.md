@@ -1,10 +1,10 @@
 # piVCCU
 
-piVCCU is a project to install the original Homematic CCU2 firmware inside a virtualized container (lxc) on a Raspberry Pi running Raspbian Jessie or Stretch.
+piVCCU is a project to install the original Homematic CCU2 firmware inside a virtualized container (lxc) on a Raspberry Pi running Raspbian Jessie or Stretch, Armbian 5.x (Asus TinkerBoard) or Tinker OS 2.x
 
 ### Prequisites
 
-* Raspberry Pi 2 or 3 (Zero and Zero W should work too, but they are untested.)
+* Raspberry Pi 2 or 3 or Asus TinkerBoard
 * HM-MOD-RPI-PCB
 * Raspbian Stretch or Jessie
 
