@@ -1,0 +1,7 @@
+/ {
+	serial@ff190000 {
+		compatible = "pivccu,dw_apb";
+		pivccu,gpio_pin = <0xb8>;
+	};
+};
+
