@@ -44,7 +44,7 @@ Architecture: armhf
 Maintainer: Alexander Reinert <alex@areinert.de>
 Provides: pivccu-kernel-modules
 Pre-Depends: dkms, build-essential
-Depends: pivccu-devicetree
+Recommends: pivccu-devicetree
 Section: kernel
 Priority: extra
 Homepage: https://github.com/alexreinert/piVCCU

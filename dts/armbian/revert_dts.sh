@@ -7,11 +7,11 @@ if [ ! -z "$FDT_FILE" ]; then
   if [ -e /boot/dtb/$FDT_FILE.bak ]; then
     cp /boot/dtb/$FDT_FILE.bak /boot/dtb/$FDT_FILE
   else
-    echo "piVCCU: Could not find backup file of FDT, cannot revert"
-    exit 1
+    echo "piVCCU: Error! Could not find backup file of FDT, cannot revert"
+    exit
   fi
 else
-  echo "piVCCU: FDT could not be determined"
-  exit 1
+  echo "piVCCU: Error! FDT could not be determined"
+  exit
 fi
 
