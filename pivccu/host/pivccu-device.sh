@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function showUsage {
-  echo "pivccu-device <add|delete> <device>"
+  echo "pivccu-device <add|delete|listavailable> [device]"
   exit 1
 }
 

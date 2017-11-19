@@ -1,135 +1,38 @@
 # piVCCU
 
-piVCCU is a project to install the original Homematic CCU2 firmware inside a virtualized container (lxc) on a Raspberry Pi running Raspbian Jessie or Stretch, Armbian 5.x (Asus TinkerBoard) or Tinker OS 2.x
+piVCCU is a project to install the original Homematic CCU2 firmware inside a virtualized container (lxc) on ARM based single board computers.
+
+### Goals
+* Option to run CCU2 and other software parallel on one device
+* Usage of original CCU2 firmware (and not OCCU)
+* As compatible as possible with original CCU2
+* Full Homematic and Homematic IP support on all supported platforms
+* Support for backup/restore between piVCCU and original CCU2 without modification
+* Easy to install and update with apt
+* Support not only on Raspberry
 
 ### Prequisites
 
-* Raspberry Pi 2 or 3 or Asus TinkerBoard
-* HM-MOD-RPI-PCB
-* Raspbian Stretch or Jessie
+* Supported Single Board Computer
+  * Raspberry Pi 2 or 3 running Raspbian Jessie or Stretch
+  * Asus Tinkerboard running Armbian with Mainline kernel (Experimental)
+* Properly installed HM-MOD-RPI-PCB
 
-### Installation
-0. Create full backup of your SD card
-1. Add the public key of the repository
-   ```bash
-   wget -q -O - http://alexreinert.github.io/piVCCU/public.key | sudo apt-key add -
-   ```
+### Pre-prepared sd card images
+You can find pre-prepared sd card images [here](https://www.pivccu/images).
+They are identical to the original distribution lite or server images but have piVCCU already installed like it is described below.
+Login to Raspbian based images using user 'pi' and password 'raspberry'.
+Login to Armbian based images using user 'root' and password '1234'.
 
-2. Add the package repository
-   ```bash
-   sudo bash -c 'echo "deb http://alexreinert.github.io/piVCCU stable main" >> /etc/apt/sources.list'
-   sudo apt update
-   ```
-   Instead of `stable` you can also use the `testing` tree, but be aware testing sometimes means not that stable.
+### Manual installation
+* [Raspberry Pi](docs/setup/raspberrypi.md)
+* [Asus Tinkerboard](docs/setup/tinkerboard.md)
 
-3. Install the neccessary kernel modules for the low level communication with the HM-MOD-RPI-PCB
-      ```bash
-      sudo apt install pivccu-modules-raspberrypi
-      ```
-
-4. Enable UART GPIO pins (only on Raspberry Pi 3)
-   * Option 1: Disabled bluetooth (prefered)
-      ```bash
-      sudo bash -c 'cat << EOT >> /boot/config.txt
-      dtoverlay=pi3-disable-bt
-      EOT'
-      sudo systemctl disable hciuart.service
-      ```
-
-   * Option 2: Bluetooth attached to mini uart
-      ```bash
-      sudo bash -c 'cat << EOT >> /boot/config.txt
-      dtoverlay=pi3-miniuart-bt
-      enable_uart=1
-      force_turbo=1
-      EOT'
-      ```
-
-5. Disable serial console in command line
-      ```bash
-      sudo sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
-      sudo sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
-      ```
-
-6. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
-   * Verify, that *eth0* is the name of your primary network interface:
-      ```bash
-      sudo ifconfig
-      ```
-   * Update your config. (Replace *eth0* if necessary)
-      ```bash
-      sudo apt remove dhcpcd5
-      sudo apt install bridge-utils
-      sudo bash -c 'cat << EOT > /etc/network/interfaces
-      source-directory /etc/network/interfaces.d
-
-      auto lo
-      iface lo inet loopback
-   
-      iface eth0 inet manual
-   
-      auto br0
-      iface br0 inet dhcp
-        bridge_ports eth0
-      EOT'
-      ```
-   * You can use an static IP address, too. In that case use instead:
-      ```bash
-      sudo apt remove dhcpcd5
-      sudo apt install bridge-utils
-      sudo bash -c 'cat << EOT > /etc/network/interfaces
-      source-directory /etc/network/interfaces.d
-
-      auto lo
-      iface lo inet loopback
-   
-      iface eth0 inet manual
-   
-      auto br0
-      iface br0 inet static
-        bridge_ports eth0
-        address <address>
-        netmask <netmask>
-        gateway <gateway>
-        dns-nameservers <dns1> <dns2>
-      EOT'
-      ```
-
-7. Reboot the system
-   ```bash
-   sudo reboot
-   ```
-
-8. Install CCU2 container
-   ```bash
-   sudo apt install pivccu
-   ```
-
-9. Start using your new virtualized CCU2, you can get the IP of the container using
-   ```bash
-   sudo pivccu-info
-   ```
-
-### Migrating from custom kernel to original Raspbian kernel with custom modules and device tree overlay
-0. Create full backup of your SD card
-1. Upgrade to latest pivccu package
-   ```bash
-   sudo apt update
-   sudo apt upgrade
-   ```
-2. Verify, that at least Version 2.29.23-12 is installed
-   ```bash
-   sudo dpkg -s pivccu | grep 'Version'
-   ```
-3. Install original Raspbian kernel and additional custom kernel modules
-   ```bash
-   sudo apt install pivccu-modules-raspberrypi raspberrypi-kernel
-   ```
-   (In this step, the two packages should be get installed and the package raspberrypi-kernel-pivccu should be get removed)
-4. Reboot the system
-   ```bash
-   sudo reboot
-   ```
+### Updating piVCCU to latest version
+Use the normal apt based update mechanism:
+```bash
+sudo apt update && sudo apt upgrade
+```
 
 ### Migration from other systems
 * Original CCU2
@@ -143,7 +46,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 * YAHM
    0. Create full backup of your SD card
    1. Create system backup using CCU web interface
-   2. Remove YAHM
+   2. Remove YAHM on the host
       ```bash
       sudo lxc-stop -n yahm
       sudo rm -f /etc/bash_completion.d/yahm_completion
@@ -174,14 +77,19 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
       ```
       
 ### Using CUxD and USB devices
-1. Create a hook script
+0. Starting with package build 16 You can find available devices on the host using
    ```bash
-   echo '#!/bin/bash' | sudo tee -a /etc/piVCCU/post-start.sh
+   sudo pivccu-device listavailable
+   ```
+
+1. Create a hook script on the host
+   ```bash
+   bash -c 'echo "#!/bin/bash" > /etc/piVCCU/post-start.sh'
    sudo chmod +x /etc/piVCCU/post-start.sh
    ```
 2. For each device add an entry to this hook file, e.g. here for ```/dev/ttyUSB0```
    ```bash
-   echo 'pivccu-device add /dev/ttyUSB0' | sudo tee -a /etc/piVCCU/post-start.sh
+   bash -c 'echo "pivccu-device add /dev/ttyUSB0" >> /etc/piVCCU/post-start.sh'
    ```
 3. The devices will now be available inside the container, just use them like it is described in the CUxD documentation
 
@@ -190,8 +98,7 @@ If you like to build the .deb package by yourself
 * Use Ubuntu 16.04 as build system
 * Install prequisites *__tbd__*
 * Clone source
-* create_kernel.sh builds the custom kernel package
-* create_pivccu.sh builds the container package
+* create_*.sh are the scripts to build the deb packages
 * Deploy the .deb files to an apt repository e.g. using reprepro
 
 ### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU)
