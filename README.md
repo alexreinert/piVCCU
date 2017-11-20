@@ -19,7 +19,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 * Properly installed HM-MOD-RPI-PCB
 
 ### Pre-prepared sd card images
-You can find pre-prepared sd card images [here](https://www.pivccu/images).
+You can find pre-prepared sd card images [here](https://www.pivccu.de/images).
 They are identical to the original distribution lite or server images but have piVCCU already installed like it is described below.
 Login to Raspbian based images using user 'pi' and password 'raspberry'.
 Login to Armbian based images using user 'root' and password '1234'.
