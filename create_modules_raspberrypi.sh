@@ -31,6 +31,7 @@ make -C $SRC_DIR -j$(grep -c processor /proc/cpuinfo) ARCH="arm" CROSS_COMPILE="
 MOD_DIR=$WORK_DIR/modules
 mkdir -p $MOD_DIR
 
+wget -q -O $MOD_DIR/eq3_char_loop.c https://raw.githubusercontent.com/eq-3/occu/e60183fc5b8375d9eea185c716f716c07657fa00/KernelDrivers/eq3_char_loop.c
 cp -p $CURRENT_DIR/kernel/*.c $MOD_DIR
 cp -p $CURRENT_DIR/kernel/*.h $MOD_DIR
 cp -p $CURRENT_DIR/kernel/Makefile $MOD_DIR

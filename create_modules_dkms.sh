@@ -11,6 +11,7 @@ cd $WORK_DIR
 TARGET_DIR=$WORK_DIR/pivccu-modules-dkms-$PKG_VERSION
 
 mkdir -p $TARGET_DIR/usr/src/pivccu-$PKG_VERSION
+wget -q -O $TARGET_DIR/usr/src/pivccu-$PKG_VERSION/eq3_char_loop.c https://raw.githubusercontent.com/eq-3/occu/e60183fc5b8375d9eea185c716f716c07657fa00/KernelDrivers/eq3_char_loop.c
 cp $CURRENT_DIR/kernel/* $TARGET_DIR/usr/src/pivccu-$PKG_VERSION
 
 DKMS_CONF_FILE=$TARGET_DIR/usr/src/pivccu-$PKG_VERSION/dkms.conf
