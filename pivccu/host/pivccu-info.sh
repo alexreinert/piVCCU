@@ -25,12 +25,16 @@ if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tr
   echo "Rasp.Pi3 UART:  $UART_STATE"
 fi
 
-if [ -f /sys/module/plat_eq3ccu2/parameters/board_serial ]; then
-  BOARD_SERIAL=`cat /sys/module/plat_eq3ccu2/parameters/board_serial | sed 1q`
-  if [ -z "$BOARD_SERIAL" ]; then
-    BOARD_SERIAL="Unknown"
-  fi
+if [ -e /sys/devices/virtual/raw-uart ] && [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU/ --name lxc --state --no-humanize` == "STOPPED" ]; then
+  mount --bind /dev /var/lib/piVCCU/rootfs/dev
+  BOARD_SERIAL=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5`
+  umount /var/lib/piVCCU/rootfs/dev
 else
+  if [ -f /sys/module/plat_eq3ccu2/parameters/board_serial ]; then
+    BOARD_SERIAL=`cat /sys/module/plat_eq3ccu2/parameters/board_serial | sed 1q`
+  fi
+fi
+if [ -z "$BOARD_SERIAL" ]; then
   BOARD_SERIAL="Unknown"
 fi
 echo "Board serial:   $BOARD_SERIAL"
