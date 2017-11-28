@@ -2,6 +2,9 @@
 
 piVCCU is a project to install the original Homematic CCU2 firmware inside a virtualized container (lxc) on ARM based single board computers.
 
+### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU)
+Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU).
+
 ### Goals
 * Option to run CCU2 and other software parallel on one device
 * Usage of original CCU2 firmware (and not OCCU)
@@ -100,9 +103,6 @@ If you like to build the .deb package by yourself
 * Clone source
 * create_*.sh are the scripts to build the deb packages
 * Deploy the .deb files to an apt repository e.g. using reprepro
-
-### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU)
-Please consider sending me a donation to not only help me to compensate for expenses regarding piVCCU, but also to keep my general development motivation on a high level. So if you want to donate some money please feel free to send me money via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU).
 
 ### License
 piVCCU itself – the source files found in this git repository – are licensed under the conditions of the [Apache License 2.0](https://opensource.org/licenses/Apache-2.0).
