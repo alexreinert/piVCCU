@@ -99,10 +99,15 @@ if [ ! -e /usr/sbin/pivccu-device ]; then
   ln -s /var/lib/piVCCU/pivccu-device.sh /usr/sbin/pivccu-device
 fi
 
-BRIDGE=\`brctl show | sed -n 2p | awk '{print $1}'\`
+BRIDGE=\`brctl show | sed -n 2p | awk '{print \$1}'\`
 if [ -z "\$BRIDGE" ]; then
   echo "WARNING: No network bridge could be detected."
 fi
+
+sed -i 's/alexreinert.github.io/www.pivccu.de/g' /etc/apt/sources.list
+for file in \`find /etc/apt/sources.list.d/*.list -type f 2>/dev/null\`; do
+  sed -i 's/alexreinert.github.io/www.pivccu.de/g' \$file
+done
 EOT
 
 chmod +x $TARGET_DIR/DEBIAN/postinst
