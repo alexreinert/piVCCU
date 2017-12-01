@@ -49,7 +49,7 @@ sudo apt update && sudo apt upgrade
 * YAHM
    0. Create full backup of your SD card
    1. Create system backup using CCU web interface
-   2. Remove YAHM on the host
+   2. Remove YAHM on the host (or use a plain new sd card image)
       ```bash
       sudo lxc-stop -n yahm
       sudo rm -f /etc/bash_completion.d/yahm_completion
@@ -68,7 +68,7 @@ sudo apt update && sudo apt upgrade
       ```
    3. Install piVCCU as described above
    4. Restore the system backup using the CCU web interface
-   5. Remove YAHM specific configuration stuff
+   5. Remove YAHM specific configuration stuff (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
       ```bash
       sudo systemctl stop pivccu.service
 
