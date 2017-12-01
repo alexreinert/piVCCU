@@ -25,6 +25,7 @@
 #include <linux/of.h>
 #include <linux/of_device.h>
 #include <linux/clk.h>
+#include <linux/reset.h>
 #include <linux/slab.h>
 #include <linux/io.h>
 #include <linux/interrupt.h>
@@ -44,14 +45,16 @@
 
 #define DW_UART_SRR           0x22 /* Software reset register */
 #define DW_UART_SRR_UR           1 /* reset UART */
+#define DW_UART_SRR_RFR     1 << 1 /* Reset Receive FIFO */
+#define DW_UART_SRR_XFR     1 << 2 /* Reset Xfer FIFo */
 
 #define DW_UART_IER_PTIME   1 << 7 /* Programmable THRE Interrupt Mode Enable */
 
 #define DW_UART_IIR_IID       0x0f /* nask for interrupt id */
 #define DW_UART_IIR_CTO       0x12 /* character timeout */
 
-static inline void dw_apb_writeb(int value, int offset);
-static inline unsigned int dw_apb_readb(int offset);
+static inline void dw_apb_raw_uart_writeb(int value, int offset);
+static inline unsigned int dw_apb_raw_uart_readb(int offset);
 static int dw_apb_raw_uart_start_connection(void);
 static void dw_apb_raw_uart_stop_connection(void);
 static void dw_apb_raw_uart_stop_tx(void);
@@ -67,6 +70,7 @@ struct dw_apb_port_s
 {
   struct clk *sclk;                            /*Baud clock assigned to the UART device*/
   struct clk *pclk;                           /*System clock assigned to the UART device*/
+  struct reset_control *rst;
   struct device *dev;                         /*System device*/
   unsigned long mapbase;                      /*physical address of UART registers*/
   void __iomem *membase;                      /*logical address of UART registers*/
@@ -76,31 +80,59 @@ struct dw_apb_port_s
 
 static struct dw_apb_port_s *dw_apb_port;
 
-static inline void dw_apb_writeb(int value, int offset)
+static inline void dw_apb_raw_uart_writeb(int value, int offset)
 {
   writel(value, dw_apb_port->membase + (offset << dw_apb_port->regshift));
 }
 
-static inline unsigned int dw_apb_readb(int offset)
+static inline unsigned int dw_apb_raw_uart_readb(int offset)
 {
   return readl(dw_apb_port->membase + (offset << dw_apb_port->regshift));
 }
 
+static void dw_apb_raw_uart_write_lcr(int value) {
+  int tries = 1000;
+
+  dw_apb_raw_uart_writeb(value, UART_LCR);
+
+  if ((dw_apb_raw_uart_readb(UART_LCR) & ~UART_LCR_SPAR) == (value & ~UART_LCR_SPAR)) {
+    return;
+  }
+
+  while (tries--) {
+    if ((dw_apb_raw_uart_readb(UART_LCR) & ~UART_LCR_SPAR) == (value & ~UART_LCR_SPAR)) {
+      return;
+    }
+
+    dw_apb_raw_uart_writeb(DW_UART_SRR_RFR | DW_UART_SRR_XFR, DW_UART_SRR);
+    (void)dw_apb_raw_uart_readb(UART_RX);
+
+    dw_apb_raw_uart_writeb(value, UART_LCR);
+  }
+}
+
 static void dw_apb_raw_uart_init_uart(void)
 {
-  long rate; 
-
-  // set divisor 1 and 8N1
-  dw_apb_writeb(UART_LCR_DLAB, UART_LCR);
-  dw_apb_writeb(0, UART_DLM);
-  dw_apb_writeb(1, UART_DLL);
-  dw_apb_writeb(UART_LCR_WLEN8, UART_LCR);
-
+  long rate;
+  int divisor;
+ 
+  // reset uart
+  dw_apb_raw_uart_writeb(DW_UART_SRR_UR, DW_UART_SRR);
+  msleep(200);
+ 
   // set bauclock
-  clk_disable_unprepare(dw_apb_port->sclk);
   rate = clk_round_rate(dw_apb_port->sclk, BAUD * 16);
+  clk_disable_unprepare(dw_apb_port->sclk);
   clk_set_rate(dw_apb_port->sclk, rate);
   clk_prepare_enable(dw_apb_port->sclk);
+  msleep(50);
+
+  // set divisor and 8N1
+  divisor = DIV_ROUND_CLOSEST(clk_get_rate(dw_apb_port->sclk), BAUD * 16);
+  dw_apb_raw_uart_write_lcr(UART_LCR_DLAB);
+  dw_apb_raw_uart_writeb(divisor & 0xff, UART_DLL);
+  dw_apb_raw_uart_writeb((divisor >> 8) & 0xff, UART_DLM);
+  dw_apb_raw_uart_write_lcr(UART_LCR_WLEN8);
 }
 
 static int dw_apb_raw_uart_start_connection(void)
@@ -108,10 +140,10 @@ static int dw_apb_raw_uart_start_connection(void)
   int ret = 0;
 
   /* Disable interrupts */
-  dw_apb_writeb(DW_UART_IER_PTIME, UART_IER);
+  dw_apb_raw_uart_writeb(DW_UART_IER_PTIME, UART_IER);
 
   /* clear FIFO */
-  dw_apb_writeb(0, UART_FCR);
+  dw_apb_raw_uart_writeb(0, UART_FCR);
 
   /*Register interrupt handler*/
   ret = request_irq(dw_apb_port->irq, dw_apb_raw_uart_irq_handle, 0, dev_name(dw_apb_port->dev), dw_apb_port);
@@ -122,10 +154,10 @@ static int dw_apb_raw_uart_start_connection(void)
   }
 
   /* Enable interrupts */
-  dw_apb_writeb(UART_IER_RDI | DW_UART_IER_PTIME, UART_IER);
+  dw_apb_raw_uart_writeb(UART_IER_RDI | DW_UART_IER_PTIME, UART_IER);
 
   /* enable FIFO */
-  dw_apb_writeb(UART_FCR_ENABLE_FIFO | UART_FCR_T_TRIG_01, UART_FCR);
+  dw_apb_raw_uart_writeb(UART_FCR_ENABLE_FIFO | UART_FCR_T_TRIG_01, UART_FCR);
 
   return 0;
 }
@@ -133,37 +165,37 @@ static int dw_apb_raw_uart_start_connection(void)
 static void dw_apb_raw_uart_stop_connection(void)
 {
   // wait until uart is not busy
-  while (dw_apb_readb(DW_UART_USR) & DW_UART_USR_BUSY)
+  while (dw_apb_raw_uart_readb(DW_UART_USR) & DW_UART_USR_BUSY)
   {
     schedule();
   }
 
   /* disable interrupts */
-  dw_apb_writeb(0, UART_IER);
+  dw_apb_raw_uart_writeb(0, UART_IER);
   free_irq(dw_apb_port->irq, dw_apb_port);
 
   /* clear and disable fifo */
-  dw_apb_writeb(0, UART_FCR);
+  dw_apb_raw_uart_writeb(0, UART_FCR);
 }
 
 static void dw_apb_raw_uart_stop_tx(void)
 {
-  dw_apb_writeb(UART_IER_RDI | DW_UART_IER_PTIME, UART_IER);
+  dw_apb_raw_uart_writeb(UART_IER_RDI | DW_UART_IER_PTIME, UART_IER);
 }
 
 static bool dw_apb_raw_uart_isready_for_tx(void)
 {
-  return !(dw_apb_readb(UART_LSR) & UART_LSR_THRE); // FIFO not full
+  return !(dw_apb_raw_uart_readb(UART_LSR) & UART_LSR_THRE); // FIFO not full
 }
 
 static void dw_apb_raw_uart_tx_char(unsigned char chr)
 {
-  dw_apb_writeb(chr, UART_TX);
+  dw_apb_raw_uart_writeb(chr, UART_TX);
 }
 
 static void dw_apb_raw_uart_init_tx(void)
 {
-  dw_apb_writeb(UART_IER_RDI | DW_UART_IER_PTIME | UART_IER_THRI, UART_IER);
+  dw_apb_raw_uart_writeb(UART_IER_RDI | DW_UART_IER_PTIME | UART_IER_THRI, UART_IER);
 }
 
 static void dw_apb_raw_uart_rx_chars(void)
@@ -172,7 +204,7 @@ static void dw_apb_raw_uart_rx_chars(void)
   int data;
   enum generic_raw_uart_rx_flags flags = GENERIC_RAW_UART_RX_STATE_NONE;
 
-  status = dw_apb_readb(UART_LSR);
+  status = dw_apb_raw_uart_readb(UART_LSR);
 
   while (status & UART_LSR_DR)
   {
@@ -197,11 +229,11 @@ static void dw_apb_raw_uart_rx_chars(void)
       }
     }
 
-    data = dw_apb_readb(UART_RX);
+    data = dw_apb_raw_uart_readb(UART_RX);
 
     generic_raw_uart_handle_rx_char(flags, (unsigned char)data);
 
-    status = dw_apb_readb(UART_LSR);
+    status = dw_apb_raw_uart_readb(UART_LSR);
   }
 
   generic_raw_uart_rx_completed();
@@ -211,7 +243,7 @@ static irqreturn_t dw_apb_raw_uart_irq_handle(int irq, void *context)
 {
   int iid;
 
-  iid = dw_apb_readb(UART_IIR) & DW_UART_IIR_IID;
+  iid = dw_apb_raw_uart_readb(UART_IIR) & DW_UART_IIR_IID;
 
   switch(iid)
   {
@@ -282,18 +314,28 @@ static int dw_apb_raw_uart_probe(struct platform_device *pdev)
   if (IS_ERR(dw_apb_port->sclk) && PTR_ERR(dw_apb_port->sclk) != -EPROBE_DEFER)
     dw_apb_port->sclk = devm_clk_get(&pdev->dev, NULL);
   if (IS_ERR(dw_apb_port->sclk)) {
-    dev_err(dev, "failed to get baudclock\n");
+    dev_err(dev, "failed to get sclk\n");
     err = PTR_ERR(dw_apb_port->sclk);
     goto failed_get_clock;
   }
   clk_prepare_enable(dw_apb_port->sclk);
 
   dw_apb_port->pclk = devm_clk_get(dev, "apb_pclk");
-  if (IS_ERR(dw_apb_port->pclk)) {
-    err = PTR_ERR(dw_apb_port->pclk);
+  if (IS_ERR(dw_apb_port->pclk) && PTR_ERR(dw_apb_port->pclk) == -EPROBE_DEFER) {
+    dev_err(dev, "failed to get pclk\n");
+    err = -EPROBE_DEFER;
     goto failed_get_pclock;
   }
-  clk_prepare_enable(dw_apb_port->pclk);
+  if (!IS_ERR(dw_apb_port->pclk)) {
+    clk_prepare_enable(dw_apb_port->pclk);
+  }
+
+  dw_apb_port->rst = devm_reset_control_get_optional(dev, NULL);
+  if (IS_ERR(dw_apb_port->rst)) {
+    err = PTR_ERR(dw_apb_port->rst);
+    goto failed_get_rst;
+  }
+  reset_control_deassert(dw_apb_port->rst);
 
   err = device_property_read_u32(dev, "reg-shift", &val);
   if (!err)
@@ -301,20 +343,18 @@ static int dw_apb_raw_uart_probe(struct platform_device *pdev)
 
   dw_apb_port->dev = dev;
 
-  dev_info(dev, "Initialized dw_apb device; mapbase=0x%08lx; irq=%lu; sclk rate=%lu; pclk rate=%lu",
+  dw_apb_raw_uart_init_uart();
+
+  dev_info(dev, "Initialized dw_apb device; mapbase=0x%08lx; irq=%lu; sclk rate=%lu; pclk rate=%ld",
     dw_apb_port->mapbase,
     dw_apb_port->irq,
     clk_get_rate(dw_apb_port->sclk),
-    clk_get_rate(dw_apb_port->pclk));
-
-  // reset uart
-  dw_apb_writeb(DW_UART_SRR_UR, DW_UART_SRR);
-
-  msleep(100);
-
-  dw_apb_raw_uart_init_uart();
+    IS_ERR(dw_apb_port->pclk) ? -1 : clk_get_rate(dw_apb_port->pclk) );
 
   return 0;
+
+failed_get_rst:
+  reset_control_assert(dw_apb_port->rst);
 failed_get_pclock:
   clk_disable_unprepare(dw_apb_port->sclk);
 failed_get_clock:
@@ -326,8 +366,13 @@ failed_inst_alloc:
 
 static int dw_apb_raw_uart_remove(struct platform_device *pdev)
 {
-  clk_disable_unprepare(dw_apb_port->pclk);
+  reset_control_assert(dw_apb_port->rst);
+
+  if (!IS_ERR(dw_apb_port->pclk))
+    clk_disable_unprepare(dw_apb_port->pclk);
+
   clk_disable_unprepare(dw_apb_port->sclk);
+
   kfree(dw_apb_port);
   return 0;
 }
