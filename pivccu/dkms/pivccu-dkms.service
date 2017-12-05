@@ -1,0 +1,11 @@
+[Unit]
+Description=piVCCU DKMS Modules
+Before=pivccu.service
+
+[Service]
+ExecStart=/var/lib/piVCCU/dkms/ensure_modules.sh
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target
+

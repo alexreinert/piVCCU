@@ -35,6 +35,11 @@ for file in $TARGET_DIR/usr/src/pivccu-$PKG_VERSION/*.c; do
   index=$(expr $index + 1)
 done
 
+mkdir -p $TARGET_DIR/lib/systemd/system/
+cp -p $CURRENT_DIR/pivccu/dkms/pivccu-dkms.service $TARGET_DIR/lib/systemd/system/
+
+mkdir -p $TARGET_DIR/var/lib/piVCCU/dkms
+cp -p $CURRENT_DIR/pivccu/dkms/*.sh $TARGET_DIR/var/lib/piVCCU/dkms
 
 mkdir -p $TARGET_DIR/DEBIAN
 
@@ -53,6 +58,8 @@ Description: DKMS package for kernel modules needed for Homematic
   This package contains the a DKMS package for kernel needed for Homematic.
 EOT
 
+echo /lib/systemd/system/pivccu-dkms.service >> $TARGET_DIR/DEBIAN/conffiles
+
 for file in preinst postinst prerm postrm; do
   echo "#!/bin/sh" > $TARGET_DIR/DEBIAN/$file
   chmod 755 $TARGET_DIR/DEBIAN/$file
@@ -60,6 +67,8 @@ done
 
 cat <<EOF >> $TARGET_DIR/DEBIAN/postinst
 set -e
+
+systemctl enable pivccu-dkms.service
 
 DKMS_NAME=pivccu
 DKMS_PACKAGE_NAME=\$DKMS_NAME-dkms
@@ -89,6 +98,8 @@ EOF
 
 cat <<EOF >> $TARGET_DIR/DEBIAN/prerm
 set -e
+
+systemctl disable pivccu-dkms.service
 
 DKMS_NAME=pivccu
 DKMS_VERSION=$PKG_VERSION
