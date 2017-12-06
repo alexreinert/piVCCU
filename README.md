@@ -18,7 +18,8 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 
 * Supported Single Board Computer
   * Raspberry Pi 2 or 3 running Raspbian Jessie or Stretch
-  * Asus Tinkerboard running Armbian with Mainline kernel (Experimental)
+  * Asus Tinkerboard running Armbian with Mainline kernel
+  * Orange Pi One, Orange Pi Plus, Orange Pi Plus 2 or Orange Pi Plus 2E running Armbian with Mainline kernel (Experimental)
 * Properly installed HM-MOD-RPI-PCB
 
 ### Pre-prepared sd card images
@@ -30,6 +31,7 @@ Login to Armbian based images using user 'root' and password '1234'.
 ### Manual installation
 * [Raspberry Pi](docs/setup/raspberrypi.md)
 * [Asus Tinkerboard](docs/setup/tinkerboard.md)
+* [Orange Pi One, Orange Pi Plus, Orange Pi Plus 2 and Orange Pi Plus 2E](docs/setup/orangepi.md)
 
 ### Updating piVCCU to latest version
 Use the normal apt based update mechanism:
