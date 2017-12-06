@@ -1,5 +1,5 @@
 #!/bin/bash
-PKG_BUILD=2
+PKG_BUILD=4
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -13,6 +13,13 @@ cd $WORK_DIR
 mkdir -p $TARGET_DIR/var/lib/piVCCU/dts
 
 cp $CURRENT_DIR/dts/armbian/* $TARGET_DIR/var/lib/piVCCU/dts
+
+mkdir -p $TARGET_DIR/boot/overlay-user
+
+cd $CURRENT_DIR/dts
+for dts in $(find *.dts -type f); do
+  dtc -@ -I dts -O dtb -o $TARGET_DIR/boot/overlay-user/${dts%.dts}.dtbo $dts
+done
 
 mkdir -p $TARGET_DIR/etc/apt/apt.conf.d
 
@@ -37,7 +44,7 @@ EOT
 
 cat <<EOT >> $TARGET_DIR/DEBIAN/postinst
 #!/bin/sh
-#/var/lib/piVCCU/dts/patch_dts.sh
+/var/lib/piVCCU/dts/patch_dts.sh
 EOT
 
 chmod +x $TARGET_DIR/DEBIAN/postinst
