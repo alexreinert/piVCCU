@@ -31,6 +31,7 @@ mv rootfs/*/root $CNT_ROOTFS
 cd $CNT_ROOTFS
 
 patch -l -p1 < $CURRENT_DIR/pivccu/firmware.patch
+sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/config/cp_maintenance.cgi
 wget -q -O $CNT_ROOTFS/firmware/dualcopro_si1002_update_blhm.eq3 https://raw.githubusercontent.com/eq-3/occu/eea64da6f8ad5b2016df4fceb671439dc2643e35/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3
 
 rm -rf $CNT_ROOTFS/dev/*

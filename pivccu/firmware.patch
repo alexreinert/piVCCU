@@ -1,6 +1,6 @@
-diff -ruN rootfs.orig/etc/fstab rootfs/etc/fstab
---- rootfs.orig/etc/fstab	2017-10-25 07:50:59.725908702 +0200
-+++ rootfs/etc/fstab	2017-10-25 07:52:10.458372939 +0200
+diff -ruN fw.orig/etc/fstab fw.patched/etc/fstab
+--- fw.orig/etc/fstab	2017-12-06 07:53:17.701684788 +0100
++++ fw.patched/etc/fstab	2017-12-06 07:55:37.034589535 +0100
 @@ -1,13 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -15,9 +15,9 @@ diff -ruN rootfs.orig/etc/fstab rootfs/etc/fstab
 -varfs           /var           tmpfs    defaults,size=196M 0      0
 -debugfs 	/sys/kernel/debug debugfs 		  0 	0
 -ubi1:user	/usr/local	ubifs	defaults,noatime,rw,sync	0 0
-diff -ruN rootfs.orig/etc/init.d/S00eQ3SystemStart rootfs/etc/init.d/S00eQ3SystemStart
---- rootfs.orig/etc/init.d/S00eQ3SystemStart	2017-10-25 07:50:59.721908676 +0200
-+++ rootfs/etc/init.d/S00eQ3SystemStart	2017-10-25 07:52:10.466372991 +0200
+diff -ruN fw.orig/etc/init.d/S00eQ3SystemStart fw.patched/etc/init.d/S00eQ3SystemStart
+--- fw.orig/etc/init.d/S00eQ3SystemStart	2017-12-06 07:53:17.701684788 +0100
++++ fw.patched/etc/init.d/S00eQ3SystemStart	2017-12-06 07:55:37.058589691 +0100
 @@ -7,17 +7,6 @@
  SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
  
@@ -73,9 +73,9 @@ diff -ruN rootfs.orig/etc/init.d/S00eQ3SystemStart rootfs/etc/init.d/S00eQ3Syste
  }
  
  restart() {
-diff -ruN rootfs.orig/etc/init.d/S10udev rootfs/etc/init.d/S10udev
---- rootfs.orig/etc/init.d/S10udev	2017-10-25 07:50:59.721908676 +0200
-+++ rootfs/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.orig/etc/init.d/S10udev fw.patched/etc/init.d/S10udev
+--- fw.orig/etc/init.d/S10udev	2017-12-06 07:53:17.701684788 +0100
++++ fw.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
 @@ -1,48 +0,0 @@
 -#!/bin/sh
 -#
@@ -125,9 +125,9 @@ diff -ruN rootfs.orig/etc/init.d/S10udev rootfs/etc/init.d/S10udev
 -
 -
 -exit 0
-diff -ruN rootfs.orig/etc/init.d/S15watchdog rootfs/etc/init.d/S15watchdog
---- rootfs.orig/etc/init.d/S15watchdog	2017-10-25 07:50:59.721908676 +0200
-+++ rootfs/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.orig/etc/init.d/S15watchdog fw.patched/etc/init.d/S15watchdog
+--- fw.orig/etc/init.d/S15watchdog	2017-12-06 07:53:17.701684788 +0100
++++ fw.patched/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
 @@ -1,20 +0,0 @@
 -#!/bin/sh
 -#
@@ -149,9 +149,9 @@ diff -ruN rootfs.orig/etc/init.d/S15watchdog rootfs/etc/init.d/S15watchdog
 -esac
 -
 -exit $?
-diff -ruN rootfs.orig/etc/init.d/S20urandom rootfs/etc/init.d/S20urandom
---- rootfs.orig/etc/init.d/S20urandom	2017-10-25 07:50:59.721908676 +0200
-+++ rootfs/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.orig/etc/init.d/S20urandom fw.patched/etc/init.d/S20urandom
+--- fw.orig/etc/init.d/S20urandom	2017-12-06 07:53:17.701684788 +0100
++++ fw.patched/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
 @@ -1,54 +0,0 @@
 -#! /bin/sh
 -#
@@ -207,9 +207,9 @@ diff -ruN rootfs.orig/etc/init.d/S20urandom rootfs/etc/init.d/S20urandom
 -		exit 1
 -		;;
 -esac
-diff -ruN rootfs.orig/etc/init.d/S40UsbNetwork rootfs/etc/init.d/S40UsbNetwork
---- rootfs.orig/etc/init.d/S40UsbNetwork	2017-10-25 07:50:59.721908676 +0200
-+++ rootfs/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.orig/etc/init.d/S40UsbNetwork fw.patched/etc/init.d/S40UsbNetwork
+--- fw.orig/etc/init.d/S40UsbNetwork	2017-12-06 07:53:17.701684788 +0100
++++ fw.patched/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
 @@ -1,52 +0,0 @@
 -#!/bin/sh
 -#
@@ -263,9 +263,9 @@ diff -ruN rootfs.orig/etc/init.d/S40UsbNetwork rootfs/etc/init.d/S40UsbNetwork
 -
 -exit $?
 -
-diff -ruN rootfs.orig/etc/init.d/S50eq3configd rootfs/etc/init.d/S50eq3configd
---- rootfs.orig/etc/init.d/S50eq3configd	2017-10-25 07:50:59.721908676 +0200
-+++ rootfs/etc/init.d/S50eq3configd	2017-10-25 07:52:10.486373122 +0200
+diff -ruN fw.orig/etc/init.d/S50eq3configd fw.patched/etc/init.d/S50eq3configd
+--- fw.orig/etc/init.d/S50eq3configd	2017-12-06 07:53:17.701684788 +0100
++++ fw.patched/etc/init.d/S50eq3configd	2017-12-06 07:55:37.078589821 +0100
 @@ -17,6 +17,7 @@
  }
  
@@ -274,9 +274,9 @@ diff -ruN rootfs.orig/etc/init.d/S50eq3configd rootfs/etc/init.d/S50eq3configd
  	echo -n "Starting eq3configd: "
  	init
  	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
-diff -ruN rootfs.orig/etc/init.d/S60multimacd rootfs/etc/init.d/S60multimacd
---- rootfs.orig/etc/init.d/S60multimacd	2017-10-25 07:50:59.721908676 +0200
-+++ rootfs/etc/init.d/S60multimacd	2017-10-25 07:54:42.839373050 +0200
+diff -ruN fw.orig/etc/init.d/S60multimacd fw.patched/etc/init.d/S60multimacd
+--- fw.orig/etc/init.d/S60multimacd	2017-12-06 07:53:17.701684788 +0100
++++ fw.patched/etc/init.d/S60multimacd	2017-12-06 07:55:37.082589847 +0100
 @@ -10,11 +10,11 @@
  update() {        
  	if [ ! -e /etc/config/no-coprocessor-update ] ; then
@@ -291,9 +291,9 @@ diff -ruN rootfs.orig/etc/init.d/S60multimacd rootfs/etc/init.d/S60multimacd
  			sleep 1
  		else
  			echo "done"
-diff -ruN rootfs.orig/etc/init.d/S99eQ3SystemStarted rootfs/etc/init.d/S99eQ3SystemStarted
---- rootfs.orig/etc/init.d/S99eQ3SystemStarted	2017-10-25 07:50:59.721908676 +0200
-+++ rootfs/etc/init.d/S99eQ3SystemStarted	2017-10-25 07:52:10.494373175 +0200
+diff -ruN fw.orig/etc/init.d/S99eQ3SystemStarted fw.patched/etc/init.d/S99eQ3SystemStarted
+--- fw.orig/etc/init.d/S99eQ3SystemStarted	2017-12-06 07:53:17.701684788 +0100
++++ fw.patched/etc/init.d/S99eQ3SystemStarted	2017-12-06 07:55:37.082589847 +0100
 @@ -8,15 +8,6 @@
  
  init() {
@@ -310,9 +310,9 @@ diff -ruN rootfs.orig/etc/init.d/S99eQ3SystemStarted rootfs/etc/init.d/S99eQ3Sys
  }
  
  start() {
-diff -ruN rootfs.orig/etc/inittab rootfs/etc/inittab
---- rootfs.orig/etc/inittab	2017-10-25 07:50:59.725908702 +0200
-+++ rootfs/etc/inittab	2017-10-25 07:52:10.502373227 +0200
+diff -ruN fw.orig/etc/inittab fw.patched/etc/inittab
+--- fw.orig/etc/inittab	2017-12-06 07:53:17.705684814 +0100
++++ fw.patched/etc/inittab	2017-12-06 07:55:37.082589847 +0100
 @@ -14,25 +14,15 @@
  # process   == program to run
  
@@ -339,9 +339,9 @@ diff -ruN rootfs.orig/etc/inittab rootfs/etc/inittab
  # Stuff to do before rebooting
  ::shutdown:/etc/init.d/rcK
  null::shutdown:/bin/umount -a -r
-diff -ruN rootfs.orig/firmware/fwmap rootfs/firmware/fwmap
---- rootfs.orig/firmware/fwmap	2017-10-25 07:51:02.117924406 +0200
-+++ rootfs/firmware/fwmap	2017-10-25 07:53:36.474937481 +0200
+diff -ruN fw.orig/firmware/fwmap fw.patched/firmware/fwmap
+--- fw.orig/firmware/fwmap	2017-12-06 07:53:26.789743801 +0100
++++ fw.patched/firmware/fwmap	2017-12-06 07:55:37.082589847 +0100
 @@ -17,7 +17,8 @@
  
  #Coprozessor
@@ -352,9 +352,9 @@ diff -ruN rootfs.orig/firmware/fwmap rootfs/firmware/fwmap
  # CCU2                    coprocessor_update_hm_only.eq3                1.4.1          # HM only CoProzessor CCU2  
  CCU2-RFLGW				coprocessor_update_hm_only.eq3					1.4.1          # HM only CoProzessor CCU2 for HomeMatic RF Lan Gateway
  
-diff -ruN rootfs.orig/opt/HMServer/pages/StorageSettingsDialog.ftl rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl
---- rootfs.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-25 07:50:59.801909201 +0200
-+++ rootfs/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-10-25 07:52:10.502373227 +0200
+diff -ruN fw.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
+--- fw.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-12-06 07:53:18.249688347 +0100
++++ fw.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2017-12-06 07:55:37.082589847 +0100
 @@ -168,23 +168,6 @@
  						<td class="CLASS21112">${"$"}{dialogSettingsSDCardStatus}:</td>
  						<td>${SDCardStatus}</td>
@@ -379,13 +379,35 @@ diff -ruN rootfs.orig/opt/HMServer/pages/StorageSettingsDialog.ftl rootfs/opt/HM
  				</table>
  			</td>
  			<td class="CLASS21113" align="left">
-diff -ruN rootfs.orig/www/config/cp_maintenance.cgi rootfs/www/config/cp_maintenance.cgi
---- rootfs.orig/www/config/cp_maintenance.cgi	2017-10-25 07:51:01.793922275 +0200
-+++ rootfs/www/config/cp_maintenance.cgi	2017-10-25 07:52:10.502373227 +0200
-@@ -350,103 +350,10 @@
-                                 puts "$cur_version"
+diff -ruN fw.orig/www/config/control_panel.cgi fw.patched/www/config/control_panel.cgi
+--- fw.orig/www/config/control_panel.cgi	2017-12-06 07:53:25.825737541 +0100
++++ fw.patched/www/config/control_panel.cgi	2017-12-06 07:55:37.082589847 +0100
+@@ -183,9 +183,12 @@
+ 
+ if { "[read_var /etc/config/tweaks CP_DEVCONFIG]" != "" } {
+   puts "<!-- devconfig -->"
+-  puts "<td>"
+-  puts "<div class=\"StdTableBtn CLASS21701\" onclick=\"window.open('/tools/devconfig.cgi?sid=$sid');\">devconfig</div>"
+-  puts "</td><td class=\"StdTableBtnHelp\"></td>"
++    puts "<td>"
++      puts "<div class=\"cpButton\">"
++      puts "<div class=\"StdTableBtn CLASS21701\" onclick=\"window.open('/tools/devconfig.cgi?sid=$sid');\">DevConfig</div>"
++      puts "<div class=\"StdTableBtnHelp\"></div>"
++    puts "</div>"
++  puts "</td>"
+   incr i
+ }
+ 
+diff -ruN fw.orig/www/config/cp_maintenance.cgi fw.patched/www/config/cp_maintenance.cgi
+--- fw.orig/www/config/cp_maintenance.cgi	2017-12-06 07:53:25.825737541 +0100
++++ fw.patched/www/config/cp_maintenance.cgi	2017-12-06 08:29:59.235984732 +0100
+@@ -347,106 +347,13 @@
+                                 puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                              }
-                         }
+                             table_data {
+-                                puts "$cur_version"
+-                            }
+-                        }
 -                        table_row {
 -                            table_data {align="left"} {colspan="2"} {
 -                                puts "\${dialogSettingsCMLblAvailableSoftwareVersion}"
@@ -460,8 +482,9 @@ diff -ruN rootfs.orig/www/config/cp_maintenance.cgi rootfs/www/config/cp_mainten
 -                            td {width="20"} {}
 -                            table_data {align="left"} {colspan="2"} {class="CLASS20920"} {
 -                                puts "\${dialogSettingsCMLblPerformSoftwareUpdateStep4}"
--                            }
--                        }
++                                puts "@@@pivccu_version@@@"
+                             }
+                         }
                      }
                  }
 -                table_data {align="left"} {class="CLASS20921"} {
@@ -484,7 +507,7 @@ diff -ruN rootfs.orig/www/config/cp_maintenance.cgi rootfs/www/config/cp_mainten
 -                      puts "<br/>\${dialogSettingsCMHintSoftwareUpdate3}"
 -                    }
 +                table_data {align="left"} {class="CLASS20904"} {
-+                    puts " "
++                    puts "\${dialogSettingspiVCCUDonateHint}"
                  }
              }
              table_row {class="CLASS20902 j_noForcedUpdate j_fwUpdateOnly"} {
@@ -499,9 +522,9 @@ diff -ruN rootfs.orig/www/config/cp_maintenance.cgi rootfs/www/config/cp_mainten
  
        # Hide all elements with class j_noForcedUpdate when an update is enforced
        puts "if (forceUpdate) {"
-diff -ruN rootfs.orig/www/config/cp_security.cgi rootfs/www/config/cp_security.cgi
---- rootfs.orig/www/config/cp_security.cgi	2017-10-25 07:51:01.809922380 +0200
-+++ rootfs/www/config/cp_security.cgi	2017-10-25 07:52:10.502373227 +0200
+diff -ruN fw.orig/www/config/cp_security.cgi fw.patched/www/config/cp_security.cgi
+--- fw.orig/www/config/cp_security.cgi	2017-12-06 07:53:25.825737541 +0100
++++ fw.patched/www/config/cp_security.cgi	2017-12-06 07:55:37.082589847 +0100
 @@ -202,8 +202,8 @@
          # exec /usr/sbin/ubiattach -p /dev/mtd6
          # exec /usr/sbin/ubimkvol /dev/ubi1 -N user -m
@@ -536,9 +559,9 @@ diff -ruN rootfs.orig/www/config/cp_security.cgi rootfs/www/config/cp_security.c
          division {class="popupTitle"} {
              puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
          }
-diff -ruN rootfs.orig/www/config/cp_software.cgi rootfs/www/config/cp_software.cgi
---- rootfs.orig/www/config/cp_software.cgi	2017-10-25 07:51:01.777922170 +0200
-+++ rootfs/www/config/cp_software.cgi	2017-10-25 07:52:10.502373227 +0200
+diff -ruN fw.orig/www/config/cp_software.cgi fw.patched/www/config/cp_software.cgi
+--- fw.orig/www/config/cp_software.cgi	2017-12-06 07:53:25.821737515 +0100
++++ fw.patched/www/config/cp_software.cgi	2017-12-06 07:55:37.082589847 +0100
 @@ -507,7 +507,7 @@
      if {[isOldCCU]} {
          exec /sbin/init -q
@@ -548,22 +571,29 @@ diff -ruN rootfs.orig/www/config/cp_software.cgi rootfs/www/config/cp_software.c
      }
  }
  
-diff -ruN rootfs.orig/www/config/control_panel.cgi rootfs/www/config/control_panel.cgi
---- rootfs.orig/www/config/control_panel.cgi	2017-10-27 10:28:16.992432949 +0200
-+++ rootfs/www/config/control_panel.cgi	2017-10-27 10:32:46.014174918 +0200
-@@ -183,9 +183,12 @@
- 
- if { "[read_var /etc/config/tweaks CP_DEVCONFIG]" != "" } {
-   puts "<!-- devconfig -->"
--  puts "<td>"
--  puts "<div class=\"StdTableBtn CLASS21701\" onclick=\"window.open('/tools/devconfig.cgi?sid=$sid');\">devconfig</div>"
--  puts "</td><td class=\"StdTableBtnHelp\"></td>"
-+    puts "<td>"
-+      puts "<div class=\"cpButton\">"
-+      puts "<div class=\"StdTableBtn CLASS21701\" onclick=\"window.open('/tools/devconfig.cgi?sid=$sid');\">DevConfig</div>"
-+      puts "<div class=\"StdTableBtnHelp\"></div>"
-+    puts "</div>"
-+  puts "</td>"
-   incr i
- }
- 
+diff -ruN fw.orig/www/webui/js/lang/de/translate.lang.js fw.patched/www/webui/js/lang/de/translate.lang.js
+--- fw.orig/www/webui/js/lang/de/translate.lang.js	2017-12-06 07:53:25.581735956 +0100
++++ fw.patched/www/webui/js/lang/de/translate.lang.js	2017-12-06 08:28:10.347276704 +0100
+@@ -445,7 +445,8 @@
+     "dialogSettingsCMTDCCURestart" : HMIdentifier.de.CCUShortName + "<br/>Neustart",
+     "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
+     "dialogSettingsCMTDErrorProtocol" : "Fehler-<br/>protokoll",
+-    "dialogSettingsCMLblActualSoftwareVersion" : "Aktuelle Software-Version:",
++    "dialogSettingsCMLblActualSoftwareVersion" : "Aktuelle piVCCU Version:",
++    "dialogSettingspiVCCUDonateHint" : "Bitte unterst%FCtzen Sie die Entwicklung von piVCCU mit einer Spende via <a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=KJ3UWNDMXLJKU' rel='nofollow'>PayPal</a>.",
+     "dialogSettingsCMLblAvailableSoftwareVersion" : "Verf%FCgbare Software-Version:",
+     "dialogSettingsCMLblPerformSoftwareUpdate" : "Software-Update durchf%FChren",
+     "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
+diff -ruN fw.orig/www/webui/js/lang/en/translate.lang.js fw.patched/www/webui/js/lang/en/translate.lang.js
+--- fw.orig/www/webui/js/lang/en/translate.lang.js	2017-12-06 07:53:25.581735956 +0100
++++ fw.patched/www/webui/js/lang/en/translate.lang.js	2017-12-06 08:27:56.167184494 +0100
+@@ -445,7 +445,8 @@
+     "dialogSettingsCMTDCCURestart" : HMIdentifier.en.CCUShortName + "<br/>restart",
+     "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
+     "dialogSettingsCMTDErrorProtocol" : "Error<br/>log",
+-    "dialogSettingsCMLblActualSoftwareVersion" : "Current software version:",
++    "dialogSettingsCMLblActualSoftwareVersion" : "Current piVCCU version:",
++    "dialogSettingspiVCCUDonateHint" : "Please support the development of piVCCU with a donation via <a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=KJ3UWNDMXLJKU' rel='nofollow'>PayPal</a>.",
+     "dialogSettingsCMLblAvailableSoftwareVersion" : "Available software version:",
+     "dialogSettingsCMLblPerformSoftwareUpdate" : "Perform software update",
+     "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Step 1: Download new software",
