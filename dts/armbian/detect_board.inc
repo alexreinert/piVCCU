@@ -1,12 +1,13 @@
-if [ `grep -c -e 'asus,rk3288-tinker\|rockchip,rk3288-miniarm' /proc/device-tree/compatible` -eq 1 ]; then
-  OVERLAY_MODE='patch'
-  INCLUDE_FILE='/var/lib/piVCCU/dts/tinkerboard.dts.include'
+if [ -e /proc/device-tree/compatible ]; then
+  if [ `grep -c -e 'asus,rk3288-tinker\|rockchip,rk3288-miniarm' /proc/device-tree/compatible` -eq 1 ]; then
+    OVERLAY_MODE='patch'
+    INCLUDE_FILE='/var/lib/piVCCU/dts/tinkerboard.dts.include'
+  fi
+  if [ `grep -c -e 'xunlong,orangepi-one\|xunlong,orangepi-plus' /proc/device-tree/compatible` -eq 1 ]; then
+    OVERLAY_MODE='overlay'
+    OVERLAY_FILE='pivccu-sun8i-h3.dtbo'
+  fi
 fi
-if [ `grep -c -e 'xunlong,orangepi-one\|xunlong,orangepi-plus' /proc/device-tree/compatible` -eq 1 ]; then
-  OVERLAY_MODE='overlay'
-  OVERLAY_FILE='pivccu-sun8i-h3.dtbo'
-fi
-
 
 if [ ! -z "$1" ]; then
   OVERLAY_MODE="$1"
