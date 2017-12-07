@@ -20,6 +20,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
   * Raspberry Pi 2 or 3 running Raspbian Jessie or Stretch
   * Asus Tinkerboard running Armbian with Mainline kernel
   * Orange Pi One, Plus, Plus 2 or Plus 2E running Armbian with Mainline kernel (Experimental)
+
     :warning: WARNING: The Orange Pi has a rotated GPIO socket. See [Manual installation instructions](docs/setup/orangepi.md) for more information.
 * Properly installed HM-MOD-RPI-PCB
 
