@@ -19,7 +19,8 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 * Supported Single Board Computer
   * Raspberry Pi 2 or 3 running Raspbian Jessie or Stretch
   * Asus Tinkerboard running Armbian with Mainline kernel
-  * Orange Pi One, Plus, Plus 2 or Plus 2E running Armbian with Mainline kernel (Experimental)<br /><span style="color:red">WARNING:</span>The Orange Pi has a rotated GPIO socket. See [Manual installation instructions](docs/setup/orangepi.md) for more information.
+  * Orange Pi One, Plus, Plus 2 or Plus 2E running Armbian with Mainline kernel (Experimental)
+    :warning: WARNING: The Orange Pi has a rotated GPIO socket. See [Manual installation instructions](docs/setup/orangepi.md) for more information.
 * Properly installed HM-MOD-RPI-PCB
 
 ### Pre-prepared sd card images

@@ -4,8 +4,9 @@
 * Armbian using Mainline kernel
 * Properly installed HM-MOD-RPI-PCB
 
-### <span style="color:red">WARNING</span>
-The Orange Pi has a rotated GPIO socket.** A normal soldered radio module should lead away from the board.
+### :warning: WARNING
+The Orange Pi has a rotated GPIO socket.
+A normal soldered radio module should lead away from the board.
 
 ### Installation
 0. Create full backup of your SD card
