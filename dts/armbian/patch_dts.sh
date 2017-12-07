@@ -12,7 +12,7 @@ case "$OVERLAY_MODE" in
     if [ `grep -c -e 'compatible = "pivccu,' $TMP_DIR/devicetree.dts` -eq 0 ]; then
       echo "piVCCU: Patching DTB $FDT_FILE"
       cp /boot/dtb/$FDT_FILE /boot/dtb/$FDT_FILE.bak
-      cat /var/lib/piVCCU/dts/$INCLUDE_FILE >> $TMP_DIR/devicetree.dts
+      cat $INCLUDE_FILE >> $TMP_DIR/devicetree.dts
       dtc -I dts -O dtb -q -o $TMP_DIR/$FDT_FILE $TMP_DIR/devicetree.dts
       cp $TMP_DIR/$FDT_FILE /boot/dtb
     else
