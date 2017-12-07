@@ -2,9 +2,6 @@
 
 piVCCU is a project to install the original Homematic CCU2 firmware inside a virtualized container (lxc) on ARM based single board computers.
 
-### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU)
-Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU).
-
 ### Goals
 * Option to run CCU2 and other software parallel on one device
 * Usage of original CCU2 firmware (and not OCCU)
@@ -14,13 +11,15 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 * Easy to install and update with apt
 * Support not only on Raspberry
 
+### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU)
+Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU).
+
 ### Prequisites
 
 * Supported Single Board Computer
   * Raspberry Pi 2 or 3 running Raspbian Jessie or Stretch
   * Asus Tinkerboard running Armbian with Mainline kernel
-  * Orange Pi One, Orange Pi Plus, Orange Pi Plus 2 or Orange Pi Plus 2E running Armbian with Mainline kernel (Experimental)
-     <span style="color:red">WARNING:</span>The Orange Pi has a rotated GPIO socket. See [Manual installation instructions](docs/setup/orangepi.md) for more information.
+  * Orange Pi One, Plus, Plus 2 or Plus 2E running Armbian with Mainline kernel (Experimental)<br /><span style="color:red">WARNING:</span>The Orange Pi has a rotated GPIO socket. See [Manual installation instructions](docs/setup/orangepi.md) for more information.
 * Properly installed HM-MOD-RPI-PCB
 
 ### Pre-prepared sd card images
@@ -32,7 +31,7 @@ Login to Armbian based images using user 'root' and password '1234'.
 ### Manual installation
 * [Raspberry Pi](docs/setup/raspberrypi.md)
 * [Asus Tinkerboard](docs/setup/tinkerboard.md)
-* [Orange Pi One, Orange Pi Plus, Orange Pi Plus 2 and Orange Pi Plus 2E](docs/setup/orangepi.md)
+* [Orange Pi One, Plus, Plus 2 and Plus 2E](docs/setup/orangepi.md)
 
 ### Updating piVCCU to latest version
 Use the normal apt based update mechanism:
@@ -50,9 +49,9 @@ sudo apt update && sudo apt upgrade
    2. Reinstall all addons using the CCU web interface
 
 * YAHM
-   0. Create full backup of your SD card
-   1. Create system backup using CCU web interface
-   2. Remove YAHM on the host (or use a plain new sd card image)
+   1. Create full backup of your SD card
+   2. Create system backup using CCU web interface
+   3. Remove YAHM on the host (or use a plain new sd card image)
       ```bash
       sudo lxc-stop -n yahm
       sudo rm -f /etc/bash_completion.d/yahm_completion
@@ -69,9 +68,9 @@ sudo apt update && sudo apt upgrade
       sudo sed -i /etc/modules -e '/#*eq3_char_loop/d'
       sudo sed -i /etc/modules -e '/#*bcm2835_raw_uart/d'
       ```
-   3. Install piVCCU as described above
-   4. Restore the system backup using the CCU web interface
-   5. Remove YAHM specific configuration stuff (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
+   4. Install piVCCU as described above
+   5. Restore the system backup using the CCU web interface
+   6. Remove YAHM specific configuration stuff (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
       ```bash
       sudo systemctl stop pivccu.service
 
@@ -83,21 +82,20 @@ sudo apt update && sudo apt upgrade
       ```
       
 ### Using CUxD and USB devices
-0. Starting with package build 16 You can find available devices on the host using
+1. You can find available devices on the host using
    ```bash
    sudo pivccu-device listavailable
    ```
-
-1. Create a hook script on the host
+2. Create a hook script on the host
    ```bash
    bash -c 'echo "#!/bin/bash" > /etc/piVCCU/post-start.sh'
    sudo chmod +x /etc/piVCCU/post-start.sh
    ```
-2. For each device add an entry to this hook file, e.g. here for ```/dev/ttyUSB0```
+3. For each device add an entry to this hook file, e.g. here for ```/dev/ttyUSB0```
    ```bash
    bash -c 'echo "pivccu-device add /dev/ttyUSB0" >> /etc/piVCCU/post-start.sh'
    ```
-3. The devices will now be available inside the container, just use them like it is described in the CUxD documentation
+4. The devices will now be available inside the container, just use them like it is described in the CUxD documentation
 
 ### Build packages by your own
 If you like to build the .deb package by yourself
