@@ -84,6 +84,7 @@ sudo apt update && sudo apt upgrade
 
       sudo systemctl start pivccu.service
       ```
+   7. If you used YAHM without radio module, you should check your interface assignments of the LAN Gateways in the control panel
       
 ### Using CUxD and USB devices
 1. You can find available devices on the host using
