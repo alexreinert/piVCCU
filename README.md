@@ -78,6 +78,8 @@ sudo apt update && sudo apt upgrade
 
       sudo rm -f /var/lib/piVCCU/userfs/etc/config/no-coprocessor-update
       sudo sed -i /var/lib/piVCCU/userfs/etc/config/rfd.conf -e 's/Improved Coprocessor Initialization = false/Improved Coprocessor Initialization = true/'
+      if [ `grep -c '^Improved Coprocessor Initialization' /var/lib/piVCCU/userfs/etc/config/rfd.conf` -eq 0 ]; then sudo sed -i /var/lib/piVCCU/userfs/etc/config/rfd.conf -e 's/\(^Replacemap File.*\)/\1\nImproved Coprocessor Initialization = true\n/'; fi
+      if [ `grep -c '\^[Interface 0\]' /var/lib/piVCCU/userfs/etc/config/rfd.conf` -eq 0 ]; then sudo bash -c "echo -e \"\n[Interface 0]\nType = CCU2\nComPortFile = /dev/mmd_bidcos\n#AccessFile = /dev/null\n#ResetFile = /dev/ccu2-ic200\" >> /var/lib/piVCCU/userfs/etc/config/rfd.conf"; fi
       sudo sed -i /var/lib/piVCCU/userfs/etc/config/multimacd.conf -e 's/bcm2835-raw-uart/mxs_auart_raw.0/'
 
       sudo systemctl start pivccu.service
