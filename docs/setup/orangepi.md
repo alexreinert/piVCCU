@@ -5,8 +5,10 @@
 * Properly installed HM-MOD-RPI-PCB
 
 ### :warning: WARNING
-The Orange Pi has a rotated GPIO socket.
+The Orange Pi Plus 2E and the Orange Pi One have a rotated GPIO socket.
 A normal soldered radio module should lead away from the board.
+
+Please ensure for all models, that you attach the radio module to the right pins in the right direction.
 
 ### Installation
 0. Create full backup of your SD card
