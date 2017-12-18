@@ -88,6 +88,7 @@ Please ensure for all models, that you attach the radio module to the right pins
         dns-nameservers <dns1> <dns2>
       EOT'
       ```
+   * To use Wireless LAN, please take a look [here](wlan.md)
 
 8. Reboot the system
    ```bash
