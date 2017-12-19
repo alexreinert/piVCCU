@@ -22,6 +22,7 @@
 #include <linux/module.h> /*needed for all modules*/
 
 static char *board_serial = "";
+static char *board_firmware = "";
 static char *radio_mac = "";
 static short eq3charloop_major = 0;
 static short uart_major = 0;
@@ -30,6 +31,9 @@ module_param(board_serial, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROT
 MODULE_PARM_DESC(board_serial, "Board serial number, e.g. MEQ1234567");
 module_param(radio_mac, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 MODULE_PARM_DESC(radio_mac, "Radio mac, e.g. 0x123456");
+
+module_param(board_firmware, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+MODULE_PARM_DESC(board_firmware, "Firmware Version, e.g. 2.8.4");
 
 module_param(eq3charloop_major, short, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 MODULE_PARM_DESC(eq3charloop_major, "Device major number of eq3_char_loop");
