@@ -39,5 +39,8 @@ if [ -z "$BOARD_SERIAL" ]; then
 fi
 echo "Board serial:   $BOARD_SERIAL"
 
+module_firmware=$(cat /sys/module/plat_eq3ccu2/parameters/board_firmware)
+echo "Board Firmware: ${module_firmware}"
+
 /usr/bin/lxc-info --lxcpath /var/lib/piVCCU/ --name lxc --ips --pid --stats --state
 
