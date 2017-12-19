@@ -28,6 +28,9 @@ fi
 /bin/eq3configcmd update-coprocessor -p /dev/mxs_auart_raw.0 -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5 > /sys/module/plat_eq3ccu2/parameters/board_serial
 /bin/eq3configcmd read-default-rf-address -f /dev/mxs_auart_raw.0 -h | grep "^0x" > /sys/module/plat_eq3ccu2/parameters/radio_mac
 
+firmware_version=`/bin/eq3configcmd update-coprocessor -p /dev/mxs_auart_raw.0 -t HM-MOD-UART -c -v 2>&1 | grep "Version:" | cut -d' ' -f5`
+echo $firmware_version > /sys/module/plat_eq3ccu2/parameters/board_firmware
+
 # emulate initialised SD card
 mkdir -p /var/status
 touch /var/status/SDmounted
