@@ -788,6 +788,7 @@ module_exit(generic_raw_uart_exit);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
+MODULE_VERSION("1.1");
 MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

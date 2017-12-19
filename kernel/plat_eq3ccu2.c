@@ -23,6 +23,7 @@
 
 static char *board_serial = "";
 static char *radio_mac = "";
+static char *board_extended_info = "";
 static short eq3charloop_major = 0;
 static short uart_major = 0;
 
@@ -30,6 +31,9 @@ module_param(board_serial, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROT
 MODULE_PARM_DESC(board_serial, "Board serial number, e.g. MEQ1234567");
 module_param(radio_mac, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 MODULE_PARM_DESC(radio_mac, "Radio mac, e.g. 0x123456");
+
+module_param(board_extended_info, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+MODULE_PARM_DESC(board_extended_info, "Extended board informations, e.g. firmware version");
 
 module_param(eq3charloop_major, short, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 MODULE_PARM_DESC(eq3charloop_major, "Device major number of eq3_char_loop");
@@ -51,6 +55,7 @@ module_init(plat_eq3ccu2_init);
 module_exit(plat_eq3ccu2_exit);
 
 MODULE_LICENSE("GPL");
+MODULE_VERSION("1.1");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("plat_eq3ccu2 CCU2 emulation module");
 

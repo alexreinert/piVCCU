@@ -321,6 +321,7 @@ module_raw_uart_driver(MODULE_NAME, pl011_raw_uart, pl011_raw_uart_of_match);
 
 MODULE_ALIAS("platform:pl011-raw-uart");
 MODULE_LICENSE("GPL");
+MODULE_VERSION("1.2");
 MODULE_DESCRIPTION("PL011 raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
