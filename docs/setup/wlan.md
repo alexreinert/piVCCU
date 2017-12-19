@@ -12,6 +12,7 @@ Because of that, you need a bridge without a physical interface and to use port 
    auto lo
    iface lo inet loopback
 
+   auto wlan0
    iface wlan0 inet dhcp
      wpa-ssid     <PUT_YOUR_SSID_HERE>
      wpa-psk      <PUT_YOUR_WLAN_KEY_HERE>
