@@ -1,0 +1,21 @@
+/ {
+  serial@ff1a0000 {
+    compatible = "pivccu,dw_apb";
+    pivccu,reset_pin = <&pivccu_gpio1 18 0>;
+    pivccu,red_pin = <&pivccu_gpio3 31 0>;
+    pivccu,green_pin = <&pivccu_gpio3 29 0>;
+    pivccu,blue_pin = <&pivccu_gpio3 30 0>;
+    pinctrl-0 = <&pivccu_uart2b_xfer>;
+  };
+  pinctrl {
+    pivccu_gpio1: gpio1@ff730000 {
+    };
+    pivccu_gpio3: gpio3@ff788000 {
+    };
+    uart2b {
+      pivccu_uart2b_xfer: uart2b-xfer {
+      };
+    };
+  };
+};
+

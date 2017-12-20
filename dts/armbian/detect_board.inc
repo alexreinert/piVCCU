@@ -56,6 +56,11 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         INCLUDE_FILE='/var/lib/piVCCU/dts/nanopct4.dts.include'
         break
         ;; 
+     friendlyelec,nanopi-m4)
+        OVERLAY_MODE='patch'
+        INCLUDE_FILE='/var/lib/piVCCU/dts/nanopim4.dts.include'
+        break
+        ;;
     esac
   done
 fi
