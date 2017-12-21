@@ -4,7 +4,7 @@ CCU_VERSION=2.29.23
 CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=268"
 CCU_DOWNLOAD_URL="http://www.eq-3.de/Downloads/Software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tar.gz"
 
-PKG_BUILD=19
+PKG_BUILD=20
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -106,8 +106,10 @@ if [ -z "\$BRIDGE" ]; then
 fi
 
 sed -i 's/alexreinert.github.io/www.pivccu.de/g' /etc/apt/sources.list
+sed -i 's/http:\\/\\/www.pivccu.de/https:\\/\\/www.pivccu.de/g' /etc/apt/sources.list
 for file in \`find /etc/apt/sources.list.d/*.list -type f 2>/dev/null\`; do
   sed -i 's/alexreinert.github.io/www.pivccu.de/g' \$file
+  sed -i 's/http:\\/\\/www.pivccu.de/https:\\/\\/www.pivccu.de/g' \$file
 done
 EOT
 
