@@ -1,11 +1,11 @@
 ### Prequisites
 
-* Orange Pi One, Orange Pi Plus, Orange Pi Plus 2 or Orange Pi Plus 2E
+* Orange Pi One, Orange Pi 2, Orange Pi Lite, Orange Pi Plus, Orange Pi Plus 2, Orange Pi Plus 2E, Orange Pi PC, Orane Pi PC Plus
 * Armbian using Mainline kernel
 * Properly installed HM-MOD-RPI-PCB
 
 ### :warning: WARNING
-The Orange Pi Plus 2E and the Orange Pi One have a rotated GPIO socket.
+The Orange Pi Plus 2E, the Orange Pi One and the Orange Pi Lite have a rotated GPIO socket.
 A normal soldered radio module should lead away from the board.
 
 Please ensure for all models, that you attach the radio module to the right pins in the right direction.
