@@ -84,7 +84,7 @@ sudo apt update && sudo apt upgrade
       if [ `grep -c '<name>HmIP-RF</name>' /var/lib/piVCCU/userfs/etc/config/InterfacesList.xml` -eq 0 ]; then sudo bash -c "sed -i /var/lib/piVCCU/userfs/etc/config/InterfacesList.xml -e 's/\(<\/interfaces>\)/\t<ipc>\n\t\t<name>HmIP-RF<\/name>\n\t\t<url>xmlrpc:\/\/127.0.0.1:2010<\/url>\n\t\t<info>HmIP-RF<\/info>\n\t<\/ipc>\n\1/'"; fi
       sudo systemctl start pivccu.service
       ```
-   7. If you used YAHM with without HmIP (and only then), remove the HmIP keys to avoid migrating duplicate keys (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
+   7. If you used YAHM without HmIP (and only then), remove the HmIP keys to avoid migrating duplicate keys (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
       ```bash
       sudo systemctl stop pivccu.service
       rm -rf /var/lib/piVCCU/userfs/etc/config/crRFD/data/*
