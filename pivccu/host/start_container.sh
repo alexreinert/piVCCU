@@ -24,6 +24,16 @@ fi
 EQ3LOOP_MAJOR=`cat /sys/devices/virtual/eq3loop/eq3loop/dev | cut -d: -f1`
 UART_MAJOR=`cat /sys/devices/virtual/raw-uart/raw-uart/dev | cut -d: -f1`
 
+#determine radio mac and serial
+mount --bind /dev /var/lib/piVCCU/rootfs/dev
+BOARD_SERIAL=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5`
+RADIO_MAC=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd read-default-rf-address -f /dev/raw-uart -h | grep "^0x"`
+umount /var/lib/piVCCU/rootfs/dev
+
+if [ -z "$BOARD_SERIAL" ]; then
+  logger -t piVCCU -p user.warning -s "Radio module was not detected." 1>&2
+fi
+
 # create config file
 mkdir -p /var/lib/piVCCU/lxc
 
@@ -46,6 +56,8 @@ sed -i $CONFIG_FILE -e "s/<uart_major>/$UART_MAJOR/"
 
 echo -n $EQ3LOOP_MAJOR > /sys/module/plat_eq3ccu2/parameters/eq3charloop_major
 echo -n $UART_MAJOR > /sys/module/plat_eq3ccu2/parameters/uart_major
+echo -n $BOARD_SERIAL > /sys/module/plat_eq3ccu2/parameters/board_serial
+echo -n $RADIO_MAC > /sys/module/plat_eq3ccu2/parameters/radio_mac
 
 if [ -x /etc/piVCCU/pre-start.sh ]; then
   /etc/piVCCU/pre-start.sh
