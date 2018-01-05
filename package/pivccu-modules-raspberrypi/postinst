@@ -1,0 +1,9 @@
+#!/bin/sh
+depmod -a {KERNEL_RELEASE}
+
+if [ -f /usr/share/rpikernelhack/overlays/pivccu-bcm2835.dtbo ]; then
+  rm -f /boot/overlays/pivccu-bcm2835.dtbo
+  dpkg-divert --package rpikernelhack --remove --rename /boot/overlays/pivccu-bcm2835.dtbo
+  sync
+fi
+

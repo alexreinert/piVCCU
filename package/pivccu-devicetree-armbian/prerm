@@ -1,0 +1,3 @@
+#!/bin/sh
+/var/lib/piVCCU/dts/revert_dts.sh
+

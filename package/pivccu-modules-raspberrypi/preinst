@@ -1,0 +1,3 @@
+#!/bin/sh
+dpkg-divert --package rpikernelhack --divert /usr/share/rpikernelhack/overlays/pivccu-bcm2835.dtbo /boot/overlays/pivccu-bcm2835.dtbo
+

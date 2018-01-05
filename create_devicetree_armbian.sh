@@ -28,33 +28,10 @@ DPkg::Post-Invoke {"if [ -e /var/lib/piVCCU/dts/patch_dts.sh ]; then /var/lib/pi
 EOF
 
 mkdir -p $TARGET_DIR/DEBIAN
-
-cat <<EOT >> $TARGET_DIR/DEBIAN/control
-Package: pivccu-devicetree-armbian
-Version: $PKG_VERSION
-Architecture: armhf
-Maintainer: Alexander Reinert <alex@areinert.de>
-Provides: pivccu-devicetree
-Section: misc
-Priority: extra
-Homepage: https://github.com/alexreinert/piVCCU
-Description: piVCCU DeviceTree files for armbian
-  This package contains piVCCU DeviceTree files for armbian
-EOT
-
-cat <<EOT >> $TARGET_DIR/DEBIAN/postinst
-#!/bin/sh
-/var/lib/piVCCU/dts/patch_dts.sh
-EOT
-
-chmod +x $TARGET_DIR/DEBIAN/postinst
-
-cat <<EOT >> $TARGET_DIR/DEBIAN/prerm
-#!/bin/sh
-/var/lib/piVCCU/dts/revert_dts.sh
-EOT
-
-chmod +x $TARGET_DIR/DEBIAN/prerm
+cp -p $CURRENT_DIR/package/pivccu-devicetree-armbian/* $TARGET_DIR/DEBIAN
+for file in $TARGET_DIR/DEBIAN/*; do
+  sed -i "s/{PKG_VERSION}/$PKG_VERSION/g" $file
+done
 
 cd $WORK_DIR
 

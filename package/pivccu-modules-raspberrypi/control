@@ -1,0 +1,12 @@
+Package: pivccu-modules-raspberrypi
+Version: {PKG_VERSION}
+Architecture: armhf
+Maintainer: Alexander Reinert <alex@areinert.de>
+Provides: pivccu-kernel-modules
+Depends: raspberrypi-kernel (= {KERNEL_TAG})
+Section: kernel
+Priority: extra
+Homepage: https://github.com/alexreinert/piVCCU
+Description: Raspberry Pi kernel modules needed for Homematic
+  This package contains the Raspberry Pi kernel needed for Homematic.
+

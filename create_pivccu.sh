@@ -67,65 +67,11 @@ mkdir -p $TARGET_DIR/lib/systemd/system/
 cp -p $CURRENT_DIR/pivccu/host/pivccu.service $TARGET_DIR/lib/systemd/system/
 
 mkdir -p $TARGET_DIR/DEBIAN
-
-cat <<EOT >> $TARGET_DIR/DEBIAN/control
-Package: pivccu
-Version: $PKG_VERSION
-Architecture: armhf
-Maintainer: Alexander Reinert <alex@areinert.de>
-Depends: pivccu-kernel-modules
-Pre-Depends: lxc, bridge-utils, systemd
-Section: misc
-Priority: extra
-Homepage: https://github.com/alexreinert/piVCCU
-Description: piVCCU - Homematic CCU LXC container
-  This package contains piVCCU - a Homematic CCU LXC container
-EOT
-
-echo /etc/piVCCU/lxc.config >> $TARGET_DIR/DEBIAN/conffiles
-echo /lib/systemd/system/pivccu.service >> $TARGET_DIR/DEBIAN/conffiles
-
-cat <<EOT >> $TARGET_DIR/DEBIAN/postinst
-#!/bin/sh
-systemctl enable pivccu.service
-systemctl start pivccu.service || true
-
-if [ ! -e /usr/sbin/pivccu-attach ]; then
-  ln -s /var/lib/piVCCU/pivccu-attach.sh /usr/sbin/pivccu-attach
-fi
-if [ ! -e /usr/sbin/pivccu-info ]; then
-  ln -s /var/lib/piVCCU/pivccu-info.sh /usr/sbin/pivccu-info
-fi
-if [ ! -e /usr/sbin/pivccu-device ]; then
-  ln -s /var/lib/piVCCU/pivccu-device.sh /usr/sbin/pivccu-device
-fi
-
-BRIDGE=\`brctl show | sed -n 2p | awk '{print \$1}'\`
-if [ -z "\$BRIDGE" ]; then
-  echo "WARNING: No network bridge could be detected."
-fi
-
-sed -i 's/alexreinert.github.io/www.pivccu.de/g' /etc/apt/sources.list
-sed -i 's/http:\\/\\/www.pivccu.de/https:\\/\\/www.pivccu.de/g' /etc/apt/sources.list
-for file in \`find /etc/apt/sources.list.d/*.list -type f 2>/dev/null\`; do
-  sed -i 's/alexreinert.github.io/www.pivccu.de/g' \$file
-  sed -i 's/http:\\/\\/www.pivccu.de/https:\\/\\/www.pivccu.de/g' \$file
+cp -p $CURRENT_DIR/package/pivccu/* $TARGET_DIR/DEBIAN
+for file in $TARGET_DIR/DEBIAN/*; do
+  sed -i "s/{PKG_VERSION}/$PKG_VERSION/g" $file
+  sed -i "s/{CCU_VERSION}/$CCU_VERSION/g" $file
 done
-EOT
-
-chmod +x $TARGET_DIR/DEBIAN/postinst
-
-cat <<EOT >> $TARGET_DIR/DEBIAN/prerm
-#!/bin/sh
-systemctl stop pivccu.service
-systemctl disable pivccu.service
-
-rm -f /usr/sbin/pivccu-attach
-rm -f /usr/sbin/pivccu-info
-rm -f /usr/sbin/pivccu-device
-EOT
-
-chmod +x $TARGET_DIR/DEBIAN/prerm
 
 cd $WORK_DIR
 

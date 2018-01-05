@@ -53,54 +53,11 @@ cd $CURRENT_DIR/dts
 dtc -@ -I dts -O dtb -o $TARGET_DIR/boot/overlays/pivccu-bcm2835.dtbo pivccu-bcm2835.dts
 
 mkdir -p $TARGET_DIR/DEBIAN
-
-cat <<EOT >> $TARGET_DIR/DEBIAN/control
-Package: pivccu-modules-raspberrypi
-Version: $PKG_VERSION
-Architecture: armhf
-Maintainer: Alexander Reinert <alex@areinert.de>
-Provides: pivccu-kernel-modules
-Depends: raspberrypi-kernel (= $KERNEL_TAG)
-Section: kernel
-Priority: extra
-Homepage: https://github.com/alexreinert/piVCCU
-Description: Raspberry Pi kernel modules needed for Homematic
-  This package contains the Raspberry Pi kernel needed for Homematic.
-EOT
-
-for file in preinst postinst prerm postrm; do
-  echo "#!/bin/sh" > $TARGET_DIR/DEBIAN/$file
-  chmod 755 $TARGET_DIR/DEBIAN/$file
-done
-
-for file in postinst postrm; do
-  echo "depmod -a $KERNEL_RELEASE" >> $TARGET_DIR/DEBIAN/$file
-
-  cat <<EOF >> $TARGET_DIR/DEBIAN/$file
-sed -i /boot/config.txt -e '/dtoverlay=pivccu-bcm2835/d'
-EOF
-
-done
-
-cat <<EOF >> $TARGET_DIR/DEBIAN/postinst
-echo "dtoverlay=pivccu-bcm2835" >> /boot/config.txt
-EOF
-
-cd $TARGET_DIR/boot
-
-for file in $(find * -type f)
-do
-  cat <<EOF >> $TARGET_DIR/DEBIAN/preinst
-dpkg-divert --package rpikernelhack --divert /usr/share/rpikernelhack/$file /boot/$file
-EOF
-
-  cat <<EOF >> $TARGET_DIR/DEBIAN/postinst
-if [ -f /usr/share/rpikernelhack/$file ]; then
-  rm -f /boot/$file
-  dpkg-divert --package rpikernelhack --remove --rename /boot/$file
-  sync
-fi
-EOF
+cp -p $CURRENT_DIR/package/pivccu-modules-raspberrypi/* $TARGET_DIR/DEBIAN
+for file in $TARGET_DIR/DEBIAN/*; do
+  sed -i "s/{PKG_VERSION}/$PKG_VERSION/g" $file
+  sed -i "s/{KERNEL_TAG}/$KERNEL_TAG/g" $file
+  sed -i "s/{KERNEL_RELEASE}/$KERNEL_RELEASE/g" $file
 done
 
 cd $WORK_DIR

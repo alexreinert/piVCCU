@@ -1,0 +1,11 @@
+Package: pivccu-devicetree-armbian
+Version: {PKG_VERSION}
+Architecture: armhf
+Maintainer: Alexander Reinert <alex@areinert.de>
+Provides: pivccu-devicetree
+Section: misc
+Priority: extra
+Homepage: https://github.com/alexreinert/piVCCU
+Description: piVCCU DeviceTree files for armbian
+  This package contains piVCCU DeviceTree files for armbian
+

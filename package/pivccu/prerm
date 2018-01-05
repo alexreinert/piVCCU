@@ -1,0 +1,7 @@
+#!/bin/sh
+systemctl stop pivccu.service
+systemctl disable pivccu.service
+
+rm -f /usr/sbin/pivccu-attach
+rm -f /usr/sbin/pivccu-info
+rm -f /usr/sbin/pivccu-device

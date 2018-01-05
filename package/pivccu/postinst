@@ -1,0 +1,42 @@
+#!/bin/sh
+if [ ! -e /usr/sbin/pivccu-attach ]; then
+  ln -s /var/lib/piVCCU/pivccu-attach.sh /usr/sbin/pivccu-attach
+fi
+if [ ! -e /usr/sbin/pivccu-info ]; then
+  ln -s /var/lib/piVCCU/pivccu-info.sh /usr/sbin/pivccu-info
+fi
+if [ ! -e /usr/sbin/pivccu-device ]; then
+  ln -s /var/lib/piVCCU/pivccu-device.sh /usr/sbin/pivccu-device
+fi
+
+if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tree/model` == 1 ]; then
+  if ! cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
+    echo "WARNING: Hardware UART is not assigned to GPIO pins."
+  fi
+fi
+
+if [ ! -e /sys/devices/virtual/raw-uart ]; then
+  echo "WARNING: Could not locate raw uart interface. Are the kernel modules and the device tree overlays installed?"
+fi
+
+mount --bind /dev /var/lib/piVCCU/rootfs/dev
+BOARD_SERIAL=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5`
+umount /var/lib/piVCCU/rootfs/dev
+if [ -z "$BOARD_SERIAL" ]; then
+  echo "WARNING: Radio module was not detected."
+fi
+
+BRIDGE=`brctl show | sed -n 2p | awk '{print $1}'`
+if [ -z "$BRIDGE" ]; then
+  echo "WARNING: No network bridge could be detected."
+fi
+
+systemctl enable pivccu.service
+systemctl start pivccu.service || true
+
+sed -i 's/alexreinert.github.io/www.pivccu.de/g' /etc/apt/sources.list
+sed -i 's/http:\/\/www.pivccu.de/https:\/\/www.pivccu.de/g' /etc/apt/sources.list
+for file in `find /etc/apt/sources.list.d/*.list -type f 2>/dev/null`; do
+  sed -i 's/alexreinert.github.io/www.pivccu.de/g' $file
+  sed -i 's/http:\/\/www.pivccu.de/https:\/\/www.pivccu.de/g' $file
+done

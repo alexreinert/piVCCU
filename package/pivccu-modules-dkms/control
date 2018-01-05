@@ -1,0 +1,13 @@
+Package: pivccu-modules-dkms
+Version: {PKG_VERSION}
+Architecture: armhf
+Maintainer: Alexander Reinert <alex@areinert.de>
+Provides: pivccu-kernel-modules
+Pre-Depends: dkms, build-essential
+Recommends: pivccu-devicetree
+Section: kernel
+Priority: extra
+Homepage: https://github.com/alexreinert/piVCCU
+Description: DKMS package for kernel modules needed for Homematic
+  This package contains the a DKMS package for kernel needed for Homematic.
+

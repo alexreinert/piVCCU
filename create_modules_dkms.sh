@@ -42,76 +42,10 @@ mkdir -p $TARGET_DIR/var/lib/piVCCU/dkms
 cp -p $CURRENT_DIR/pivccu/dkms/*.sh $TARGET_DIR/var/lib/piVCCU/dkms
 
 mkdir -p $TARGET_DIR/DEBIAN
-
-cat <<EOT >> $TARGET_DIR/DEBIAN/control
-Package: pivccu-modules-dkms
-Version: $PKG_VERSION
-Architecture: armhf
-Maintainer: Alexander Reinert <alex@areinert.de>
-Provides: pivccu-kernel-modules
-Pre-Depends: dkms, build-essential
-Recommends: pivccu-devicetree
-Section: kernel
-Priority: extra
-Homepage: https://github.com/alexreinert/piVCCU
-Description: DKMS package for kernel modules needed for Homematic
-  This package contains the a DKMS package for kernel needed for Homematic.
-EOT
-
-echo /lib/systemd/system/pivccu-dkms.service >> $TARGET_DIR/DEBIAN/conffiles
-
-for file in preinst postinst prerm postrm; do
-  echo "#!/bin/sh" > $TARGET_DIR/DEBIAN/$file
-  chmod 755 $TARGET_DIR/DEBIAN/$file
+cp -p $CURRENT_DIR/package/pivccu-modules-dkms/* $TARGET_DIR/DEBIAN
+for file in $TARGET_DIR/DEBIAN/*; do
+  sed -i "s/{PKG_VERSION}/$PKG_VERSION/g" $file
 done
-
-cat <<EOF >> $TARGET_DIR/DEBIAN/postinst
-set -e
-
-systemctl enable pivccu-dkms.service
-
-DKMS_NAME=pivccu
-DKMS_PACKAGE_NAME=\$DKMS_NAME-dkms
-DKMS_VERSION=$PKG_VERSION
-
-postinst_found=0
-
-case "\$1" in
-        configure)
-                for DKMS_POSTINST in /usr/lib/dkms/common.postinst /usr/share/\$DKMS_PACKAGE_NAME/postinst; do
-                        if [ -f \$DKMS_POSTINST ]; then
-                                \$DKMS_POSTINST \$DKMS_NAME \$DKMS_VERSION /usr/share/\$DKMS_PACKAGE_NAME "" \$2
-                                postinst_found=1
-                                break
-                        fi
-                done
-                if [ "\$postinst_found" -eq 0 ]; then
-                        echo "ERROR: DKMS version is too old and \$DKMS_PACKAGE_NAME was not"
-                        echo "built with legacy DKMS support."
-                        echo "You must either rebuild \$DKMS_PACKAGE_NAME with legacy postinst"
-                        echo "support or upgrade DKMS to a more current version."
-                        exit 1
-                fi
-        ;;
-esac
-EOF
-
-cat <<EOF >> $TARGET_DIR/DEBIAN/prerm
-set -e
-
-systemctl disable pivccu-dkms.service
-
-DKMS_NAME=pivccu
-DKMS_VERSION=$PKG_VERSION
-
-case "\$1" in
-    remove|upgrade|deconfigure)
-      if [  "\$(dkms status -m \$DKMS_NAME -v \$DKMS_VERSION)" ]; then
-         dkms remove -m \$DKMS_NAME -v \$DKMS_VERSION --all
-      fi
-    ;;
-esac
-EOF
 
 cd $WORK_DIR
 

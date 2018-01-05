@@ -1,0 +1,12 @@
+Package: pivccu
+Version: {PKG_VERSION}
+Architecture: armhf
+Maintainer: Alexander Reinert <alex@areinert.de>
+Depends: pivccu-kernel-modules
+Pre-Depends: lxc, bridge-utils, systemd
+Section: misc
+Priority: extra
+Homepage: https://github.com/alexreinert/piVCCU
+Description: piVCCU - Homematic CCU LXC container
+  This package contains piVCCU - a Homematic CCU LXC container
+
