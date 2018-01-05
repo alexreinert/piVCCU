@@ -1,0 +1,29 @@
+Template: pivccu/has_backup
+Type: boolean
+Description: 
+ A new CCU firmware version is to be installed.
+ .
+ It is recommended that you create a backup before installing a new CCU firmware version.
+ .
+ Do you have a backup?
+
+Template: pivccu/err_no_backup
+Type: error
+Description: The installation will be canceled.
+
+Template: pivccu/warn_gpio_uart_not_assigned
+Type: error
+Description: WARNING: Hardware UART is not assigned to GPIO pins.
+
+Template: pivccu/warn_raw_uart_not_found
+Type: error
+Description: WARNING: Could not locate raw uart interface. Are the kernel modules and the device tree overlays installed?
+
+Template: pivccu/warn_no_radio_module_found
+Type: error
+Description: WARNING: Radio module was not detected.
+
+Template: pivccu/warn_no_bridge_found
+Type: error
+Description: WARNING: No Network bridge could be detected.
+
