@@ -1,3 +1,4 @@
 #!/bin/sh
 depmod -a {KERNEL_RELEASE}
+sed -i /boot/config.txt -e '/dtoverlay=pivccu-raspberrypi/d'
 

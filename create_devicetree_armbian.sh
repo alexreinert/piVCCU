@@ -1,5 +1,5 @@
 #!/bin/bash
-PKG_BUILD=6
+PKG_BUILD=7
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -13,12 +13,13 @@ cd $WORK_DIR
 mkdir -p $TARGET_DIR/var/lib/piVCCU/dts
 
 cp $CURRENT_DIR/dts/armbian/* $TARGET_DIR/var/lib/piVCCU/dts
+cp $CURRENT_DIR/dts/*.dts.include $TARGET_DIR/var/lib/piVCCU/dts
 
 mkdir -p $TARGET_DIR/boot/overlay-user
 
 cd $CURRENT_DIR/dts
 for dts in $(find *.dts -type f); do
-  dtc -@ -I dts -O dtb -o $TARGET_DIR/boot/overlay-user/${dts%.dts}.dtbo $dts
+  dtc -@ -I dts -O dtb -W no-unit_address_vs_reg -o $TARGET_DIR/boot/overlay-user/${dts%.dts}.dtbo $dts
 done
 
 mkdir -p $TARGET_DIR/etc/apt/apt.conf.d

@@ -1,9 +1,12 @@
 #!/bin/sh
 depmod -a {KERNEL_RELEASE}
 
-if [ -f /usr/share/rpikernelhack/overlays/pivccu-bcm2835.dtbo ]; then
-  rm -f /boot/overlays/pivccu-bcm2835.dtbo
-  dpkg-divert --package rpikernelhack --remove --rename /boot/overlays/pivccu-bcm2835.dtbo
+if [ -f /usr/share/rpikernelhack/overlays/pivccu-raspberrypi.dtbo ]; then
+  rm -f /boot/overlays/pivccu-raspberrypi.dtbo
+  dpkg-divert --package rpikernelhack --remove --rename /boot/overlays/pivccu-raspberrypi.dtbo
   sync
 fi
+
+sed -i /boot/config.txt -e '/dtoverlay=pivccu-raspberrypi/d'
+echo "dtoverlay=pivccu-raspberrypi" >> /boot/config.txt
 

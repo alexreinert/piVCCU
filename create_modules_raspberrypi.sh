@@ -50,7 +50,7 @@ cp $MOD_DIR/*.ko $TARGET_DIR/lib/modules/$KERNEL_RELEASE/kernel/drivers/pivccu
 mkdir -p $TARGET_DIR/boot/overlays
 
 cd $CURRENT_DIR/dts
-dtc -@ -I dts -O dtb -o $TARGET_DIR/boot/overlays/pivccu-bcm2835.dtbo pivccu-bcm2835.dts
+dtc -@ -I dts -O dtb -W no-unit_address_vs_reg -o $TARGET_DIR/boot/overlays/pivccu-raspberrypi.dtbo pivccu-raspberrypi.dts
 
 mkdir -p $TARGET_DIR/DEBIAN
 cp -p $CURRENT_DIR/package/pivccu-modules-raspberrypi/* $TARGET_DIR/DEBIAN

@@ -1,11 +1,11 @@
 ### Prequisites
 
-* Orange Pi One, Orange Pi 2, Orange Pi Lite, Orange Pi Plus, Orange Pi Plus 2, Orange Pi Plus 2E, Orange Pi PC, Orane Pi PC Plus
+* Orange Pi Zero (256 and 512 MB version), Orange Pi One, Orange Pi 2, Orange Pi Lite, Orange Pi Plus, Orange Pi Plus 2, Orange Pi Plus 2E, Orange Pi PC, Orange Pi PC Plus, Orange Pi R1
 * Armbian using Mainline kernel
 * Properly installed HM-MOD-RPI-PCB
 
 ### :warning: WARNING
-The Orange Pi Plus 2E, the Orange Pi One and the Orange Pi Lite have a rotated GPIO socket.
+The Orange Pi Zero, the Orange Pi Plus 2E, the Orange Pi One, the Orange Pi Lite and the Orange Pi R1 have a rotated GPIO socket.
 A normal soldered radio module should lead away from the board.
 
 Please ensure for all models, that you attach the radio module to the right pins in the right direction.
@@ -69,7 +69,6 @@ Please ensure for all models, that you attach the radio module to the right pins
       ```
    * You can use an static IP address, too. In that case use instead:
       ```bash
-      sudo apt remove dhcpcd5
       sudo apt install bridge-utils
       sudo bash -c 'cat << EOT > /etc/network/interfaces
       source-directory /etc/network/interfaces.d

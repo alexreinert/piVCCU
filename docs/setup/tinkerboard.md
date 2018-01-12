@@ -63,7 +63,6 @@
       ```
    * You can use an static IP address, too. In that case use instead:
       ```bash
-      sudo apt remove dhcpcd5
       sudo apt install bridge-utils
       sudo bash -c 'cat << EOT > /etc/network/interfaces
       source-directory /etc/network/interfaces.d
