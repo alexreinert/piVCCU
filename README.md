@@ -49,6 +49,7 @@ sudo apt update && sudo apt upgrade
 * RaspberryMatic
    1. Restore a normal system backup using the CCU web interface
    2. Reinstall all addons using the CCU web interface
+   3. If you previously used YAHM, please follow the instructions for removing YAHM specific configuration stuff below
 
 * YAHM
    1. Create full backup of your SD card
@@ -87,7 +88,7 @@ sudo apt update && sudo apt upgrade
    7. If you used YAHM without HmIP (and only then), remove the HmIP keys to avoid migrating duplicate keys (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
       ```bash
       sudo systemctl stop pivccu.service
-      rm -rf /var/lib/piVCCU/userfs/etc/config/crRFD/data/*
+      sudo rm -rf /var/lib/piVCCU/userfs/etc/config/crRFD/data/*
       sudo systemctl start pivccu.service
       ```
    8. If you used YAHM without radio module, you should check your interface assignments of the LAN Gateways in the control panel
