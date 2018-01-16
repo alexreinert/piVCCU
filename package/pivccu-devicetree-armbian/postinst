@@ -1,3 +1,14 @@
 #!/bin/sh
-/var/lib/piVCCU/dts/patch_dts.sh
+
+set -e
+
+case "$1" in
+  configure)
+    /var/lib/piVCCU/dts/patch_dts.sh
+    ;;
+
+  abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+esac
+
 

@@ -1,12 +1,29 @@
-#!/bin/sh
-depmod -a {KERNEL_RELEASE}
+#!/bin/bash
+. /usr/share/debconf/confmodule
 
-if [ -f /usr/share/rpikernelhack/overlays/pivccu-raspberrypi.dtbo ]; then
-  rm -f /boot/overlays/pivccu-raspberrypi.dtbo
-  dpkg-divert --package rpikernelhack --remove --rename /boot/overlays/pivccu-raspberrypi.dtbo
-  sync
-fi
+set -e
 
-sed -i /boot/config.txt -e '/dtoverlay=pivccu-raspberrypi/d'
-echo "dtoverlay=pivccu-raspberrypi" >> /boot/config.txt
+case "$1" in
+  configure)
+    depmod -a {KERNEL_RELEASE}
+
+    if [ -f /usr/share/rpikernelhack/overlays/pivccu-raspberrypi.dtbo ]; then
+      rm -f /boot/overlays/pivccu-raspberrypi.dtbo
+      dpkg-divert --package rpikernelhack --remove --rename /boot/overlays/pivccu-raspberrypi.dtbo
+      sync
+    fi
+
+    sed -i /boot/config.txt -e '/dtoverlay=pivccu-raspberrypi/d'
+    echo "dtoverlay=pivccu-raspberrypi" >> /boot/config.txt
+
+    if [ -z "$2" ]; then
+      db_fset pivccu/reboot_required seen false
+      db_input medium pivccu/reboot_required || true
+      db_go
+    fi
+    ;;
+
+  abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+esac
 

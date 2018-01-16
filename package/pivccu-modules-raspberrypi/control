@@ -4,6 +4,7 @@ Architecture: armhf
 Maintainer: Alexander Reinert <alex@areinert.de>
 Provides: pivccu-kernel-modules
 Depends: raspberrypi-kernel (= {KERNEL_TAG})
+Pre-Depends: debconf (>= 0.5) | debconf-2.0
 Section: kernel
 Priority: extra
 Homepage: https://github.com/alexreinert/piVCCU

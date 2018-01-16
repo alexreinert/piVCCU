@@ -1,3 +1,13 @@
-#!/bin/sh
-dpkg-divert --package rpikernelhack --divert /usr/share/rpikernelhack/overlays/pivccu-raspberrypi.dtbo /boot/overlays/pivccu-raspberrypi.dtbo
+#!/bin/bash
+
+set -e
+
+case "$1" in
+  install|upgrade)
+    dpkg-divert --package rpikernelhack --divert /usr/share/rpikernelhack/overlays/pivccu-raspberrypi.dtbo /boot/overlays/pivccu-raspberrypi.dtbo
+    ;;
+
+  abort-upgrade)
+    ;;
+esac
 

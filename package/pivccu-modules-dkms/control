@@ -3,7 +3,7 @@ Version: {PKG_VERSION}
 Architecture: armhf
 Maintainer: Alexander Reinert <alex@areinert.de>
 Provides: pivccu-kernel-modules
-Pre-Depends: dkms, build-essential
+Pre-Depends: dkms, build-essential, debconf (>= 0.5) | debconf-2.0
 Recommends: pivccu-devicetree
 Section: kernel
 Priority: extra

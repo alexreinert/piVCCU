@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 . /usr/share/debconf/confmodule
 
@@ -20,6 +20,9 @@ case "$1" in
         fi
       fi
     fi
+    ;;
+
+  abort-upgrade)
     ;;
 esac
 
