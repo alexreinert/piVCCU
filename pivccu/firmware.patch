@@ -348,7 +348,7 @@ diff -ruN fw.orig/firmware/fwmap fw.patched/firmware/fwmap
  ARM7                    hss_comm.enc                                    0.056
 -CCU2                    coprocessor_update.eq3                          2.8.6          # Dual CoProzessor CCU2  
 +#CCU2                    coprocessor_update.eq3                          2.8.6          # Dual CoProzessor CCU2  
-+CCU2                    dualcopro_si1002_update_blhm.eq3                2.8.5          # Dual CoProzessor CCU2  
++CCU2                    dualcopro_si1002_update_blhm.eq3                2.8.6          # Dual CoProzessor CCU2  
  # CCU2                    coprocessor_update_hm_only.eq3                1.4.1          # HM only CoProzessor CCU2  
  CCU2-RFLGW				coprocessor_update_hm_only.eq3					1.4.1          # HM only CoProzessor CCU2 for HomeMatic RF Lan Gateway
  
