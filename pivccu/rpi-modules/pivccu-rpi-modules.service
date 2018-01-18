@@ -1,0 +1,13 @@
+[Unit]
+Description=piVCCU RPi Kernel loader
+Before=pivccu-dkms.service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/var/lib/piVCCU/rpi-modules/ensure_headers.sh
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target
+

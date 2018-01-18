@@ -5,8 +5,6 @@ set -e
 
 case "$1" in
   configure)
-    depmod -a {KERNEL_RELEASE}
-
     if [ -f /usr/share/rpikernelhack/overlays/pivccu-raspberrypi.dtbo ]; then
       rm -f /boot/overlays/pivccu-raspberrypi.dtbo
       dpkg-divert --package rpikernelhack --remove --rename /boot/overlays/pivccu-raspberrypi.dtbo
@@ -15,6 +13,8 @@ case "$1" in
 
     sed -i /boot/config.txt -e '/dtoverlay=pivccu-raspberrypi/d'
     echo "dtoverlay=pivccu-raspberrypi" >> /boot/config.txt
+
+    systemctl enable pivccu-rpi-modules.service
 
     if [ -z "$2" ]; then
       db_fset pivccu/reboot_required seen false

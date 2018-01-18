@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+  remove|upgrade|deconfigure)
+    systemctl disable pivccu-rpi-modules.service
+    ;;
+
+  failed-upgrade)
+    ;;
+esac

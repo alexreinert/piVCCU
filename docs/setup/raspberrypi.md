@@ -108,6 +108,10 @@
    sudo pivccu-info
    ```
 
+### Using rpi-update
+The stable kernel for the Raspberry Pi is distributed via apt. Normally you should use this kernel. But still there are some reasons to use rpi-update to install the latest (unstable) kernel.
+Since version 2.0.7 the pivccu-modules-raspberrypi does support kernels installed by rpi-update. Be aware, that piVCCU start after the reboot with a new kernel will take approx. 15 minutes.
+
 ### Migrating from custom kernel to original Raspbian kernel with custom modules and device tree overlay
 0. Create full backup of your SD card
 
