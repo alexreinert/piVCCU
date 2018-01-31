@@ -3,6 +3,7 @@ obj-m += plat_eq3ccu2.o
 obj-m += generic_raw_uart.o
 obj-m += pl011_raw_uart.o
 obj-m += dw_apb_raw_uart.o
+obj-m += meson_raw_uart.o
 
 ifeq ($(KERNELRELEASE),)
   KERNELRELEASE := $(shell uname -r)

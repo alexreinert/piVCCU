@@ -13,7 +13,7 @@
 
 2. Add the package repository
    ```bash
-   sudo bash -c 'echo "deb https://www.pivccu.de/piVCCU stable main" >> /etc/apt/sources.list.d/pivccu.list'
+   sudo bash -c 'echo "deb https://www.pivccu.de/piVCCU stable main" > /etc/apt/sources.list.d/pivccu.list'
    sudo apt update
    ```
    Instead of `stable` you can also use the `testing` tree, but be aware testing sometimes means not that stable.

@@ -56,22 +56,22 @@ Because of that, you need a bridge without a physical interface and to use port 
    HOST_IP=192.168.253.1
    CCU_IP=192.168.253.2
 
-   if [ "$IFACE" = "$BRIDGE" ]; then
+   if [ "\$IFACE" = "\$BRIDGE" ]; then
      echo 1 > /proc/sys/net/ipv4/ip_forward
-     iptables -A FORWARD -i $IFACE -s ${HOST_IP}/24 -m conntrack --ctstate NEW -j ACCEPT
+     iptables -A FORWARD -i $IFACE -s \$HOST_IP/24 -m conntrack --ctstate NEW -j ACCEPT
      iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
      iptables -A POSTROUTING -t nat -j MASQUERADE
 
-     iptables -t nat -A PREROUTING -p tcp -i $HOST_IF --dport 80 -j DNAT --to-destination ${CCU_IP}:80
-     iptables -t nat -A PREROUTING -p tcp -i $HOST_IF --dport 1999 -j DNAT --to-destination ${CCU_IP}:1999
-     iptables -t nat -A PREROUTING -p tcp -i $HOST_IF --dport 2000 -j DNAT --to-destination ${CCU_IP}:2000
-     iptables -t nat -A PREROUTING -p tcp -i $HOST_IF --dport 2001 -j DNAT --to-destination ${CCU_IP}:2001
-     iptables -t nat -A PREROUTING -p tcp -i $HOST_IF --dport 2002 -j DNAT --to-destination ${CCU_IP}:2002
-     iptables -t nat -A PREROUTING -p tcp -i $HOST_IF --dport 2010 -j DNAT --to-destination ${CCU_IP}:2010
-     iptables -t nat -A PREROUTING -p tcp -i $HOST_IF --dport 8181 -j DNAT --to-destination ${CCU_IP}:8181
-     iptables -t nat -A PREROUTING -p tcp -i $HOST_IF --dport 8183 -j DNAT --to-destination ${CCU_IP}:8183
-     iptables -t nat -A PREROUTING -p tcp -i $HOST_IF --dport 8700 -j DNAT --to-destination ${CCU_IP}:8700
-     iptables -t nat -A PREROUTING -p tcp -i $HOST_IF --dport 8701 -j DNAT --to-destination ${CCU_IP}:8701
+     iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 80 -j DNAT --to-destination \$CCU_IP:80
+     iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 1999 -j DNAT --to-destination \$CCU_IP:1999
+     iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 2000 -j DNAT --to-destination \$CCU_IP:2000
+     iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 2001 -j DNAT --to-destination \$CCU_IP:2001
+     iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 2002 -j DNAT --to-destination \$CCU_IP:2002
+     iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 2010 -j DNAT --to-destination \$CCU_IP:2010
+     iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 8181 -j DNAT --to-destination \$CCU_IP:8181
+     iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 8183 -j DNAT --to-destination \$CCU_IP:8183
+     iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 8700 -j DNAT --to-destination \$CCU_IP:8700
+     iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 8701 -j DNAT --to-destination \$CCU_IP:8701
    fi
    EOT'
    sudo chmod +x /etc/network/if-up.d/pivccu

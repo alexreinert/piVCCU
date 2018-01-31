@@ -50,8 +50,8 @@
 #define IOCTL_MAGIC 'u'
 #define IOCTL_MAXNR 2
 #define MAX_CONNECTIONS 3
-#define IOCTL_IOCSPRIORITY _IOW(IOCTL_MAGIC,  1, unsigned long) /* Set the priority for the current channel */
-#define IOCTL_IOCGPRIORITY _IOR(IOCTL_MAGIC,  2, unsigned long) /* Get the priority for the current channel */
+#define IOCTL_IOCSPRIORITY _IOW(IOCTL_MAGIC,  1, uint32_t) /* Set the priority for the current channel */
+#define IOCTL_IOCGPRIORITY _IOR(IOCTL_MAGIC,  2, uint32_t) /* Get the priority for the current channel */
 
 struct generic_raw_uart_instance
 {
@@ -107,6 +107,7 @@ static struct file_operations generic_raw_uart_fops =
   .release = generic_raw_uart_close,
   .poll = generic_raw_uart_poll,
   .unlocked_ioctl = generic_raw_uart_ioctl,
+  .compat_ioctl = generic_raw_uart_ioctl,
 };
 
 #ifdef PROC_DEBUG
@@ -788,7 +789,7 @@ module_exit(generic_raw_uart_exit);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.1");
+MODULE_VERSION("1.2");
 MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

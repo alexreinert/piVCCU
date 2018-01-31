@@ -1,6 +1,6 @@
 Package: pivccu-devicetree-armbian
 Version: {PKG_VERSION}
-Architecture: armhf
+Architecture: all
 Maintainer: Alexander Reinert <alex@areinert.de>
 Provides: pivccu-devicetree
 Section: misc

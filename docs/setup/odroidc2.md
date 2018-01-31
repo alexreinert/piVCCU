@@ -1,14 +1,8 @@
 ### Prequisites
 
-* Orange Pi Zero (256 and 512 MB version), Orange Pi One, Orange Pi 2, Orange Pi Lite, Orange Pi Plus, Orange Pi Plus 2, Orange Pi Plus 2E, Orange Pi PC, Orange Pi PC Plus, Orange Pi R1
+* Odroid C2
 * Armbian using Mainline kernel
 * Properly installed HM-MOD-RPI-PCB
-
-### :warning: WARNING
-The Orange Pi Zero, the Orange Pi Plus 2E, the Orange Pi One, the Orange Pi Lite and the Orange Pi R1 have a rotated GPIO socket.
-A normal soldered radio module should lead away from the board.
-
-Please ensure for all models, that you attach the radio module to the right pins in the right direction.
 
 ### Installation
 0. Create full backup of your SD card
@@ -26,13 +20,13 @@ Please ensure for all models, that you attach the radio module to the right pins
 
 3. Install the kernel headers
    ```bash
-   sudo apt install linux-headers-next-sunxi
+   sudo apt install linux-headers-next-odroidc2
    ```
 
 4. Verify, that your kernel image and your kernel headers at the same version
    ```bash
-   sudo dpkg -s linux-headers-next-sunxi | grep Source
-   sudo dpkg -s linux-image-next-sunxi | grep Source
+   sudo dpkg -s linux-headers-next-odroidc2 | grep Source
+   sudo dpkg -s linux-image-next-odroidc2 | grep Source
    ```
 
 5. Install the neccessary device tree patches
@@ -87,7 +81,6 @@ Please ensure for all models, that you attach the radio module to the right pins
         dns-nameservers <dns1> <dns2>
       EOT'
       ```
-   * To use Wireless LAN, please take a look [here](wlan.md)
 
 8. Reboot the system
    ```bash

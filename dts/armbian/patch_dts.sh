@@ -13,8 +13,8 @@ case "$OVERLAY_MODE" in
       echo "piVCCU: Patching DTB $FDT_FILE"
       cp /boot/dtb/$FDT_FILE /boot/dtb/$FDT_FILE.bak
       cat $INCLUDE_FILE >> $TMP_DIR/devicetree.dts
-      dtc -I dts -O dtb -q -o $TMP_DIR/$FDT_FILE $TMP_DIR/devicetree.dts
-      cp $TMP_DIR/$FDT_FILE /boot/dtb
+      dtc -I dts -O dtb -q -o $TMP_DIR/devicetree.dtb $TMP_DIR/devicetree.dts
+      cp $TMP_DIR/devicetree.dtb /boot/dtb/$FDT_FILE
     else
       echo "piVCCU: DTB $FDT_FILE was already patched"
     fi

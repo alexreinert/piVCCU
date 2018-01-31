@@ -10,10 +10,16 @@ if [ -e /proc/device-tree/compatible ]; then
         OVERLAY_MODE='overlay'
         OVERLAY_FILE='pivccu-orangepi-h2plus.dtbo'
         break
-      ;;
+        ;;
       rockchip,rk3288-miniarm|asus,rk3288-tinker)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/tinkerboard.dts.include'
+        break
+        ;;
+      hardkernel,odroid-c2)
+        OVERLAY_MODE='patch'
+        INCLUDE_FILE='/var/lib/piVCCU/dts/odroidc2.dts.include'
+        FDT_FILE=amlogic/meson-gxbb-odroidc2.dtb
         break
         ;;
     esac
@@ -35,8 +41,10 @@ fi
 
 case "$OVERLAY_MODE" in
   patch)
-    if [ -e /boot/armbianEnv.txt ]; then
-      FDT_FILE=`grep -e '^fdt_file=' /boot/armbianEnv.txt | cut -d= -f2`
+    if [ -z "$FDT_FILE" ]; then
+      if [ -e /boot/armbianEnv.txt ]; then
+        FDT_FILE=`grep -e '^fdt_file=' /boot/armbianEnv.txt | cut -d= -f2`
+      fi
     fi
 
     if [ -z "$FDT_FILE" ]; then

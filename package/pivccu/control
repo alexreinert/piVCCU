@@ -1,8 +1,8 @@
 Package: pivccu
 Version: {PKG_VERSION}
-Architecture: armhf
+Architecture: all
 Maintainer: Alexander Reinert <alex@areinert.de>
-Depends: pivccu-kernel-modules
+Depends: pivccu-modules-dkms
 Pre-Depends: lxc, bridge-utils, systemd, debconf (>= 0.5) | debconf-2.0
 Section: misc
 Priority: extra
