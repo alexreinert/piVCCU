@@ -330,7 +330,7 @@ static int dw_apb_raw_uart_probe(struct platform_device *pdev)
     clk_prepare_enable(dw_apb_port->pclk);
   }
 
-  dw_apb_port->rst = devm_reset_control_get(dev, NULL);
+  dw_apb_port->rst = devm_reset_control_get_optional(dev, NULL);
   if (IS_ERR(dw_apb_port->rst)) {
     err = PTR_ERR(dw_apb_port->rst);
     goto failed_get_rst;

@@ -1,0 +1,15 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "allwinner,sun7i-a20";
+    fragment@0 {
+        target = <&uart3>;
+        __overlay__ {
+            status = "okay";
+            compatible = "pivccu,dw_apb";
+            pivccu,gpio_pin = <244>;
+        };
+    };
+};
+
