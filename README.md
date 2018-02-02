@@ -35,6 +35,7 @@ Login to Armbian based images using user 'root' and password '1234'.
 ### Manual installation
 * [Raspberry Pi](docs/setup/raspberrypi.md)
 * [Asus Tinkerboard](docs/setup/tinkerboard.md)
+* [Banana Pi M1](docs/setup/bananapi.md)
 * [Orange Pi](docs/setup/orangepi.md)
 * [Odroid C2](docs/setup/odroidc2.md)
 
@@ -43,6 +44,12 @@ Use the normal apt based update mechanism:
 ```bash
 sudo apt update && sudo apt upgrade
 ```
+
+### Backup
+Starting with version 2.31.25-23 there is the tool pivccu-backup to create CCU2 compatible backups (inside the host).
+Be aware, that this is only a backup of the CCU, no settings of the host are saved.
+
+To restore a backup file use the WebUI of the CCU.
 
 ### Migration from other systems
 * Original CCU2

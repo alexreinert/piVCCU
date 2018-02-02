@@ -10,6 +10,7 @@ case "$1" in
     rm -f /usr/sbin/pivccu-attach
     rm -f /usr/sbin/pivccu-info
     rm -f /usr/sbin/pivccu-device
+    rm -f /usr/sbin/pivccu-backup
     ;;
 
   failed-upgrade)

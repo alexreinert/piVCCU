@@ -14,6 +14,9 @@ case "$1" in
     if [ ! -e /usr/sbin/pivccu-device ]; then
       ln -s /var/lib/piVCCU/pivccu-device.sh /usr/sbin/pivccu-device
     fi
+    if [ ! -e /usr/sbin/pivccu-backup ]; then
+      ln -s /var/lib/piVCCU/pivccu-backup.sh /usr/sbin/pivccu-backup
+    fi
 
     if [ ! -e /pivccu.createimage ]; then
       if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tree/model` == 1 ]; then
