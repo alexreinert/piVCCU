@@ -1,5 +1,11 @@
-if [ -e /proc/device-tree/compatible ]; then
-  for str in `strings /proc/device-tree/compatible`; do
+if [ ! -z "$1" ]; then
+  DEV_TREE_COMPATIBLE="$1"
+elif [ -e /proc/device-tree/compatible ]; then
+  DEV_TREE_COMPATIBLE=$(strings /proc/device-tree/compatible)
+fi
+
+if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
+  for str in $DEV_TREE_COMPATIBLE; do
     case $str in
       xunlong,orangepi-one|xunlong,orangepi-lite|xunlong,orangepi-plus|xunlong,orangepi-plus2e|xunlong,orangepi-2|xunlong,orangepi-pc|xunlong,orangepi-pc-plus)
         OVERLAY_MODE='overlay'
@@ -28,19 +34,6 @@ if [ -e /proc/device-tree/compatible ]; then
         ;;
     esac
   done
-fi
-
-if [ ! -z "$1" ]; then
-  OVERLAY_MODE="$1"
-
-  case "$OVERLAY_MODE" in
-    patch)
-      INCLUDE_FILE="$2"
-      ;;
-    overlay)
-      OVERLAY_FILE="$2"
-      ;;
-  esac
 fi
 
 case "$OVERLAY_MODE" in

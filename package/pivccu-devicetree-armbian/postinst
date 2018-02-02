@@ -4,7 +4,9 @@ set -e
 
 case "$1" in
   configure)
-    /var/lib/piVCCU/dts/patch_dts.sh
+    if [ ! -e /pivccu.createimage ]; then
+      /var/lib/piVCCU/dts/patch_dts.sh
+    fi
     ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)
