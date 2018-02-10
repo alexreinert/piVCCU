@@ -331,11 +331,12 @@ static int dw_apb_raw_uart_probe(struct platform_device *pdev)
   }
 
   dw_apb_port->rst = devm_reset_control_get_optional(dev, NULL);
-  if (IS_ERR(dw_apb_port->rst)) {
-    err = PTR_ERR(dw_apb_port->rst);
+  if (IS_ERR(dw_apb_port->rst) && PTR_ERR(dw_apb_port->rst) == -EPROBE_DEFER) {
+    err = -EPROBE_DEFER;
     goto failed_get_rst;
   }
-  reset_control_deassert(dw_apb_port->rst);
+  if (!IS_ERR(dw_apb_port->rst))
+    reset_control_deassert(dw_apb_port->rst);
 
   err = device_property_read_u32(dev, "reg-shift", &val);
   if (!err)
@@ -354,7 +355,8 @@ static int dw_apb_raw_uart_probe(struct platform_device *pdev)
   return 0;
 
 failed_get_rst:
-  reset_control_assert(dw_apb_port->rst);
+  if (!IS_ERR(dw_apb_port->rst))
+    reset_control_assert(dw_apb_port->rst);
 failed_get_pclock:
   clk_disable_unprepare(dw_apb_port->sclk);
 failed_get_clock:
@@ -366,7 +368,8 @@ failed_inst_alloc:
 
 static int dw_apb_raw_uart_remove(struct platform_device *pdev)
 {
-  reset_control_assert(dw_apb_port->rst);
+  if (!IS_ERR(dw_apb_port->rst))
+    reset_control_assert(dw_apb_port->rst);
 
   if (!IS_ERR(dw_apb_port->pclk))
     clk_disable_unprepare(dw_apb_port->pclk);
@@ -386,7 +389,7 @@ module_raw_uart_driver(MODULE_NAME, dw_apb_raw_uart, dw_apb_raw_uart_of_match);
 
 MODULE_ALIAS("platform:dw_apb-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.3");
+MODULE_VERSION("1.4");
 MODULE_DESCRIPTION("dw_apb raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
