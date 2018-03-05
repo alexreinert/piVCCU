@@ -275,22 +275,31 @@ diff -ruN fw.orig/etc/init.d/S50eq3configd fw.patched/etc/init.d/S50eq3configd
  	init
  	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
 diff -ruN fw.orig/etc/init.d/S60multimacd fw.patched/etc/init.d/S60multimacd
---- fw.orig/etc/init.d/S60multimacd	2018-01-09 11:17:52.120855185 +0100
-+++ fw.patched/etc/init.d/S60multimacd	2018-01-09 11:22:24.330632351 +0100
-@@ -10,11 +10,11 @@
- update() {        
- 	if [ ! -e /etc/config/no-coprocessor-update ] ; then
- 		echo "checking if firmware update is needed..."
--		/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u
-+		/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -t HM-MOD-UART
- 		if ! [ $? -eq 0 ] ; then
- 			echo "error while updating coprocessor, recovering..."
- 			avrprog --bo
--			/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f
-+			/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f -t HM-MOD-UART
- 			sleep 1
- 		else
- 			echo "done"
+--- fw.orig/etc/init.d/S60multimacd     2018-01-09 11:17:52.120855185 +0100
++++ fw.patched/etc/init.d/S60multimacd  2018-03-05 11:08:57.866631972 +0100
+@@ -10,11 +10,10 @@
+ update() {
+        if [ ! -e /etc/config/no-coprocessor-update ] ; then
+                echo "checking if firmware update is needed..."
+-               /bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u
++               /bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -t HM-MOD-UART
+                if ! [ $? -eq 0 ] ; then
+                        echo "error while updating coprocessor, recovering..."
+-                       avrprog --bo
+-                       /bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f
++                       /bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f -t HM-MOD-UART
+                        sleep 1
+                else
+                        echo "done"
+@@ -81,8 +80,6 @@
+        echo "Starting multimacd: "
+        init
+        if [ ! -e $PIDFILE ] ; then
+-               check_bo
+-                check_rf_address
+                update
+        else
+                echo "Skipping coprocessor update because multimacd is running."
 diff -ruN fw.orig/etc/init.d/S99eQ3SystemStarted fw.patched/etc/init.d/S99eQ3SystemStarted
 --- fw.orig/etc/init.d/S99eQ3SystemStarted	2018-01-09 11:17:52.120855185 +0100
 +++ fw.patched/etc/init.d/S99eQ3SystemStarted	2018-01-09 11:22:24.330632351 +0100
