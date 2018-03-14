@@ -2,7 +2,6 @@
 
 * Raspberry Pi 2 or 3
 * Raspbian Stretch or Jessie
-* Properly installed HM-MOD-RPI-PCB
 
 ### Installation
 0. Create full backup of your SD card
@@ -23,7 +22,7 @@
    sudo apt install pivccu-modules-raspberrypi
    ```
 
-4. Enable UART GPIO pins (only on Raspberry Pi 3)
+4. Enable UART GPIO pins (only on Raspberry Pi 3) (You can skip this step, if you do not use the HM-MOD-RPI-PCB)
    * Option 1: Disabled bluetooth (prefered)
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
@@ -41,7 +40,7 @@
       EOT'
       ```
 
-5. Disable serial console in command line
+5. Disable serial console in command line (You can skip this step, if you do not use the HM-MOD-RPI-PCB)
    ```bash
    sudo sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
    sudo sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"

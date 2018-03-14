@@ -6,6 +6,11 @@ set -e
 case "$1" in
   purge)
     db_purge
+    rm -f /etc/default/pivccu
+    rm -rf /etc/piVCCU
+    rm -rf /var/lib/piVCCU/rootfs
+    rm -rf /var/lib/piVCCU/userfs
+    rm -rf /var/lib/piVCCU/sdcardfs
     ;;
 
   remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)

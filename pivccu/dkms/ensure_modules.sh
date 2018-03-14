@@ -1,5 +1,5 @@
 #!/bin/bash
-modinfo generic_raw_uart &> /dev/null
+modinfo plat_eq3ccu2 &> /dev/null
 if [ ! $? -eq 0 ]; then
   dpkg-reconfigure pivccu-modules-dkms
   modprobe dw_apb_raw_uart || true

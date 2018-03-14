@@ -1,14 +1,8 @@
 ### Prequisites
 
-* Orange Pi Zero (256 and 512 MB version), Orange Pi One, Orange Pi 2, Orange Pi Lite, Orange Pi Plus, Orange Pi Plus 2, Orange Pi Plus 2E, Orange Pi PC, Orange Pi PC Plus, Orange Pi R1
-* Armbian using Mainline kernel
-* Properly installed HM-MOD-RPI-PCB
-
-### :warning: WARNING
-The Orange Pi Zero, the Orange Pi Plus 2E, the Orange Pi One, the Orange Pi Lite and the Orange Pi R1 have a rotated GPIO socket.
-A normal soldered radio module should lead away from the board.
-
-Please ensure for all models, that you attach the radio module to the right pins in the right direction.
+* Armbian
+* At least kernel 4.4 (Mainline is prefered)
+* The HM-MOD-RPI-PCB only works on supported platforms
 
 ### Installation
 0. Create full backup of your SD card
@@ -24,28 +18,22 @@ Please ensure for all models, that you attach the radio module to the right pins
    ```
    Instead of `stable` you can also use the `testing` tree, but be aware testing sometimes means not that stable.
 
-3. Install the kernel headers
+3. Install the matching kernel headers
    ```bash
-   sudo apt install linux-headers-next-sunxi
+   sudo apt install `dpkg --get-selections | grep 'linux-image-' | grep '\sinstall' | sed -e 's/linux-image-\([a-z-]\+\).*/linux-headers-\1/'`
    ```
 
-4. Verify, that your kernel image and your kernel headers at the same version
-   ```bash
-   sudo dpkg -s linux-headers-next-sunxi | grep Source
-   sudo dpkg -s linux-image-next-sunxi | grep Source
-   ```
-
-5. Install the neccessary device tree patches
+4. Install the neccessary device tree patches (You can skip this step, if you do not use the HM-MOD-RPI-PCB)
    ```bash
    sudo apt install pivccu-devicetree-armbian
    ```
 
-6. Install the neccessary kernel modules for the low level communication with the HM-MOD-RPI-PCB
+5. Install the neccessary kernel modules
    ```bash
    sudo apt install pivccu-modules-dkms
    ```
 
-7. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
+6. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
    * Verify, that *eth0* is the name of your primary network interface:
       ```bash
       sudo ip link show | cut -d' ' -f2 | cut -d: -f1 | grep -e '^e.*'
@@ -89,17 +77,17 @@ Please ensure for all models, that you attach the radio module to the right pins
       ```
    * To use Wireless LAN, please take a look [here](wlan.md)
 
-8. Reboot the system
+7. Reboot the system
    ```bash
    sudo reboot
    ```
 
-9. Install CCU2 container
+8. Install CCU2 container
    ```bash
    sudo apt install pivccu
    ```
 
-10. Start using your new virtualized CCU2, you can get the IP of the container using
+9. Start using your new virtualized CCU2, you can get the IP of the container using
    ```bash
    sudo pivccu-info
    ```

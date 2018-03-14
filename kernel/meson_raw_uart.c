@@ -271,7 +271,9 @@ static inline struct clk *meson_raw_uart_probe_clk(struct device *dev, const cha
   if (ret)
     return ERR_PTR(ret);
 
-  devm_add_action_or_reset(dev, (void(*)(void *))clk_disable_unprepare, clk);
+  ret = devm_add_action(dev, (void(*)(void *))clk_disable_unprepare, clk);
+  if (ret)
+    clk_disable_unprepare(clk);
 
   return clk;
 }
@@ -369,7 +371,7 @@ module_raw_uart_driver(MODULE_NAME, meson_raw_uart, meson_raw_uart_of_match);
 
 MODULE_ALIAS("platform:meson-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.0");
+MODULE_VERSION("1.1");
 MODULE_DESCRIPTION("MESON raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

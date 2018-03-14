@@ -6,16 +6,21 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 * Option to run CCU2 and other software parallel on one device
 * Usage of original CCU2 firmware (and not OCCU)
 * As compatible as possible with original CCU2
-* Full Homematic and Homematic IP support on all supported platforms
+* Full Homematic and Homematic IP support on all supported platforms (if RF hardware supports it)
 * Support for backup/restore between piVCCU and original CCU2 without modification
 * Easy to install and update with apt
 * Support not only on Raspberry
+* Support for HM-MOD-RPI-PCB (HmRF+HmIP), HmIP-RFUSB (HmIP only) and HM-LGW-O-TW-W-EU (HmRF only)
 
 ### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU)
-Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU).
+Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU). Or you can send me a gift from my [Amazon wishlist](https://www.amazon.de/gp/registry/wishlist/3NNUQIQO20AAP/ref=nav_wishlist_lists_1).
 
 ### Prequisites
+* Debian or Ubuntu based distribution
+* armhf or arm64 architecture (x64 is not supported at the moment)
+* At least kernel 4.4
 
+### Prequisites for HM-MOD-RPI-PCB
 * Supported Single Board Computer
   * Raspberry Pi 2 or 3 running Raspbian Jessie or Stretch
   * Asus Tinkerboard running Armbian with Mainline kernel
@@ -23,27 +28,40 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
   * Odroid C2 running Armbian with Mainline kernel (Experimental)
   * Orange Pi Zero, One, 2, Lite, Plus, Plus 2, Plus 2E, PC, PC Plus, R1 running Armbian with Mainline kernel
 
-    :warning: WARNING: Some models of the Orange Pi have a rotated GPIO socket. See [Manual installation instructions](docs/setup/orangepi.md) for more information.
+    :warning: WARNING: Some models of the Orange Pi have a rotated GPIO socket. Please ensure the correct position of Pin 1!
 * Properly installed HM-MOD-RPI-PCB
 
 ### Pre-prepared sd card images
 You can find pre-prepared sd card images [here](https://www.pivccu.de/images).
+The images are configured to use the HM-MOD-RPI-PCB. If you like to use an other radio mode, please see below how to switch it.
 They are identical to the original distribution lite or server images but have piVCCU already installed like it is described below.
 Login to Raspbian based images using user 'pi' and password 'raspberry'.
 Login to Armbian based images using user 'root' and password '1234'.
 
 ### Manual installation
 * [Raspberry Pi](docs/setup/raspberrypi.md)
-* [Asus Tinkerboard](docs/setup/tinkerboard.md)
-* [Banana Pi M1](docs/setup/bananapi.md)
-* [Orange Pi](docs/setup/orangepi.md)
-* [Odroid C2](docs/setup/odroidc2.md)
+* [Armbian](docs/setup/armbian.md)
+* [Other OS](docs/setup/otheros.md) (Experimental)
 
 ### Updating piVCCU to latest version
 Use the normal apt based update mechanism:
 ```bash
 sudo apt update && sudo apt upgrade
 ```
+
+### Supported Radio modes
+* HM-MOD-RPI-PCB
+  * HmRF and HmIP is supported
+  * Works only on Raspbian and Armbian and only on supported hardware platforms
+* HmIP-RFUSB (Experimental)
+  * Only HmIP is supported. You can add support for HmRF using a external HM-LGW-O-TW-W-EU
+* Fake emulation (Experimental)
+  * Software emulation of the HM-MOD-RPI-PCB
+  * You can add support for (real) HmRF using a external HM-LGW-O-TW-W-EU
+* To switch between radio modes use the following command:
+  ```bash
+  sudo dpkg-reconfigure pivccu
+  ```
 
 ### Backup
 Starting with version 2.31.25-23 there is the tool pivccu-backup to create CCU2 compatible backups (inside the host).

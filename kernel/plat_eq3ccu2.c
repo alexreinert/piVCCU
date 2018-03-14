@@ -26,6 +26,8 @@ static char *radio_mac = "";
 static char *board_extended_info = "";
 static short eq3charloop_major = 0;
 static short uart_major = 0;
+static short hmip_major = 0;
+static short hmip_minor = 0;
 
 module_param(board_serial, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 MODULE_PARM_DESC(board_serial, "Board serial number, e.g. MEQ1234567");
@@ -39,6 +41,11 @@ module_param(eq3charloop_major, short, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S
 MODULE_PARM_DESC(eq3charloop_major, "Device major number of eq3_char_loop");
 module_param(uart_major, short, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 MODULE_PARM_DESC(uart_major, "Device major number of raw uart");
+
+module_param(hmip_major, short, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+MODULE_PARM_DESC(hmip_major, "Device major number of HmIP device");
+module_param(hmip_minor, short, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+MODULE_PARM_DESC(hmip_minor, "Device minor number of HmIP device");
 
 static int __init plat_eq3ccu2_init(void)
 {
@@ -55,7 +62,7 @@ module_init(plat_eq3ccu2_init);
 module_exit(plat_eq3ccu2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.1");
+MODULE_VERSION("1.2");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("plat_eq3ccu2 CCU2 emulation module");
 

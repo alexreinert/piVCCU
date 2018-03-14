@@ -4,6 +4,7 @@ obj-m += generic_raw_uart.o
 obj-m += pl011_raw_uart.o
 obj-m += dw_apb_raw_uart.o
 obj-m += meson_raw_uart.o
+obj-m += fake_hmrf.o
 
 ifeq ($(KERNELRELEASE),)
   KERNELRELEASE := $(shell uname -r)

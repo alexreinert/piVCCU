@@ -16,3 +16,5 @@ fi
 # unload kernel modules
 rmmod plat_eq3ccu2 || true
 rmmod eq3_char_loop || true
+rmmod fake_hmrf || true
+

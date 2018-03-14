@@ -1,0 +1,34 @@
+#!/bin/sh
+
+start() {
+  if ! cmp -s /sys/module/plat_eq3ccu2/parameters/hmip_major /sys/module/plat_eq3ccu2/parameters/eq3charloop_major ; then
+    echo "Updating HmIP-RFUSB" | logger -p user.info
+    /opt/jre-1.8.0_121-compact3/bin/java -jar /opt/HmIP/hmip-copro-update.jar -p /dev/ttyS0 -f /firmware/hmip_coprocessor_update-*.eq3 | logger -p user.info
+  fi
+}
+
+stop() {
+  :
+}
+
+restart() {
+  :
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart|reload)
+        restart
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?
+

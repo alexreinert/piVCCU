@@ -2,6 +2,8 @@
 
 EQ3LOOP_MAJOR=`cat /sys/module/plat_eq3ccu2/parameters/eq3charloop_major`
 UART_MAJOR=`cat /sys/module/plat_eq3ccu2/parameters/uart_major`
+HMIP_MAJOR=`cat /sys/module/plat_eq3ccu2/parameters/hmip_major`
+HMIP_MINOR=`cat /sys/module/plat_eq3ccu2/parameters/hmip_minor`
 
 # generate/update dev nodes
 rm -f /dev/eq3loop
@@ -10,7 +12,7 @@ rm -f /dev/mmd_bidcos
 rm -f /dev/mxs_auart_raw.0
 
 mknod -m 666 /dev/eq3loop c $EQ3LOOP_MAJOR 0
-mknod -m 666 /dev/ttyS0 c $EQ3LOOP_MAJOR 1
+mknod -m 666 /dev/ttyS0 c $HMIP_MAJOR $HMIP_MINOR
 mknod -m 666 /dev/mmd_bidcos c $EQ3LOOP_MAJOR 2
 mknod -m 666 /dev/mxs_auart_raw.0 c $UART_MAJOR 0
 

@@ -5,6 +5,11 @@ function showUsage {
   exit 1
 }
 
+if [ $EUID != 0 ]; then
+  echo "Please run as root"
+  exit
+fi
+
 case "$1" in
   add|delete)
     if [ $# -ne 2 ]; then

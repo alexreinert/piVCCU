@@ -1,10 +1,12 @@
 #!/bin/bash
+CONFIGFILE=/etc/default/pivccu
+
 . /usr/share/debconf/confmodule
 
 set -e
 
 case "$1" in
-  configure)
+  configure|reconfigure)
     if [ ! -e /usr/sbin/pivccu-attach ]; then
       ln -s /var/lib/piVCCU/pivccu-attach.sh /usr/sbin/pivccu-attach
     fi
@@ -18,30 +20,69 @@ case "$1" in
       ln -s /var/lib/piVCCU/pivccu-backup.sh /usr/sbin/pivccu-backup
     fi
 
-    if [ ! -e /pivccu.createimage ]; then
-      if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tree/model` == 1 ]; then
-        if ! cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
-          db_input critical pivccu/warn_gpio_uart_not_assigned || true
-        fi
+    if [ "$1" = "reconfigure" ] || [ "${DEBCONF_RECONFIGURE}" = "1" ]; then
+      db_fset pivccu/rf_mode seen false
+      db_input high pivccu/rf_mode || true
+    elif [ -e /pivccu.createimage ]; then
+      db_set pivccu/rf_mode "HM-MOD-RPI-PCB"
+    elif [ ! -z "$2" ]; then
+      db_get pivccu/rf_mode
+      if [ -z "$RET" ]; then
+        db_set pivccu/rf_mode "HM-MOD-RPI-PCB"
       fi
+    else
+      db_input high pivccu/rf_mode || true
+    fi
 
+    db_go || true
+
+    db_get pivccu/rf_mode
+
+    case "$RET" in
+      "HM-MOD-RPI-PCB")
+        PIVCCU_HMRF_MODE="HM-MOD-RPI-PCB"
+        PIVCCU_HMIP_MODE="Multimacd"
+        ;;
+      "HmIP-RFUSB")
+        PIVCCU_HMRF_MODE="Fake-HmRF"
+        PIVCCU_HMIP_MODE="HmIP-RFUSB"
+        ;;
+      "HM-MOD-RPI-PCB+HmIP-RFUSB")
+        PIVCCU_HMRF_MODE="HM-MOD-RPI-PCB"
+        PIVCCU_HMIP_MODE="HmIP-RFUSB"
+        ;;
+      "Fake")
+        PIVCCU_HMRF_MODE="Fake-HmRF"
+        PIVCCU_HMIP_MODE="Multimacd"
+        ;;
+    esac
+
+    test -z "$PIVCCU_HMRF_MODE" || grep -Eq '^ *PIVCCU_HMRF_MODE=' $CONFIGFILE || echo "PIVCCU_HMRF_MODE=" >> $CONFIGFILE
+    test -z "$PIVCCU_HMIP_MODE" || grep -Eq '^ *PIVCCU_HMIP_MODE=' $CONFIGFILE || echo "PIVCCU_HMIP_MODE=" >> $CONFIGFILE
+
+    sed -i $CONFIGFILE -e "s/^ *PIVCCU_HMRF_MODE=.*/PIVCCU_HMRF_MODE=\"$PIVCCU_HMRF_MODE\"/"
+    sed -i $CONFIGFILE -e "s/^ *PIVCCU_HMIP_MODE=.*/PIVCCU_HMIP_MODE=\"$PIVCCU_HMIP_MODE\"/"
+
+    if [ ! -e /pivccu.createimage ]; then 
       if [ -z "$2" ]; then
-        if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tree/model` == 1 ]; then
-          if ! cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
-            db_input critical pivccu/warn_gpio_uart_not_assigned || true
+        if [ "$PIVCCU_HMRF_MODE" == "HM-MOD-RPI-PCB" ]; then
+          if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tree/model` == 1 ]; then
+            if ! cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
+              db_input critical pivccu/warn_gpio_uart_not_assigned || true
+            fi
           fi
-        fi
 
-        if [ ! -e /sys/devices/virtual/raw-uart ]; then
-          db_input critical pivccu/warn_raw_uart_not_found || true
-        else
-          mount --bind /dev /var/lib/piVCCU/rootfs/dev
-          BOARD_SERIAL=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5`
-          umount /var/lib/piVCCU/rootfs/dev
-          if [ -z "$BOARD_SERIAL" ]; then
-            db_input critical pivccu/warn_no_radio_module_found || true
+          if [ ! -e /sys/devices/virtual/raw-uart ]; then
+            db_input critical pivccu/warn_raw_uart_not_found || true
+          else
+            mount --bind /dev /var/lib/piVCCU/rootfs/dev
+            BOARD_SERIAL=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5`
+            umount /var/lib/piVCCU/rootfs/dev
+            if [ -z "$BOARD_SERIAL" ]; then
+              db_input critical pivccu/warn_no_radio_module_found || true
+            fi
           fi
-        fi
+	fi
 
         BRIDGE=`brctl show | sed -n 2p | awk '{print $1}'`
         if [ -z "$BRIDGE" ]; then
@@ -49,9 +90,10 @@ case "$1" in
         fi
 
         db_go
-        db_stop
       fi
     fi
+
+    db_stop
 
     systemctl enable pivccu.service
 

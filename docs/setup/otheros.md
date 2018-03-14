@@ -1,8 +1,9 @@
 ### Prequisites
 
-* Banana Pi M1
-* Armbian using Mainline kernel
-* Properly installed HM-MOD-RPI-PCB
+* Debian or Ubuntu based distribution
+* armhf or arm64 architecture (no x64 at the moment!)
+* At least kernel 4.4 (Mainline is prefered)
+* HM-MOD-RPI-PCB is supported only on Armbian and on supported hardware platforms
 
 ### Installation
 0. Create full backup of your SD card
@@ -18,28 +19,14 @@
    ```
    Instead of `stable` you can also use the `testing` tree, but be aware testing sometimes means not that stable.
 
-3. Install the kernel headers
-   ```bash
-   sudo apt install linux-headers-next-sunxi
-   ```
+3. Install the matching kernel headers, this highly depends on your distribution
 
-4. Verify, that your kernel image and your kernel headers at the same version
-   ```bash
-   sudo dpkg -s linux-headers-next-sunxi | grep Source
-   sudo dpkg -s linux-image-next-sunxi | grep Source
-   ```
-
-5. Install the neccessary device tree patches
-   ```bash
-   sudo apt install pivccu-devicetree-armbian
-   ```
-
-6. Install the neccessary kernel modules for the low level communication with the HM-MOD-RPI-PCB
+4. Install the neccessary kernel modules
    ```bash
    sudo apt install pivccu-modules-dkms
    ```
 
-7. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
+5. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
    * Verify, that *eth0* is the name of your primary network interface:
       ```bash
       sudo ip link show | cut -d' ' -f2 | cut -d: -f1 | grep -e '^e.*'
@@ -83,17 +70,17 @@
       ```
    * To use Wireless LAN, please take a look [here](wlan.md)
 
-8. Reboot the system
+6. Reboot the system
    ```bash
    sudo reboot
    ```
 
-9. Install CCU2 container
+7. Install CCU2 container
    ```bash
    sudo apt install pivccu
    ```
 
-10. Start using your new virtualized CCU2, you can get the IP of the container using
+8. Start using your new virtualized CCU2, you can get the IP of the container using
    ```bash
    sudo pivccu-info
    ```

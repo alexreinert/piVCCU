@@ -2,6 +2,11 @@
 
 set -e
 
+if [ $EUID != 0 ]; then
+  echo "Please run as root"
+  exit
+fi
+
 if [ $# -ne 1 ] || [ ! -d "$1" ]; then
   echo "pivccu-backup <backupdir>"
   exit 1

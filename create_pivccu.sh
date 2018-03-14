@@ -4,7 +4,7 @@ CCU_VERSION=2.31.25
 CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=278"
 CCU_DOWNLOAD_URL="http://www.eq-3.de/Downloads/Software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tgz"
 
-PKG_BUILD=23
+PKG_BUILD=24
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -34,6 +34,9 @@ patch -l -p1 < $CURRENT_DIR/pivccu/firmware.patch
 sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/config/cp_maintenance.cgi
 wget -q -O $CNT_ROOTFS/firmware/dualcopro_si1002_update_blhm.eq3 https://raw.githubusercontent.com/eq-3/occu/abc3d4c8ee7d0ba090407b6b4431aeca42aeb014/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3
 
+wget -q -O $CNT_ROOTFS/firmware/hmip_coprocessor_update-2.8.4.eq3 https://raw.githubusercontent.com/eq-3/occu/eeece8b24acf22d0f227577988e88511e030c807/firmware/HmIP-RFUSB/hmip_coprocessor_update-2.8.4.eq3
+wget -q -O $CNT_ROOTFS/opt/HmIP/hmip-copro-update.jar https://raw.githubusercontent.com/eq-3/occu/eeece8b24acf22d0f227577988e88511e030c807/HMserver/opt/HmIP/hmip-copro-update.jar
+
 rm -rf $CNT_ROOTFS/dev/*
 
 mkdir $CNT_ROOTFS/dev/pts
@@ -52,6 +55,10 @@ mkdir -p $CNT_ROOTFS/media/sd-mmcblk0
 
 mkdir -p $CNT_ROOTFS/etc/piVCCU
 cp -p $CURRENT_DIR/pivccu/container/* $CNT_ROOTFS/etc/piVCCU
+rm -f $CNT_ROOTFS/etc/piVCCU/S60HmIPFirmwareUpdate
+
+mkdir -p $CNT_ROOTFS/etc/init.d
+cp -p $CURRENT_DIR/pivccu/container/S60HmIPFirmwareUpdate $CNT_ROOTFS/etc/init.d
 
 mkdir -p $CNT_ROOT/userfs
 mkdir -p $CNT_ROOT/sdcardfs
@@ -59,6 +66,9 @@ touch $CNT_ROOT/sdcardfs/.initialised
 
 mkdir -p $TARGET_DIR/etc/piVCCU
 cp -p $CURRENT_DIR/pivccu/host/lxc.config $TARGET_DIR/etc/piVCCU
+
+mkdir -p $TARGET_DIR/etc/default
+cp -p $CURRENT_DIR/pivccu/host/default.config $TARGET_DIR/etc/default/pivccu
 
 cp -p $CURRENT_DIR/pivccu/host/*.sh $CNT_ROOT
 
