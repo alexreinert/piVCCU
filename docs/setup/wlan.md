@@ -58,7 +58,7 @@ Because of that, you need a bridge without a physical interface and to use port 
 
    if [ "\$IFACE" = "\$BRIDGE" ]; then
      echo 1 > /proc/sys/net/ipv4/ip_forward
-     iptables -A FORWARD -i $IFACE -s \$HOST_IP/24 -m conntrack --ctstate NEW -j ACCEPT
+     iptables -A FORWARD -i \$IFACE -s \$HOST_IP/24 -m conntrack --ctstate NEW -j ACCEPT
      iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
      iptables -A POSTROUTING -t nat -j MASQUERADE
 
