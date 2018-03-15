@@ -1,6 +1,6 @@
 # piVCCU
 
-piVCCU is a project to install the original Homematic CCU2 firmware inside a virtualized container (lxc) on ARM based single board computers.
+piVCCU is a project to install the original Homematic CCU2 firmware inside a virtualized container (lxc) on ARM based single board computers in conjunction with the HomeMatic wireless module HM-MOD-RPI-PCB.
 
 ### Goals
 * Option to run CCU2 and other software parallel on one device
