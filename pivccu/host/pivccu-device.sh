@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function showUsage {
-  echo "pivccu-device <add|delete|listavailable> [device]"
+  echo "pivccu-device <add|del|listavailable> [device]"
   exit 1
 }
 
@@ -11,7 +11,7 @@ if [ $EUID != 0 ]; then
 fi
 
 case "$1" in
-  add|delete)
+  add|del)
     if [ $# -ne 2 ]; then
       showUsage
     else
@@ -30,8 +30,7 @@ case "$1" in
       devname="$(udevadm info -q name -p $syspath)"
       [[ "$devname" == "bus/"* ]] && continue
 
-      ID_SERIAL=''
-      eval "$(udevadm info -q property --export -p $syspath)"
+      ID_SERIAL=`udevadm info -q property --export -p $syspath | grep "ID_SERIAL=" | sed -e "s/.*='\(.*\)'/\1/"`
       [[ -z "$ID_SERIAL" ]] && continue
 
       echo "/dev/$devname - $ID_SERIAL"
