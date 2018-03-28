@@ -20,7 +20,7 @@
 
 3. Install the matching kernel headers
    ```bash
-   sudo apt install `dpkg --get-selections | grep 'linux-image-' | grep '\sinstall' | sed -e 's/linux-image-\([a-z-]\+\).*/linux-headers-\1/'`
+   sudo apt install `dpkg --get-selections | grep 'linux-image-' | grep '\sinstall' | sed -e 's/linux-image-\([a-z0-9-]\+\).*/linux-headers-\1/'`
    ```
 
 4. Install the neccessary device tree patches (You can skip this step, if you do not use the HM-MOD-RPI-PCB)

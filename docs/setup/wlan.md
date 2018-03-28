@@ -1,7 +1,7 @@
 WLAN is not as stable as a wired network connections, there are connections drops sometimes. Please consider using a wired network connection.
 
 For technical reasons, it is not possible to create a linux network bridge using a WLAN interface.
-Because of that, you need a bridge without a physical interface and to use port forwading to access the virtual CCU. To configure that, you need to do the following steps.
+Because of that, you need a bridge without a physical interface and to use port forwading to access the virtual CCU. To configure that, you need to do the following steps. Do *not* change the IP adresses 192.168.253.x in the commands.
 
 1. Configure Interfaces
    ```bash
