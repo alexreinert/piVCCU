@@ -1,6 +1,6 @@
 diff -ruN fw.orig/etc/fstab fw.patched/etc/fstab
 --- fw.orig/etc/fstab	2018-01-09 11:17:52.124855211 +0100
-+++ fw.patched/etc/fstab	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/etc/fstab	2018-05-09 10:46:29.989955803 +0200
 @@ -1,13 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -17,7 +17,7 @@ diff -ruN fw.orig/etc/fstab fw.patched/etc/fstab
 -ubi1:user	/usr/local	ubifs	defaults,noatime,rw,sync	0 0
 diff -ruN fw.orig/etc/init.d/S00eQ3SystemStart fw.patched/etc/init.d/S00eQ3SystemStart
 --- fw.orig/etc/init.d/S00eQ3SystemStart	2018-01-09 11:17:52.120855185 +0100
-+++ fw.patched/etc/init.d/S00eQ3SystemStart	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/etc/init.d/S00eQ3SystemStart	2018-05-09 10:46:29.989955803 +0200
 @@ -7,17 +7,6 @@
  SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
  
@@ -265,7 +265,7 @@ diff -ruN fw.orig/etc/init.d/S40UsbNetwork fw.patched/etc/init.d/S40UsbNetwork
 -
 diff -ruN fw.orig/etc/init.d/S50eq3configd fw.patched/etc/init.d/S50eq3configd
 --- fw.orig/etc/init.d/S50eq3configd	2018-01-09 11:17:52.120855185 +0100
-+++ fw.patched/etc/init.d/S50eq3configd	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/etc/init.d/S50eq3configd	2018-05-09 10:46:29.989955803 +0200
 @@ -17,6 +17,7 @@
  }
  
@@ -275,34 +275,34 @@ diff -ruN fw.orig/etc/init.d/S50eq3configd fw.patched/etc/init.d/S50eq3configd
  	init
  	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
 diff -ruN fw.orig/etc/init.d/S60multimacd fw.patched/etc/init.d/S60multimacd
---- fw.orig/etc/init.d/S60multimacd     2018-01-09 11:17:52.120855185 +0100
-+++ fw.patched/etc/init.d/S60multimacd  2018-03-05 11:08:57.866631972 +0100
+--- fw.orig/etc/init.d/S60multimacd	2018-01-09 11:17:52.120855185 +0100
++++ fw.patched/etc/init.d/S60multimacd	2018-05-09 10:46:29.989955803 +0200
 @@ -10,11 +10,10 @@
- update() {
-        if [ ! -e /etc/config/no-coprocessor-update ] ; then
-                echo "checking if firmware update is needed..."
--               /bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u
+ update() {        
+ 	if [ ! -e /etc/config/no-coprocessor-update ] ; then
+ 		echo "checking if firmware update is needed..."
+-		/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u
 +               /bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -t HM-MOD-UART
-                if ! [ $? -eq 0 ] ; then
-                        echo "error while updating coprocessor, recovering..."
--                       avrprog --bo
--                       /bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f
+ 		if ! [ $? -eq 0 ] ; then
+ 			echo "error while updating coprocessor, recovering..."
+-			avrprog --bo
+-			/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f
 +                       /bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f -t HM-MOD-UART
-                        sleep 1
-                else
-                        echo "done"
+ 			sleep 1
+ 		else
+ 			echo "done"
 @@ -81,8 +80,6 @@
-        echo "Starting multimacd: "
-        init
-        if [ ! -e $PIDFILE ] ; then
--               check_bo
+ 	echo "Starting multimacd: "
+ 	init
+ 	if [ ! -e $PIDFILE ] ; then
+-		check_bo
 -                check_rf_address
-                update
-        else
-                echo "Skipping coprocessor update because multimacd is running."
+ 		update
+ 	else
+ 		echo "Skipping coprocessor update because multimacd is running."
 diff -ruN fw.orig/etc/init.d/S99eQ3SystemStarted fw.patched/etc/init.d/S99eQ3SystemStarted
 --- fw.orig/etc/init.d/S99eQ3SystemStarted	2018-01-09 11:17:52.120855185 +0100
-+++ fw.patched/etc/init.d/S99eQ3SystemStarted	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/etc/init.d/S99eQ3SystemStarted	2018-05-09 10:46:29.989955803 +0200
 @@ -8,15 +8,6 @@
  
  init() {
@@ -321,7 +321,7 @@ diff -ruN fw.orig/etc/init.d/S99eQ3SystemStarted fw.patched/etc/init.d/S99eQ3Sys
  start() {
 diff -ruN fw.orig/etc/inittab fw.patched/etc/inittab
 --- fw.orig/etc/inittab	2018-01-09 11:17:52.124855211 +0100
-+++ fw.patched/etc/inittab	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/etc/inittab	2018-05-09 10:46:29.989955803 +0200
 @@ -14,25 +14,15 @@
  # process   == program to run
  
@@ -348,9 +348,35 @@ diff -ruN fw.orig/etc/inittab fw.patched/etc/inittab
  # Stuff to do before rebooting
  ::shutdown:/etc/init.d/rcK
  null::shutdown:/bin/umount -a -r
+diff -ruN fw.orig/etc/network/if-up.d/eQ3StartNetwork fw.patched/etc/network/if-up.d/eQ3StartNetwork
+--- fw.orig/etc/network/if-up.d/eQ3StartNetwork	2018-01-09 11:17:52.120855185 +0100
++++ fw.patched/etc/network/if-up.d/eQ3StartNetwork	2018-05-09 10:47:04.178180552 +0200
+@@ -19,22 +19,6 @@
+ route del -net 224.0.0.0 netmask 240.0.0.0 2> /dev/null
+ route add -net 224.0.0.0 netmask 240.0.0.0 eth0
+ 
+-if grep -q nfsroot /proc/cmdline ; then
+-   killall -q setclock
+-   daemonize /bin/setclock
+-   echo Running from nfs root. Skipping network configuration.
+-
+-   # has IP  
+-   touch /var/status/hasLink
+-   touch /var/status/hasIP
+-
+-   # check internet connection; use fix ip because no nameserver (nfs boot) 
+-   if ping -W 5 -c 1 87.230.102.12 >/dev/null; then
+-	touch /var/status/hasInternet 
+-   fi
+-   exit 0
+-fi
+-
+ killall -q udhcpc
+ 
+ if [ _$MODE = _DHCP ] ; then
 diff -ruN fw.orig/firmware/fwmap fw.patched/firmware/fwmap
 --- fw.orig/firmware/fwmap	2018-01-09 11:17:52.948860587 +0100
-+++ fw.patched/firmware/fwmap	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/firmware/fwmap	2018-05-09 10:46:29.989955803 +0200
 @@ -17,7 +17,8 @@
  
  #Coprozessor
@@ -363,7 +389,7 @@ diff -ruN fw.orig/firmware/fwmap fw.patched/firmware/fwmap
  
 diff -ruN fw.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
 --- fw.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2018-01-09 11:17:52.192855654 +0100
-+++ fw.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2018-05-09 10:46:29.989955803 +0200
 @@ -168,23 +168,6 @@
  						<td class="CLASS21112">${"$"}{dialogSettingsSDCardStatus}:</td>
  						<td>${SDCardStatus}</td>
@@ -390,7 +416,7 @@ diff -ruN fw.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.patched/opt/HM
  			<td class="CLASS21113" align="left">
 diff -ruN fw.orig/www/config/control_panel.cgi fw.patched/www/config/control_panel.cgi
 --- fw.orig/www/config/control_panel.cgi	2018-01-09 11:17:52.752859308 +0100
-+++ fw.patched/www/config/control_panel.cgi	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/www/config/control_panel.cgi	2018-05-09 10:46:29.989955803 +0200
 @@ -183,9 +183,12 @@
  
  if { "[read_var /etc/config/tweaks CP_DEVCONFIG]" != "" } {
@@ -409,7 +435,7 @@ diff -ruN fw.orig/www/config/control_panel.cgi fw.patched/www/config/control_pan
  
 diff -ruN fw.orig/www/config/cp_maintenance.cgi fw.patched/www/config/cp_maintenance.cgi
 --- fw.orig/www/config/cp_maintenance.cgi	2018-01-09 11:17:52.752859308 +0100
-+++ fw.patched/www/config/cp_maintenance.cgi	2018-01-09 11:28:06.092865645 +0100
++++ fw.patched/www/config/cp_maintenance.cgi	2018-05-09 10:46:29.989955803 +0200
 @@ -347,109 +347,13 @@
                                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                              }
@@ -536,7 +562,7 @@ diff -ruN fw.orig/www/config/cp_maintenance.cgi fw.patched/www/config/cp_mainten
        puts "if (forceUpdate) {"
 diff -ruN fw.orig/www/config/cp_security.cgi fw.patched/www/config/cp_security.cgi
 --- fw.orig/www/config/cp_security.cgi	2018-01-09 11:17:52.752859308 +0100
-+++ fw.patched/www/config/cp_security.cgi	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/www/config/cp_security.cgi	2018-05-09 10:46:29.989955803 +0200
 @@ -202,8 +202,8 @@
          # exec /usr/sbin/ubiattach -p /dev/mtd6
          # exec /usr/sbin/ubimkvol /dev/ubi1 -N user -m
@@ -573,7 +599,7 @@ diff -ruN fw.orig/www/config/cp_security.cgi fw.patched/www/config/cp_security.c
          }
 diff -ruN fw.orig/www/config/cp_software.cgi fw.patched/www/config/cp_software.cgi
 --- fw.orig/www/config/cp_software.cgi	2018-01-09 11:17:52.748859282 +0100
-+++ fw.patched/www/config/cp_software.cgi	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/www/config/cp_software.cgi	2018-05-09 10:46:29.989955803 +0200
 @@ -507,7 +507,7 @@
      if {[isOldCCU]} {
          exec /sbin/init -q
@@ -585,7 +611,7 @@ diff -ruN fw.orig/www/config/cp_software.cgi fw.patched/www/config/cp_software.c
  
 diff -ruN fw.orig/www/webui/js/lang/de/translate.lang.js fw.patched/www/webui/js/lang/de/translate.lang.js
 --- fw.orig/www/webui/js/lang/de/translate.lang.js	2018-01-09 11:17:52.584858212 +0100
-+++ fw.patched/www/webui/js/lang/de/translate.lang.js	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/www/webui/js/lang/de/translate.lang.js	2018-05-09 10:46:29.989955803 +0200
 @@ -445,7 +445,8 @@
      "dialogSettingsCMTDCCURestart" : HMIdentifier.de.CCUShortName + "<br/>Neustart",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
@@ -598,7 +624,7 @@ diff -ruN fw.orig/www/webui/js/lang/de/translate.lang.js fw.patched/www/webui/js
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
 diff -ruN fw.orig/www/webui/js/lang/en/translate.lang.js fw.patched/www/webui/js/lang/en/translate.lang.js
 --- fw.orig/www/webui/js/lang/en/translate.lang.js	2018-01-09 11:17:52.584858212 +0100
-+++ fw.patched/www/webui/js/lang/en/translate.lang.js	2018-01-09 11:22:24.330632351 +0100
++++ fw.patched/www/webui/js/lang/en/translate.lang.js	2018-05-09 10:46:29.993955829 +0200
 @@ -445,7 +445,8 @@
      "dialogSettingsCMTDCCURestart" : HMIdentifier.en.CCUShortName + "<br/>restart",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
