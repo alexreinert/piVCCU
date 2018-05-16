@@ -315,13 +315,13 @@ static void fake_hmrf_add_to_buffer(char *buf, size_t len)
   wake_up_interruptible(&fake_hmrf_readq);
 }
 
-static int fake_hmrf_get_serial(char *buffer, struct kernel_param *kp)
+static int fake_hmrf_get_serial(char *buffer, const struct kernel_param *kp)
 {
   memcpy(buffer, &(llmac_get_serial_response[2]), 10);
   return 10;
 }
 
-static int fake_hmrf_set_serial(const char *val, struct kernel_param *kp)
+static int fake_hmrf_set_serial(const char *val, const struct kernel_param *kp)
 {
   if (strlen(val) != 10)
     return -EINVAL;
@@ -331,15 +331,21 @@ static int fake_hmrf_set_serial(const char *val, struct kernel_param *kp)
   return 10;
 }
 
-module_param_call(board_serial, fake_hmrf_set_serial, fake_hmrf_get_serial, NULL, S_IRUGO | S_IWUSR);
+const struct kernel_param_ops fake_hmrf_board_serial_param_ops = 
+{
+  .get = &fake_hmrf_get_serial,
+  .set = &fake_hmrf_set_serial,
+};
+
+module_param_cb(board_serial, &fake_hmrf_board_serial_param_ops, NULL, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(board_serial, "Board serial number, defaults to FKE1234567.");
 
-static int fake_hmrf_get_radio_mac(char *buffer, struct kernel_param *kp)
+static int fake_hmrf_get_radio_mac(char *buffer, const struct kernel_param *kp)
 {
   return sprintf(buffer, "0x%02hhX%02hhX%02hhX", llmac_get_default_rf_address_response[2], llmac_get_default_rf_address_response[3], llmac_get_default_rf_address_response[4]);
 }
 
-static int fake_hmrf_set_radio_mac(const char *val, struct kernel_param *kp)
+static int fake_hmrf_set_radio_mac(const char *val, const struct kernel_param *kp)
 {
   char parsed_mac[] = { 0x0, 0x0, 0x0 };
   int i;
@@ -368,15 +374,21 @@ static int fake_hmrf_set_radio_mac(const char *val, struct kernel_param *kp)
   return 8;
 }
 
-module_param_call(radio_mac, fake_hmrf_set_radio_mac, fake_hmrf_get_radio_mac, NULL, S_IRUGO | S_IWUSR);
+const struct kernel_param_ops fake_hmrf_radio_mac_param_ops =
+{
+  .get = &fake_hmrf_get_radio_mac,
+  .set = &fake_hmrf_set_radio_mac,
+};
+
+module_param_cb(radio_mac, &fake_hmrf_radio_mac_param_ops, NULL, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(radio_mac, "Radio MAC, defaults to 0x4F68F1.");
 
-static int fake_hmrf_get_firmware_version(char *buffer, struct kernel_param *kp)
+static int fake_hmrf_get_firmware_version(char *buffer, const struct kernel_param *kp)
 {
   return sprintf(buffer, "%u.%u.%u", trx_get_version_response[2], trx_get_version_response[3], trx_get_version_response[4]);
 }
 
-static int fake_hmrf_set_firmware_version(const char *val, struct kernel_param *kp)
+static int fake_hmrf_set_firmware_version(const char *val, const struct kernel_param *kp)
 {
   char parsed_version[] = { 0x0, 0x0, 0x0 };
   int i;
@@ -412,7 +424,13 @@ static int fake_hmrf_set_firmware_version(const char *val, struct kernel_param *
   return strlen(val);
 }
 
-module_param_call(firmware_version, fake_hmrf_set_firmware_version, fake_hmrf_get_firmware_version, NULL, S_IRUGO | S_IWUSR);
+const struct kernel_param_ops fake_hmrf_firmware_version_param_ops =
+{
+  .get = &fake_hmrf_get_firmware_version,
+  .set = &fake_hmrf_set_firmware_version,
+};
+
+module_param_cb(firmware_version, &fake_hmrf_firmware_version_param_ops, NULL, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(firmware_version, "Firmware version, defaults to 2.8.6.");
 
 static int __init fake_hmrf_init(void)
@@ -474,7 +492,7 @@ module_init(fake_hmrf_init);
 module_exit(fake_hmrf_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.0");
+MODULE_VERSION("1.1");
 MODULE_DESCRIPTION("Fake HM-MOD-RPI-PCB driver");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
