@@ -1,3 +1,44 @@
+diff -ruN fw.orig/bin/dhcp.script fw.patched/bin/dhcp.script
+--- fw.orig/bin/dhcp.script	2018-01-09 11:17:52.088854976 +0100
++++ fw.patched/bin/dhcp.script	2018-05-17 13:16:48.935387913 +0200
+@@ -6,29 +6,19 @@
+ 
+ action=$1
+ 
+-if grep -q nfsroot /proc/cmdline ; then
+-    if [ _$interface = _eth0 ] ; then
+-    	nfsroot=TRUE 
+-    fi
+-fi
+-
+ handle_deconfig() {
+-	if [ _$nfsroot = _TRUE ] ; then
+-   		exit 0
+-	fi
+ 	ifconfig $interface 0.0.0.0
+ }
+ 
+ handle_renew() {
+-	if [ _$nfsroot != _TRUE ] ; then
+-		ifconfig $interface $ip netmask $subnet
+-		eq3configcmd netconfigcmd -i $ip -n $subnet -g $router 
+-                export j=1;
+-                for i in $dns; do
+-			eq3configcmd netconfigcmd -d$j $i
+-                        export j=`expr $j + 1`
+-                done
+-	fi
++	ifconfig $interface $ip netmask $subnet
++	eq3configcmd netconfigcmd -i $ip -n $subnet -g $router 
++        export j=1;
++        for i in $dns; do
++		eq3configcmd netconfigcmd -d$j $i
++                export j=`expr $j + 1`
++        done
++
+ 	route del default 2> /dev/null
+ 	[ -n "$router" ] && route add default gw $router
+ 	[ -n "$boot_file" ] && echo $boot_file > $CONFIGURL
 diff -ruN fw.orig/etc/fstab fw.patched/etc/fstab
 --- fw.orig/etc/fstab	2018-01-09 11:17:52.124855211 +0100
 +++ fw.patched/etc/fstab	2018-05-09 10:46:29.989955803 +0200
@@ -611,7 +652,7 @@ diff -ruN fw.orig/www/config/cp_software.cgi fw.patched/www/config/cp_software.c
  
 diff -ruN fw.orig/www/webui/js/lang/de/translate.lang.js fw.patched/www/webui/js/lang/de/translate.lang.js
 --- fw.orig/www/webui/js/lang/de/translate.lang.js	2018-01-09 11:17:52.584858212 +0100
-+++ fw.patched/www/webui/js/lang/de/translate.lang.js	2018-05-09 10:46:29.989955803 +0200
++++ fw.patched/www/webui/js/lang/de/translate.lang.js	2018-05-18 08:58:56.885449212 +0200
 @@ -445,7 +445,8 @@
      "dialogSettingsCMTDCCURestart" : HMIdentifier.de.CCUShortName + "<br/>Neustart",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
@@ -624,7 +665,7 @@ diff -ruN fw.orig/www/webui/js/lang/de/translate.lang.js fw.patched/www/webui/js
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
 diff -ruN fw.orig/www/webui/js/lang/en/translate.lang.js fw.patched/www/webui/js/lang/en/translate.lang.js
 --- fw.orig/www/webui/js/lang/en/translate.lang.js	2018-01-09 11:17:52.584858212 +0100
-+++ fw.patched/www/webui/js/lang/en/translate.lang.js	2018-05-09 10:46:29.993955829 +0200
++++ fw.patched/www/webui/js/lang/en/translate.lang.js	2018-05-18 08:59:16.273577588 +0200
 @@ -445,7 +445,8 @@
      "dialogSettingsCMTDCCURestart" : HMIdentifier.en.CCUShortName + "<br/>restart",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
