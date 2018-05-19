@@ -227,15 +227,15 @@ static irqreturn_t pl011_raw_uart_irq_handle(int irq, void *context)
   /*Clear interrupts*/
   smp_wmb();
 
+  writel(istat, pl011_port->membase + UART011_ICR );
+
   if( istat & (UART011_RXIS | UART011_RTIS))
   {
-    writel( UART011_RTIC | UART011_RXIC, pl011_port->membase + UART011_ICR );
     pl011_raw_uart_rx_chars( );
   }
 
   if( istat & UART011_TXIS )
   {
-    writel(  UART011_TXIC , pl011_port->membase + UART011_ICR );
     generic_raw_uart_tx_queued();
   }
 
@@ -321,7 +321,7 @@ module_raw_uart_driver(MODULE_NAME, pl011_raw_uart, pl011_raw_uart_of_match);
 
 MODULE_ALIAS("platform:pl011-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.2");
+MODULE_VERSION("1.3");
 MODULE_DESCRIPTION("PL011 raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
