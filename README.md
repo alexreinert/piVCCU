@@ -24,8 +24,9 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 * Supported Single Board Computer
   * Raspberry Pi 2 or 3 running Raspbian Jessie or Stretch
   * Asus Tinkerboard running Armbian with Mainline kernel
-  * Banana Pi M1 running Armbian with Mainline kernel (Experimental)
-  * Odroid C2 running Armbian with Mainline kernel (Experimental)
+  * Banana Pi M1 running Armbian with Mainline kernel
+  * Libre Computer AML-S905X-CC (Le Potato) running Armbian with Mainline kernel (Experimental)
+  * Odroid C2 running Armbian with Mainline kernel
   * Orange Pi Zero, One, 2, Lite, Plus, Plus 2, Plus 2E, PC, PC Plus, R1 running Armbian with Mainline kernel
 
     :warning: WARNING: Some models of the Orange Pi have a rotated GPIO socket. Please ensure the correct position of Pin 1!

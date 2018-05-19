@@ -32,6 +32,12 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         FDT_FILE=amlogic/meson-gxbb-odroidc2.dtb
         break
         ;;
+      libretech,cc)
+        OVERLAY_MODE='patch'
+        INCLUDE_FILE='/var/lib/piVCCU/dts/lepotato.dts.include'
+        FDT_FILE=amlogic/meson-gxl-s905x-libretech-cc.dtb
+        break
+        ;;
     esac
   done
 fi
