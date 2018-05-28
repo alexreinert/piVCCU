@@ -16,52 +16,58 @@ else
 fi
 echo "Kernel modules: $MODULE_STATE"
 
-case $PIVCCU_HMRF_MODE in
-  "HM-MOD-RPI-PCB"|"")
-    if [ -e /sys/devices/virtual/raw-uart ]; then
-      RAW_UART_STATE="Available"
-    else
-      RAW_UART_STATE="Not available"
-    fi
-    echo "Raw UART dev:   $RAW_UART_STATE"
+if [ -e /sys/devices/virtual/raw-uart ]; then
+  RAW_UART_STATE="Available"
+else
+  RAW_UART_STATE="Not available"
+fi
+echo "Raw UART dev:   $RAW_UART_STATE"
 
-    if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tree/model` == 1 ]; then
-      if cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
-        UART_STATE="Assigned to GPIO pins"
-      else
-        UART_STATE="Not assigned to GPIO pins"
-      fi
-      echo "Rasp.Pi3 UART:  $UART_STATE"
-    fi
+if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tree/model` == 1 ]; then
+  if cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
+    UART_STATE="Assigned to GPIO pins"
+  else
+    UART_STATE="Not assigned to GPIO pins"
+  fi
+  echo "Rasp.Pi3 UART:  $UART_STATE"
+fi
 
-    if [ -e /sys/devices/virtual/raw-uart ] && [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU/ --name lxc --state --no-humanize` == "STOPPED" ]; then
-      mount --bind /dev /var/lib/piVCCU/rootfs/dev
-      BOARD_SERIAL=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5`
-      umount /var/lib/piVCCU/rootfs/dev
-    else
-      if [ -f /sys/module/plat_eq3ccu2/parameters/board_serial ]; then
-        BOARD_SERIAL=`cat /sys/module/plat_eq3ccu2/parameters/board_serial | sed 1q`
-      fi
-    fi
-    if [ -z "$BOARD_SERIAL" ]; then
-      BOARD_SERIAL="Unknown"
-    fi
-    echo "Board serial:   $BOARD_SERIAL"
-    ;;
-  "Fake-HmRF")
-    if [ -e /sys/devices/virtual/raw-uart ] && [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU/ --name lxc --state --no-humanize` == "STOPPED" ]; then
-      BOARD_SERIAL="$PIVCCU_FAKE_SERIAL"
-    else
-      if [ -f /sys/module/plat_eq3ccu2/parameters/board_serial ]; then
-        BOARD_SERIAL=`cat /sys/module/plat_eq3ccu2/parameters/board_serial | sed 1q`
-      fi
-    fi
-    if [ -z "$BOARD_SERIAL" ]; then
-      BOARD_SERIAL="Unknown"
-    fi
-    echo "Board serial:   $BOARD_SERIAL"
-    ;;
-esac
+if [ -e /sys/devices/virtual/raw-uart ] && [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU/ --name lxc --state --no-humanize` == "STOPPED" ]; then
+  . /var/lib/piVCCU/detect_hardware.inc
+else
+  if [ -e /sys/module/plat_eq3ccu2 ]; then
+    BOARD_SERIAL=`cat /sys/module/plat_eq3ccu2/parameters/board_serial | sed 1q`
+    RADIO_MAC=`cat /sys/module/plat_eq3ccu2/parameters/radio_mac | sed 1q`
+    HMRF_HARDWARE=`cat /sys/module/plat_eq3ccu2/parameters/board_extended_info | sed 1q | cut -d';' -f1`
+    HMIP_HARDWARE=`cat /sys/module/plat_eq3ccu2/parameters/board_extended_info | sed 1q | cut -d';' -f2`
+    SGTIN=`cat /sys/module/plat_eq3ccu2/parameters/board_extended_info | sed 1q | cut -d';' -f3`
+  fi
+fi
+
+if [ -z "$HMRF_HARDWARE" ]; then
+  HMRF_HARDWARE='unknown'
+fi
+echo "HMRF Hardware:  $HMRF_HARDWARE"
+
+if [ -z "$HMIP_HARDWARE" ]; then
+  HMIP_HARDWARE='unknown'
+fi
+echo "HMIP Hardware:  $HMIP_HARDWARE"
+
+if [ -z "$BOARD_SERIAL" ]; then
+  BOARD_SERIAL='unknown'
+fi
+echo "Board serial:   $BOARD_SERIAL"
+
+if [ -z "$RADIO_MAC" ]; then
+  RADIO_MAC='unknown'
+fi
+echo "Radio MAC:      $RADIO_MAC"
+
+if [ -z "$SGTIN" ]; then
+  SGTIN='unknown'
+fi
+echo "SGTIN:          $SGTIN"
 
 /usr/bin/lxc-info --lxcpath /var/lib/piVCCU/ --name lxc --ips --pid --stats --state
 

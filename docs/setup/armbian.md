@@ -2,7 +2,7 @@
 
 * Armbian
 * At least kernel 4.4 (Mainline is prefered)
-* The HM-MOD-RPI-PCB only works on supported platforms
+* The HM-MOD-RPI-PCB and the RPI-RF-MOD are only working on supported platforms
 
 ### Installation
 0. Create full backup of your SD card
@@ -23,7 +23,7 @@
    sudo apt install `dpkg --get-selections | grep 'linux-image-' | grep '\sinstall' | sed -e 's/linux-image-\([a-z0-9-]\+\).*/linux-headers-\1/'`
    ```
 
-4. Install the neccessary device tree patches (You can skip this step, if you do not use the HM-MOD-RPI-PCB)
+4. Install the neccessary device tree patches (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD)
    ```bash
    sudo apt install pivccu-devicetree-armbian
    ```

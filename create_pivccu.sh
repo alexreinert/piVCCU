@@ -4,7 +4,7 @@ CCU_VERSION=2.31.25
 CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=278"
 CCU_DOWNLOAD_URL="http://www.eq-3.de/Downloads/Software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tgz"
 
-PKG_BUILD=27
+PKG_BUILD=28
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -34,8 +34,13 @@ patch -l -p1 < $CURRENT_DIR/pivccu/firmware.patch
 sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/config/cp_maintenance.cgi
 wget -q -O $CNT_ROOTFS/firmware/dualcopro_si1002_update_blhm.eq3 https://raw.githubusercontent.com/eq-3/occu/abc3d4c8ee7d0ba090407b6b4431aeca42aeb014/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3
 
-wget -q -O $CNT_ROOTFS/firmware/hmip_coprocessor_update-2.8.4.eq3 https://raw.githubusercontent.com/eq-3/occu/eeece8b24acf22d0f227577988e88511e030c807/firmware/HmIP-RFUSB/hmip_coprocessor_update-2.8.4.eq3
-wget -q -O $CNT_ROOTFS/opt/HmIP/hmip-copro-update.jar https://raw.githubusercontent.com/eq-3/occu/eeece8b24acf22d0f227577988e88511e030c807/HMserver/opt/HmIP/hmip-copro-update.jar
+wget -q -O $CNT_ROOTFS/opt/HmIP/hmip-copro-update.jar https://raw.githubusercontent.com/eq-3/occu/04877bbc3b36a716e50d774554cf88959c51d54e/HMserver/opt/HmIP/hmip-copro-update.jar
+
+mkdir -p $CNT_ROOTFS/firmware/HMIP-RFUSB
+wget -q -O $CNT_ROOTFS/firmware/HMIP-RFUSB/hmip_coprocessor_update-2.8.4.eq3 https://raw.githubusercontent.com/eq-3/occu/04877bbc3b36a716e50d774554cf88959c51d54e/firmware/HmIP-RFUSB/hmip_coprocessor_update-2.8.4.eq3
+
+mkdir -p $CNT_ROOTFS/firmware/RPI-RF-MOD
+wget -q -O $CNT_ROOTFS/firmware/RPI-RF-MOD/dualcopro_update_blhmip-3.2.4.eq3 https://raw.githubusercontent.com/eq-3/occu/04877bbc3b36a716e50d774554cf88959c51d54e/firmware/RPI-RF-MOD/dualcopro_update_blhmip-3.2.4.eq3
 
 rm -rf $CNT_ROOTFS/dev/*
 
@@ -55,10 +60,10 @@ mkdir -p $CNT_ROOTFS/media/sd-mmcblk0
 
 mkdir -p $CNT_ROOTFS/etc/piVCCU
 cp -p $CURRENT_DIR/pivccu/container/* $CNT_ROOTFS/etc/piVCCU
-rm -f $CNT_ROOTFS/etc/piVCCU/S60HmIPFirmwareUpdate
+rm -f $CNT_ROOTFS/etc/piVCCU/S59FirmwareUpdate
 
 mkdir -p $CNT_ROOTFS/etc/init.d
-cp -p $CURRENT_DIR/pivccu/container/S60HmIPFirmwareUpdate $CNT_ROOTFS/etc/init.d
+cp -p $CURRENT_DIR/pivccu/container/S59FirmwareUpdate $CNT_ROOTFS/etc/init.d
 
 mkdir -p $CNT_ROOT/userfs
 mkdir -p $CNT_ROOT/sdcardfs
@@ -71,6 +76,8 @@ mkdir -p $TARGET_DIR/etc/default
 cp -p $CURRENT_DIR/pivccu/host/default.config $TARGET_DIR/etc/default/pivccu
 
 cp -p $CURRENT_DIR/pivccu/host/*.sh $CNT_ROOT
+cp -p $CURRENT_DIR/pivccu/host/*.inc $CNT_ROOT
+cp -p $CURRENT_DIR/pivccu/host/*.pl $CNT_ROOT
 
 mkdir -p $TARGET_DIR/lib/systemd/system/
 cp -p $CURRENT_DIR/pivccu/host/pivccu.service $TARGET_DIR/lib/systemd/system/

@@ -317,30 +317,62 @@ diff -ruN fw.orig/etc/init.d/S50eq3configd fw.patched/etc/init.d/S50eq3configd
  	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
 diff -ruN fw.orig/etc/init.d/S60multimacd fw.patched/etc/init.d/S60multimacd
 --- fw.orig/etc/init.d/S60multimacd	2018-01-09 11:17:52.120855185 +0100
-+++ fw.patched/etc/init.d/S60multimacd	2018-05-09 10:46:29.989955803 +0200
-@@ -10,11 +10,10 @@
- update() {        
- 	if [ ! -e /etc/config/no-coprocessor-update ] ; then
- 		echo "checking if firmware update is needed..."
++++ fw.patched/etc/init.d/S60multimacd	2018-05-28 13:08:06.206877223 +0200
+@@ -7,39 +7,6 @@
+ CFG_TEMPLATE_DIR=/etc/config_templates
+ PIDFILE=/var/run/multimacd.pid
+ 
+-update() {        
+-	if [ ! -e /etc/config/no-coprocessor-update ] ; then
+-		echo "checking if firmware update is needed..."
 -		/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u
-+               /bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -t HM-MOD-UART
- 		if ! [ $? -eq 0 ] ; then
- 			echo "error while updating coprocessor, recovering..."
+-		if ! [ $? -eq 0 ] ; then
+-			echo "error while updating coprocessor, recovering..."
 -			avrprog --bo
 -			/bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f
-+                       /bin/eq3configcmd update-coprocessor -p "/dev/mxs_auart_raw.0" -u -f -t HM-MOD-UART
- 			sleep 1
- 		else
- 			echo "done"
-@@ -81,8 +80,6 @@
+-			sleep 1
+-		else
+-			echo "done"
+-			sleep 1
+-		fi
+-	else
+-		echo "firmware update disabled"
+-	fi
+-}
+-check_bo(){
+-	avrprog --devinfo | grep -q ec,fd,da,ef
+-	if ! [ 0 -eq $? ];
+-	then
+-	avrprog --bo
+-	fi
+-}
+-check_rf_address(){
+-        sed 1q /sys/module/plat_eq3ccu2/parameters/radio_mac > /var/log/rf_address
+-        /bin/eq3configcmd read-default-rf-address -l 0 -v -h -f /dev/mxs_auart_raw.0 | grep -q -F -f /var/log/rf_address
+-        if ! [ 0 -eq $? ];
+-        then
+-        avrprog --bo
+-        fi
+-        rm /var/log/rf_address
+-}
+ init() {
+ 	export TZ=`cat /etc/config/TZ`
+ 	
+@@ -80,14 +47,6 @@
+ start() {
  	echo "Starting multimacd: "
  	init
- 	if [ ! -e $PIDFILE ] ; then
+-	if [ ! -e $PIDFILE ] ; then
 -		check_bo
 -                check_rf_address
- 		update
- 	else
- 		echo "Skipping coprocessor update because multimacd is running."
+-		update
+-	else
+-		echo "Skipping coprocessor update because multimacd is running."
+-	fi
+-	init
+ 	start-stop-daemon -S -q -b -m -p $PIDFILE --exec /bin/multimacd -- -f /etc/config/multimacd.conf -l $LOGLEVEL_RFD
+ 	waitStartupComplete
+ }
 diff -ruN fw.orig/etc/init.d/S99eQ3SystemStarted fw.patched/etc/init.d/S99eQ3SystemStarted
 --- fw.orig/etc/init.d/S99eQ3SystemStarted	2018-01-09 11:17:52.120855185 +0100
 +++ fw.patched/etc/init.d/S99eQ3SystemStarted	2018-05-09 10:46:29.989955803 +0200
