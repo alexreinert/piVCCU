@@ -43,6 +43,11 @@ case $PIVCCU_HMRF_MODE in
 
       RADIO_MAC=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd read-default-rf-address -f /dev/raw-uart -h 2>&1 | grep "^0x"`
 
+      if [ "$RADIO_MAC" == "0x00ffff" ]; then
+        RADIO_MAC=""
+        echo -n -e "\xfd\x00\x03\xfe\x01\x02\x92\x17" > /dev/raw-uart
+      fi
+
       if [ -z "$RADIO_MAC" ]; then
         RADIO_MAC=`chroot /var/lib/piVCCU/rootfs /opt/jre-1.8.0_121-compact3/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/raw-uart -jar /opt/HmIP/hmip-copro-update.jar -p /dev/raw-uart -v -a 2>&1 | sed -n 's/.*Radio address = \([0-9A-Fa-f]\{6\}\).*/0x\1/p'`
         if [ ! -z "$RADIO_MAC" ]; then
