@@ -345,9 +345,27 @@ static int fake_hmrf_get_radio_mac(char *buffer, const struct kernel_param *kp)
   return sprintf(buffer, "0x%02hhX%02hhX%02hhX", llmac_get_default_rf_address_response[2], llmac_get_default_rf_address_response[3], llmac_get_default_rf_address_response[4]);
 }
 
+static int fake_hmrf_parse_hex_char(const char *val)
+{
+  if (*val >= 0x30 && *val <= 0x39) {
+    return *val - 0x30;
+  }
+
+  if (*val >= 0x41 && *val <= 0x46) {
+    return *val - 0x41 + 10;
+  }
+
+  if (*val >= 0x61 && *val <= 0x66) {
+    return *val - 0x61 + 10;
+  }
+
+  return -1;
+}
+
 static int fake_hmrf_set_radio_mac(const char *val, const struct kernel_param *kp)
 {
   char parsed_mac[] = { 0x0, 0x0, 0x0 };
+  int parsed_char = 0;
   int i;
 
   if (strlen(val) != 8)
@@ -358,15 +376,17 @@ static int fake_hmrf_set_radio_mac(const char *val, const struct kernel_param *k
 
   for (i = 0; i < 3; i++)
   {
-    if (*val < 0x30 || *val > 0x39)
+    parsed_char = fake_hmrf_parse_hex_char(val++);
+    if (parsed_char == -1)
       return -EINVAL;
 
-    parsed_mac[i] = (*val++ - 0x30) << 4;
+    parsed_mac[i] = (char)parsed_char << 4;
 
-    if (*val < 0x30 || *val > 0x39)
+    parsed_char = fake_hmrf_parse_hex_char(val++);
+    if (parsed_char == -1)
       return -EINVAL;
 
-    parsed_mac[i] |= (*val++ - 0x30);
+    parsed_mac[i] |= (char)parsed_char;
   }
 
   memcpy(&(llmac_get_default_rf_address_response[2]), parsed_mac, 3);
@@ -492,7 +512,7 @@ module_init(fake_hmrf_init);
 module_exit(fake_hmrf_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.1");
+MODULE_VERSION("1.2");
 MODULE_DESCRIPTION("Fake HM-MOD-RPI-PCB driver");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

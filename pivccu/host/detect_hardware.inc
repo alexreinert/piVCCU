@@ -24,12 +24,19 @@ case $PIVCCU_HMRF_MODE in
     modprobe -a fake_hmrf &> /dev/null
     if [ -e /sys/module/fake_hmrf ]; then
       UART_MAJOR=`cat /sys/devices/virtual/fake-hmrf/fake-hmrf/dev | cut -d: -f1`
-      echo -ne "$PIVCCU_FAKE_SERIAL" > /sys/module/fake_hmrf/parameters/board_serial
-      echo -ne "$PIVCCU_FAKE_RADIO_MAC" > /sys/module/fake_hmrf/parameters/radio_mac
+      echo -n "$PIVCCU_FAKE_SERIAL" > /sys/module/fake_hmrf/parameters/board_serial
+      echo -n "$PIVCCU_FAKE_RADIO_MAC" > /sys/module/fake_hmrf/parameters/radio_mac
     fi
 
     BOARD_SERIAL=$PIVCCU_FAKE_SERIAL
     RADIO_MAC=$PIVCCU_FAKE_RADIO_MAC
+
+    mount --bind /dev /var/lib/piVCCU/rootfs/dev
+    mount --bind /proc /var/lib/piVCCU/rootfs/proc
+    SGTIN=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd update-coprocessor -p /dev/fake-hmrf -t HM-MOD-UART -c -sg 2>&1 | grep "SGTIN:" | cut -d' ' -f5`
+
+    umount /var/lib/piVCCU/rootfs/dev
+    umount /var/lib/piVCCU/rootfs/proc
 
     grep "^CCU2 " /var/lib/piVCCU/rootfs/firmware/fwmap | awk -F ' ' '{print $3}' > /sys/module/fake_hmrf/parameters/firmware_version
     ;;
@@ -44,17 +51,17 @@ case $PIVCCU_HMRF_MODE in
       RADIO_MAC=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd read-default-rf-address -f /dev/raw-uart -h 2>&1 | grep "^0x"`
 
       if [ -z "$RADIO_MAC" ] || [ "$RADIO_MAC" == "0x00ffff" ]; then
-        RADIO_MAC=`chroot /var/lib/piVCCU/rootfs /opt/jre-1.8.0_121-compact3/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/raw-uart -jar /opt/HmIP/hmip-copro-update.jar -p /dev/raw-uart -v -a 2>&1 | sed -n 's/.*Radio address = \([0-9A-Fa-f]\{6\}\).*/0x\1/p'`
+        RF_RPI_MOD_INFO=`timeout 5 chroot /var/lib/piVCCU/rootfs /opt/jre-1.8.0_121-compact3/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/raw-uart -jar /opt/HmIP/hmip-copro-update.jar -p /dev/raw-uart -v -a 2>&1`
+        RADIO_MAC=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*Radio address = \([0-9A-Fa-f]\{6\}\).*/0x\1/p'`
+
         if [ ! -z "$RADIO_MAC" ]; then
           HMRF_HARDWARE='RPI-RF-MOD'
-          SGTIN=`chroot /var/lib/piVCCU/rootfs /opt/jre-1.8.0_121-compact3/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/raw-uart -jar /opt/HmIP/hmip-copro-update.jar -p /dev/raw-uart -v -a 2>&1 | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p'`
+          SGTIN=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p'`
+          BOARD_SERIAL=`echo -n "$SGTIN" | tail -c 10`
         fi
       else
         HMRF_HARDWARE='HM-MOD-RPI-PCB'
         SGTIN=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -sg 2>&1 | grep "SGTIN:" | cut -d' ' -f5`
-      fi
-
-      if [ ! -z "$RADIO_MAC" ]; then
         BOARD_SERIAL=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5`
       fi
 
@@ -88,6 +95,7 @@ case $PIVCCU_HMIP_MODE in
         if [ "$ID_VENDOR_ID $ID_MODEL_ID" == "1b1f c020" ]; then
           HMIP_MAJOR=$MAJOR
           HMIP_MINOR=$MINOR
+          HMIP_DEVNAME=$DEVNAME
           break
         fi
       fi
@@ -98,7 +106,15 @@ case $PIVCCU_HMIP_MODE in
       HMIP_MINOR=3
     else
       HMIP_HARDWARE='HMIP-RFUSB'
-      SGTIN=TODO!
+
+      mount --bind /dev /var/lib/piVCCU/rootfs/dev
+      mount --bind /proc /var/lib/piVCCU/rootfs/proc
+
+      HMIP_INFO=`timeout 5 chroot /var/lib/piVCCU/rootfs /opt/jre-1.8.0_121-compact3/bin/java -Dgnu.io.rxtx.SerialPorts=$HMIP_DEVNAME -jar /opt/HmIP/hmip-copro-update.jar -p $HMIP_DEVNAME -v -a 2>&1`
+      SGTIN=`echo "$HMIP_INFO" | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p'`
+
+      umount /var/lib/piVCCU/rootfs/dev
+      umount /var/lib/piVCCU/rootfs/proc
     fi
     ;;
 esac
