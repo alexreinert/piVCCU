@@ -6,6 +6,15 @@
         };
       };
     };
+    bus@c1100000 {
+      serial@84c0 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&pivccu_uart_a_pins>;
+        status = "okay";
+        compatible = "pivccu,meson";
+        pivccu,gpio_pin = <238>;
+      };
+    };
     cbus@c1100000 {
       serial@84c0 {
         pinctrl-names = "default";
