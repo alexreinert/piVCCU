@@ -12,7 +12,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 * Support not only on Raspberry
 * Support for 
   * HM-MOD-RPI-PCB (HmRF+HmIP),
-  * RPI-RF-MOD (HmRF+HmIP, Experimental, LEDs, Pushbutton and RTC are not supported inside CCU Container)
+  * RPI-RF-MOD (HmRF+HmIP, LEDs, Pushbutton and RTC are not supported inside CCU Container)
   * HmIP-RFUSB (HmIP only)
   * HM-LGW-O-TW-W-EU (HmRF only)
 
@@ -28,6 +28,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 * Supported Single Board Computer
   * Raspberry Pi 2 or 3 running Raspbian Jessie or Stretch
   * Asus Tinkerboard running Armbian with Mainline kernel
+  * Asus Tinkerboard S running Armbian with Mainline kernel (Experimental)
   * Banana Pi M1 running Armbian with Mainline kernel
   * Libre Computer AML-S905X-CC (Le Potato) running Armbian with Mainline kernel (Experimental)
   * Odroid C2 running Armbian with Mainline kernel
