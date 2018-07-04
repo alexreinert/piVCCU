@@ -1,6 +1,6 @@
 diff -ruN fw.orig/bin/dhcp.script fw.patched/bin/dhcp.script
---- fw.orig/bin/dhcp.script	2018-06-27 10:54:17.110635110 +0200
-+++ fw.patched/bin/dhcp.script	2018-06-27 11:00:35.313157087 +0200
+--- fw.orig/bin/dhcp.script	2018-07-04 09:51:27.226179947 +0200
++++ fw.patched/bin/dhcp.script	2018-07-04 09:57:12.968481177 +0200
 @@ -6,29 +6,19 @@
  
  action=$1
@@ -40,8 +40,8 @@ diff -ruN fw.orig/bin/dhcp.script fw.patched/bin/dhcp.script
  	[ -n "$router" ] && route add default gw $router
  	[ -n "$boot_file" ] && echo $boot_file > $CONFIGURL
 diff -ruN fw.orig/etc/fstab fw.patched/etc/fstab
---- fw.orig/etc/fstab	2018-06-27 10:54:17.158635429 +0200
-+++ fw.patched/etc/fstab	2018-06-27 11:00:35.361157407 +0200
+--- fw.orig/etc/fstab	2018-07-04 09:51:27.262180187 +0200
++++ fw.patched/etc/fstab	2018-07-04 09:57:12.976481230 +0200
 @@ -1,13 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -57,8 +57,8 @@ diff -ruN fw.orig/etc/fstab fw.patched/etc/fstab
 -debugfs 	/sys/kernel/debug debugfs 		  0 	0
 -ubi1:user	/usr/local	ubifs	defaults,noatime,rw,sync	0 0
 diff -ruN fw.orig/etc/init.d/S00eQ3SystemStart fw.patched/etc/init.d/S00eQ3SystemStart
---- fw.orig/etc/init.d/S00eQ3SystemStart	2018-06-27 10:54:17.154635402 +0200
-+++ fw.patched/etc/init.d/S00eQ3SystemStart	2018-06-27 11:00:35.377157514 +0200
+--- fw.orig/etc/init.d/S00eQ3SystemStart	2018-07-04 09:51:27.262180187 +0200
++++ fw.patched/etc/init.d/S00eQ3SystemStart	2018-07-04 09:57:12.984481283 +0200
 @@ -7,17 +7,6 @@
  SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
  
@@ -115,7 +115,7 @@ diff -ruN fw.orig/etc/init.d/S00eQ3SystemStart fw.patched/etc/init.d/S00eQ3Syste
  
  restart() {
 diff -ruN fw.orig/etc/init.d/S10udev fw.patched/etc/init.d/S10udev
---- fw.orig/etc/init.d/S10udev	2018-06-27 10:54:17.154635402 +0200
+--- fw.orig/etc/init.d/S10udev	2018-07-04 09:51:27.262180187 +0200
 +++ fw.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
 @@ -1,48 +0,0 @@
 -#!/bin/sh
@@ -167,7 +167,7 @@ diff -ruN fw.orig/etc/init.d/S10udev fw.patched/etc/init.d/S10udev
 -
 -exit 0
 diff -ruN fw.orig/etc/init.d/S15watchdog fw.patched/etc/init.d/S15watchdog
---- fw.orig/etc/init.d/S15watchdog	2018-06-27 10:54:17.154635402 +0200
+--- fw.orig/etc/init.d/S15watchdog	2018-07-04 09:51:27.262180187 +0200
 +++ fw.patched/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
 @@ -1,20 +0,0 @@
 -#!/bin/sh
@@ -191,7 +191,7 @@ diff -ruN fw.orig/etc/init.d/S15watchdog fw.patched/etc/init.d/S15watchdog
 -
 -exit $?
 diff -ruN fw.orig/etc/init.d/S20urandom fw.patched/etc/init.d/S20urandom
---- fw.orig/etc/init.d/S20urandom	2018-06-27 10:54:17.154635402 +0200
+--- fw.orig/etc/init.d/S20urandom	2018-07-04 09:51:27.262180187 +0200
 +++ fw.patched/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
 @@ -1,54 +0,0 @@
 -#! /bin/sh
@@ -249,7 +249,7 @@ diff -ruN fw.orig/etc/init.d/S20urandom fw.patched/etc/init.d/S20urandom
 -		;;
 -esac
 diff -ruN fw.orig/etc/init.d/S40UsbNetwork fw.patched/etc/init.d/S40UsbNetwork
---- fw.orig/etc/init.d/S40UsbNetwork	2018-06-27 10:54:17.154635402 +0200
+--- fw.orig/etc/init.d/S40UsbNetwork	2018-07-04 09:51:27.262180187 +0200
 +++ fw.patched/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
 @@ -1,52 +0,0 @@
 -#!/bin/sh
@@ -305,8 +305,8 @@ diff -ruN fw.orig/etc/init.d/S40UsbNetwork fw.patched/etc/init.d/S40UsbNetwork
 -exit $?
 -
 diff -ruN fw.orig/etc/init.d/S50eq3configd fw.patched/etc/init.d/S50eq3configd
---- fw.orig/etc/init.d/S50eq3configd	2018-06-27 10:54:17.154635402 +0200
-+++ fw.patched/etc/init.d/S50eq3configd	2018-06-27 11:00:35.389157594 +0200
+--- fw.orig/etc/init.d/S50eq3configd	2018-07-04 09:51:27.258180161 +0200
++++ fw.patched/etc/init.d/S50eq3configd	2018-07-04 09:57:12.996481362 +0200
 @@ -17,6 +17,7 @@
  }
  
@@ -316,8 +316,8 @@ diff -ruN fw.orig/etc/init.d/S50eq3configd fw.patched/etc/init.d/S50eq3configd
  	init
  	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
 diff -ruN fw.orig/etc/init.d/S60multimacd fw.patched/etc/init.d/S60multimacd
---- fw.orig/etc/init.d/S60multimacd	2018-06-27 10:54:17.154635402 +0200
-+++ fw.patched/etc/init.d/S60multimacd	2018-06-27 11:00:35.389157594 +0200
+--- fw.orig/etc/init.d/S60multimacd	2018-07-04 09:51:27.262180187 +0200
++++ fw.patched/etc/init.d/S60multimacd	2018-07-04 09:57:12.996481362 +0200
 @@ -7,39 +7,6 @@
  CFG_TEMPLATE_DIR=/etc/config_templates
  PIDFILE=/var/run/multimacd.pid
@@ -374,8 +374,8 @@ diff -ruN fw.orig/etc/init.d/S60multimacd fw.patched/etc/init.d/S60multimacd
  	waitStartupComplete
  }
 diff -ruN fw.orig/etc/init.d/S99eQ3SystemStarted fw.patched/etc/init.d/S99eQ3SystemStarted
---- fw.orig/etc/init.d/S99eQ3SystemStarted	2018-06-27 10:54:17.154635402 +0200
-+++ fw.patched/etc/init.d/S99eQ3SystemStarted	2018-06-27 11:00:35.389157594 +0200
+--- fw.orig/etc/init.d/S99eQ3SystemStarted	2018-07-04 09:51:27.262180187 +0200
++++ fw.patched/etc/init.d/S99eQ3SystemStarted	2018-07-04 09:57:12.996481362 +0200
 @@ -8,15 +8,6 @@
  
  init() {
@@ -393,8 +393,8 @@ diff -ruN fw.orig/etc/init.d/S99eQ3SystemStarted fw.patched/etc/init.d/S99eQ3Sys
  
  start() {
 diff -ruN fw.orig/etc/inittab fw.patched/etc/inittab
---- fw.orig/etc/inittab	2018-06-27 10:54:17.158635429 +0200
-+++ fw.patched/etc/inittab	2018-06-27 11:00:35.405157701 +0200
+--- fw.orig/etc/inittab	2018-07-04 09:51:27.262180187 +0200
++++ fw.patched/etc/inittab	2018-07-04 09:57:12.996481362 +0200
 @@ -14,25 +14,15 @@
  # process   == program to run
  
@@ -422,8 +422,8 @@ diff -ruN fw.orig/etc/inittab fw.patched/etc/inittab
  ::shutdown:/etc/init.d/rcK
  null::shutdown:/bin/umount -a -r
 diff -ruN fw.orig/etc/network/if-up.d/eQ3StartNetwork fw.patched/etc/network/if-up.d/eQ3StartNetwork
---- fw.orig/etc/network/if-up.d/eQ3StartNetwork	2018-06-27 10:54:17.154635402 +0200
-+++ fw.patched/etc/network/if-up.d/eQ3StartNetwork	2018-06-27 11:00:35.405157701 +0200
+--- fw.orig/etc/network/if-up.d/eQ3StartNetwork	2018-07-04 09:51:27.258180161 +0200
++++ fw.patched/etc/network/if-up.d/eQ3StartNetwork	2018-07-04 09:57:13.000481389 +0200
 @@ -19,22 +19,6 @@
  route del -net 224.0.0.0 netmask 240.0.0.0 2> /dev/null
  route add -net 224.0.0.0 netmask 240.0.0.0 eth0
@@ -448,8 +448,8 @@ diff -ruN fw.orig/etc/network/if-up.d/eQ3StartNetwork fw.patched/etc/network/if-
  
  if [ _$MODE = _DHCP ] ; then
 diff -ruN fw.orig/firmware/fwmap fw.patched/firmware/fwmap
---- fw.orig/firmware/fwmap	2018-06-27 10:54:22.626671889 +0200
-+++ fw.patched/firmware/fwmap	2018-06-27 11:00:35.405157701 +0200
+--- fw.orig/firmware/fwmap	2018-07-04 09:51:33.198219734 +0200
++++ fw.patched/firmware/fwmap	2018-07-04 09:57:13.000481389 +0200
 @@ -17,7 +17,8 @@
  
  #Coprozessor
@@ -461,8 +461,8 @@ diff -ruN fw.orig/firmware/fwmap fw.patched/firmware/fwmap
  CCU2-RFLGW				coprocessor_update_hm_only.eq3					1.4.1          # HM only CoProzessor CCU2 for HomeMatic RF Lan Gateway
  
 diff -ruN fw.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
---- fw.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2018-06-27 10:54:17.774639534 +0200
-+++ fw.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2018-06-27 11:00:35.417157781 +0200
+--- fw.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2018-07-04 09:51:27.730183305 +0200
++++ fw.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2018-07-04 09:57:13.008481442 +0200
 @@ -168,23 +168,6 @@
  						<td class="CLASS21112">${"$"}{dialogSettingsSDCardStatus}:</td>
  						<td>${SDCardStatus}</td>
@@ -488,8 +488,8 @@ diff -ruN fw.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.patched/opt/HM
  			</td>
  			<td class="CLASS21113" align="left">
 diff -ruN fw.orig/www/config/cp_maintenance.cgi fw.patched/www/config/cp_maintenance.cgi
---- fw.orig/www/config/cp_maintenance.cgi	2018-06-27 10:54:21.634665274 +0200
-+++ fw.patched/www/config/cp_maintenance.cgi	2018-06-27 11:00:35.417157781 +0200
+--- fw.orig/www/config/cp_maintenance.cgi	2018-07-04 09:51:31.846210727 +0200
++++ fw.patched/www/config/cp_maintenance.cgi	2018-07-04 10:06:34.912208326 +0200
 @@ -357,109 +357,13 @@
                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                }
@@ -571,7 +571,7 @@ diff -ruN fw.orig/www/config/cp_maintenance.cgi fw.patched/www/config/cp_mainten
 -              td {width="20"} {}
 -              table_data {align="left"} {colspan="2"} {class="CLASS20920"} {
 -                puts "\${dialogSettingsCMLblPerformSoftwareUpdateStep4}"
-+                                puts "@@@pivccu_version@@@"
++                puts "@@@pivccu_version@@@"
                }
              }
            }
@@ -596,10 +596,10 @@ diff -ruN fw.orig/www/config/cp_maintenance.cgi fw.patched/www/config/cp_mainten
 -          }
 -
 -          division {class="j_forcedUpdate" style="padding:10px;"} {
--            puts "<br/>\${dialogSettingsCMHintSoftwareUpdate3}"
+-            puts "<br/>\${dialogSettingsCMHintSoftwareUpdate2}"
 -          }
-+                table_data {align="left"} {class="CLASS20904"} {
-+                    puts "\${dialogSettingspiVCCUDonateHint}"
++        table_data {align="left"} {class="CLASS20904"} {
++          puts "\${dialogSettingspiVCCUDonateHint}"
          }
        }
        table_row {class="CLASS20902 j_noForcedUpdate j_fwUpdateOnly"} {
@@ -615,8 +615,8 @@ diff -ruN fw.orig/www/config/cp_maintenance.cgi fw.patched/www/config/cp_mainten
      # Hide all elements with class j_noForcedUpdate when an update is enforced
      puts "if (forceUpdate) {"
 diff -ruN fw.orig/www/config/cp_security.cgi fw.patched/www/config/cp_security.cgi
---- fw.orig/www/config/cp_security.cgi	2018-06-27 10:54:21.638665301 +0200
-+++ fw.patched/www/config/cp_security.cgi	2018-06-27 11:00:35.417157781 +0200
+--- fw.orig/www/config/cp_security.cgi	2018-07-04 09:51:31.850210753 +0200
++++ fw.patched/www/config/cp_security.cgi	2018-07-04 09:57:13.008481442 +0200
 @@ -202,8 +202,8 @@
          # exec /usr/sbin/ubiattach -p /dev/mtd6
          # exec /usr/sbin/ubimkvol /dev/ubi1 -N user -m
@@ -652,8 +652,8 @@ diff -ruN fw.orig/www/config/cp_security.cgi fw.patched/www/config/cp_security.c
              puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
          }
 diff -ruN fw.orig/www/config/cp_software.cgi fw.patched/www/config/cp_software.cgi
---- fw.orig/www/config/cp_software.cgi	2018-06-27 10:54:21.634665274 +0200
-+++ fw.patched/www/config/cp_software.cgi	2018-06-27 11:00:35.417157781 +0200
+--- fw.orig/www/config/cp_software.cgi	2018-07-04 09:51:31.846210727 +0200
++++ fw.patched/www/config/cp_software.cgi	2018-07-04 09:57:13.008481442 +0200
 @@ -507,7 +507,7 @@
      if {[isOldCCU]} {
          exec /sbin/init -q
@@ -664,8 +664,8 @@ diff -ruN fw.orig/www/config/cp_software.cgi fw.patched/www/config/cp_software.c
  }
  
 diff -ruN fw.orig/www/webui/js/lang/de/translate.lang.js fw.patched/www/webui/js/lang/de/translate.lang.js
---- fw.orig/www/webui/js/lang/de/translate.lang.js	2018-06-27 10:54:20.882660260 +0200
-+++ fw.patched/www/webui/js/lang/de/translate.lang.js	2018-06-27 11:00:35.417157781 +0200
+--- fw.orig/www/webui/js/lang/de/translate.lang.js	2018-07-04 09:51:31.630209286 +0200
++++ fw.patched/www/webui/js/lang/de/translate.lang.js	2018-07-04 09:57:13.012481469 +0200
 @@ -452,7 +452,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
@@ -677,8 +677,8 @@ diff -ruN fw.orig/www/webui/js/lang/de/translate.lang.js fw.patched/www/webui/js
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Software-Update durchf%FChren",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
 diff -ruN fw.orig/www/webui/js/lang/en/translate.lang.js fw.patched/www/webui/js/lang/en/translate.lang.js
---- fw.orig/www/webui/js/lang/en/translate.lang.js	2018-06-27 10:54:20.886660287 +0200
-+++ fw.patched/www/webui/js/lang/en/translate.lang.js	2018-06-27 11:00:35.417157781 +0200
+--- fw.orig/www/webui/js/lang/en/translate.lang.js	2018-07-04 09:51:31.634209312 +0200
++++ fw.patched/www/webui/js/lang/en/translate.lang.js	2018-07-04 09:57:13.012481469 +0200
 @@ -451,7 +451,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Shutdown",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
