@@ -20,6 +20,7 @@ case "$1" in
         fi
       fi
     fi
+    rm -rf /var/lib/piVCCU/rootfs
     ;;
 
   abort-upgrade)
