@@ -4,7 +4,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 
 ### Goals
 * Option to run CCU2 and other software parallel on one device
-* Usage of original CCU2 firmware (and not OCCU)
+* Usage of original CCU2 or CCU3 firmware (and not OCCU) (CCU3 is Experimental)
 * As compatible as possible with original CCU2
 * Full Homematic and Homematic IP support on all supported platforms (if RF hardware supports it)
 * Support for backup/restore between piVCCU and original CCU2 without modification
@@ -21,12 +21,12 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 
 ### Prequisites
 * Debian or Ubuntu based distribution
-* armhf or arm64 architecture (x64 is not supported at the moment)
+* armhf or arm64 architecture (arm64 is only supported on CCU2 version at the moment; x64 is not supported at all)
 * At least kernel 4.4
 
 ### Prequisites for HM-MOD-RPI-PCB and RPI-RF-MOD
 * Supported Single Board Computer
-  * Raspberry Pi 2 or 3 running Raspbian Jessie or Stretch
+  * Raspberry Pi 2B/3B/3B+ running Raspbian Stretch
   * Asus Tinkerboard running Armbian with Mainline kernel
   * Asus Tinkerboard S running Armbian with Mainline kernel (Experimental)
   * Banana Pi M1 running Armbian with Mainline kernel
@@ -65,9 +65,14 @@ sudo apt update && sudo apt upgrade
   * Software emulation of the HM-MOD-RPI-PCB
   * You can add support for (real) HmRF using a external HM-LGW-O-TW-W-EU
 * To switch between radio modes use the following command:
-  ```bash
-  sudo dpkg-reconfigure pivccu
-  ```
+  * piVCCU (CCU2 firmware)
+     ```bash
+     sudo dpkg-reconfigure pivccu
+     ```
+  * piVCCU3 (CCU3 firmware)
+     ```bash
+     sudo dpkg-reconfigure pivccu3
+     ```
 
 ### Backup
 Starting with version 2.31.25-23 there is the tool pivccu-backup to create CCU2 compatible backups (inside the host).
@@ -75,10 +80,38 @@ Be aware, that this is only a backup of the CCU, no settings of the host are sav
 
 To restore a backup file use the WebUI of the CCU.
 
+### Migrating from piVCCU (CCU2 firmware) to piVCCU3 (CCU3 firmware)
+1. Create a full backup of your SD card
+2. Create a CCU backup using the CCU web interface
+3. Update the apt repositories
+   ```bash
+   sudo apt update
+   ```
+4. Remove the CCU2 firmware package
+   ```bash
+   sudo apt remove pivccu
+   ```
+5. Install the CCU3 firmware package
+   ```bash
+   sudo apt install pivccu3
+   ```
+6. Restore your CCU backup using the CCU web interface
+7. Reinstall all Addons using the CCU3/RaspberryMatic versions
+8. As the CCU3 firmware does a cherry picking of files beeing restored, you maybe need to restore some files by yourself (e.g. CUxD settings files).
+9. If you used hook scripts or a customized lxc config, you need to apply your changes in the new directory /etc/piVCCU3 by yourself.
+10. After successful migration you can delete the old piVCCU (CCU2 firmware) data using
+   ```bash
+   sudo apt purge pivccu3
+   ```
+
 ### Migration from other systems
 * Original CCU2
+  Just restore a normal system backup using the CCU web interface.
+  When changing to piVCCU3 you need to reinstall all Addons using the CCU3/RaspberryMatic versions. As the CCU3 firmware does a cherry picking of files beeing restored, you maybe need to restore some files by yourself (e.g. CUxD settings files).
 
-   Just restore a normal system backup using the CCU web interface
+* Original CCU3
+  You can only migrate to piVCCU3.
+  Just restore a normal system backup using the CCU web interface.
    
 * RaspberryMatic
    1. Restore a normal system backup using the CCU web interface
@@ -86,62 +119,109 @@ To restore a backup file use the WebUI of the CCU.
    3. If you previously used YAHM, please follow the instructions for removing YAHM specific configuration stuff below
 
 * YAHM
-   1. Create full backup of your SD card
-   2. Create system backup using CCU web interface
-   3. Remove YAHM on the host (or use a plain new sd card image)
-      ```bash
-      sudo lxc-stop -n yahm
-      sudo rm -f /etc/bash_completion.d/yahm_completion
-      sudo rm -f /etc/init.d/hm-mod-rpi-pcb
+   * Migrate to piVCCU (CCU2 firmware)
+      1. Create full backup of your SD card
+      2. Create system backup using CCU web interface
+      3. Remove YAHM on the host (or use a plain new sd card image)
+         ```bash
+         sudo lxc-stop -n yahm
+         sudo rm -f /etc/bash_completion.d/yahm_completion
+         sudo rm -f /etc/init.d/hm-mod-rpi-pcb
 
-      sudo rm -rf /opt/YAHM
-      sudo rm -rf /var/lib/lxc/yahm
+         sudo rm -rf /opt/YAHM
+         sudo rm -rf /var/lib/lxc/yahm
 
-      sudo sed -i /boot/config.txt -e '/dtoverlay=pi3-miniuart-bt/d'
-      sudo sed -i /boot/config.txt -e '/dtoverlay=pi3-miniuart-bt-overlay/d'
-      sudo sed -i /boot/config.txt -e '/enable_uart=1/d'
-      sudo sed -i /boot/config.txt -e '/force_turbo=1/d'
+         sudo sed -i /boot/config.txt -e '/dtoverlay=pi3-miniuart-bt/d'
+         sudo sed -i /boot/config.txt -e '/dtoverlay=pi3-miniuart-bt-overlay/d'
+         sudo sed -i /boot/config.txt -e '/enable_uart=1/d'
+         sudo sed -i /boot/config.txt -e '/force_turbo=1/d'
 
-      sudo sed -i /etc/modules -e '/#*eq3_char_loop/d'
-      sudo sed -i /etc/modules -e '/#*bcm2835_raw_uart/d'
-      ```
-   4. Install piVCCU as described above
-   5. Restore the system backup using the CCU web interface
-   6. Remove YAHM specific configuration stuff (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
-      ```bash
-      sudo systemctl stop pivccu.service
+         sudo sed -i /etc/modules -e '/#*eq3_char_loop/d'
+         sudo sed -i /etc/modules -e '/#*bcm2835_raw_uart/d'
+         ```
+      4. Install piVCCU as described above
+      5. Restore the system backup using the CCU web interface
+      6. Remove YAHM specific configuration stuff (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
+         ```bash
+         sudo systemctl stop pivccu.service
 
-      sudo rm -f /var/lib/piVCCU/userfs/etc/config/no-coprocessor-update
-      sudo sed -i /var/lib/piVCCU/userfs/etc/config/rfd.conf -e 's/Improved Coprocessor Initialization = false/Improved Coprocessor Initialization = true/'
-      if [ `grep -c '^Improved Coprocessor Initialization' /var/lib/piVCCU/userfs/etc/config/rfd.conf` -eq 0 ]; then sudo sed -i /var/lib/piVCCU/userfs/etc/config/rfd.conf -e 's/\(^Replacemap File.*\)/\1\nImproved Coprocessor Initialization = true\n/'; fi
-      if [ `grep -c '\^[Interface 0\]' /var/lib/piVCCU/userfs/etc/config/rfd.conf` -eq 0 ]; then sudo bash -c "echo -e \"\n[Interface 0]\nType = CCU2\nComPortFile = /dev/mmd_bidcos\n#AccessFile = /dev/null\n#ResetFile = /dev/ccu2-ic200\" >> /var/lib/piVCCU/userfs/etc/config/rfd.conf"; fi
-      sudo sed -i /var/lib/piVCCU/userfs/etc/config/multimacd.conf -e 's/bcm2835-raw-uart/mxs_auart_raw.0/'
-      if [ `grep -c '<name>HmIP-RF</name>' /var/lib/piVCCU/userfs/etc/config/InterfacesList.xml` -eq 0 ]; then sudo bash -c "sed -i /var/lib/piVCCU/userfs/etc/config/InterfacesList.xml -e 's/\(<\/interfaces>\)/\t<ipc>\n\t\t<name>HmIP-RF<\/name>\n\t\t<url>xmlrpc:\/\/127.0.0.1:2010<\/url>\n\t\t<info>HmIP-RF<\/info>\n\t<\/ipc>\n\1/'"; fi
-      sudo systemctl start pivccu.service
-      ```
-   7. If you used YAHM without HmIP (and only then), remove the HmIP keys to avoid migrating duplicate keys (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
-      ```bash
-      sudo systemctl stop pivccu.service
-      sudo rm -rf /var/lib/piVCCU/userfs/etc/config/crRFD/data/*
-      sudo systemctl start pivccu.service
-      ```
-   8. If you used YAHM without radio module, you should check your interface assignments of the LAN Gateways in the control panel
+         sudo rm -f /var/lib/piVCCU/userfs/etc/config/no-coprocessor-update
+         sudo sed -i /var/lib/piVCCU/userfs/etc/config/rfd.conf -e 's/Improved Coprocessor Initialization = false/Improved Coprocessor Initialization = true/'
+         if [ `grep -c '^Improved Coprocessor Initialization' /var/lib/piVCCU/userfs/etc/config/rfd.conf` -eq 0 ]; then sudo sed -i /var/lib/piVCCU/userfs/etc/config/rfd.conf -e 's/\(^Replacemap File.*\)/\1\nImproved Coprocessor Initialization = true\n/'; fi
+         if [ `grep -c '\^[Interface 0\]' /var/lib/piVCCU/userfs/etc/config/rfd.conf` -eq 0 ]; then sudo bash -c "echo -e \"\n[Interface 0]\nType = CCU2\nComPortFile = /dev/mmd_bidcos\n#AccessFile = /dev/null\n#ResetFile = /dev/ccu2-ic200\" >> /var/lib/piVCCU/userfs/etc/config/rfd.conf"; fi
+         sudo sed -i /var/lib/piVCCU/userfs/etc/config/multimacd.conf -e 's/bcm2835-raw-uart/mxs_auart_raw.0/'
+         if [ `grep -c '<name>HmIP-RF</name>' /var/lib/piVCCU/userfs/etc/config/InterfacesList.xml` -eq 0 ]; then sudo bash -c "sed -i /var/lib/piVCCU/userfs/etc/config/InterfacesList.xml -e 's/\(<\/interfaces>\)/\t<ipc>\n\t\t<name>HmIP-RF<\/name>\n\t\t<url>xmlrpc:\/\/127.0.0.1:2010<\/url>\n\t\t<info>HmIP-RF<\/info>\n\t<\/ipc>\n\1/'"; fi
+         sudo systemctl start pivccu.service
+         ```
+      7. If you used YAHM without HmIP (and only then), remove the HmIP keys to avoid migrating duplicate keys (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
+         ```bash
+         sudo systemctl stop pivccu.service
+         sudo rm -rf /var/lib/piVCCU/userfs/etc/config/crRFD/data/*
+         sudo systemctl start pivccu.service
+         ```
+      8. If you used YAHM without radio module, you should check your interface assignments of the LAN Gateways in the control panel
+   * Migrate to piVCCU3 (CCU3 firmware)
+      1. Create full backup of your SD card
+      2. Create system backup using CCU web interface
+      3. Remove YAHM on the host (or use a plain new sd card image)
+         ```bash
+         sudo lxc-stop -n yahm
+         sudo rm -f /etc/bash_completion.d/yahm_completion
+         sudo rm -f /etc/init.d/hm-mod-rpi-pcb
+
+         sudo rm -rf /opt/YAHM
+         sudo rm -rf /var/lib/lxc/yahm
+
+         sudo sed -i /boot/config.txt -e '/dtoverlay=pi3-miniuart-bt/d'
+         sudo sed -i /boot/config.txt -e '/dtoverlay=pi3-miniuart-bt-overlay/d'
+         sudo sed -i /boot/config.txt -e '/enable_uart=1/d'
+         sudo sed -i /boot/config.txt -e '/force_turbo=1/d'
+
+         sudo sed -i /etc/modules -e '/#*eq3_char_loop/d'
+         sudo sed -i /etc/modules -e '/#*bcm2835_raw_uart/d'
+         ```
+      4. Install piVCCU3 as described above
+      5. Restore the system backup using the CCU web interface
+      6. Remove YAHM specific configuration stuff (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
+         ```bash
+         sudo systemctl stop pivccu.service
+
+         sudo sed -i /var/lib/piVCCU3/userfs/etc/config/rfd.conf -e 's/Improved Coprocessor Initialization = false/Improved Coprocessor Initialization = true/'
+         if [ `grep -c '^Improved Coprocessor Initialization' /var/lib/piVCCU3/userfs/etc/config/rfd.conf` -eq 0 ]; then sudo sed -i /var/lib/piVCCU3/userfs/etc/config/rfd.conf -e 's/\(^Replacemap File.*\)/\1\nImproved Coprocessor Initialization = true\n/'; fi
+         if [ `grep -c '\^[Interface 0\]' /var/lib/piVCCU3/userfs/etc/config/rfd.conf` -eq 0 ]; then sudo bash -c "echo -e \"\n[Interface 0]\nType = CCU2\nComPortFile = /dev/mmd_bidcos\n#AccessFile = /dev/null\n#ResetFile = /dev/ccu2-ic200\" >> /var/lib/piVCCU3/userfs/etc/config/rfd.conf"; fi
+         if [ `grep -c '<name>HmIP-RF</name>' /var/lib/piVCCU3/userfs/etc/config/InterfacesList.xml` -eq 0 ]; then sudo bash -c "sed -i /var/lib/piVCCU3/userfs/etc/config/InterfacesList.xml -e 's/\(<\/interfaces>\)/\t<ipc>\n\t\t<name>HmIP-RF<\/name>\n\t\t<url>xmlrpc:\/\/127.0.0.1:2010<\/url>\n\t\t<info>HmIP-RF<\/info>\n\t<\/ipc>\n\1/'"; fi
+         sudo systemctl start pivccu.service
+         ```
+      7. If you used YAHM without HmIP (and only then), remove the HmIP keys to avoid migrating duplicate keys (this needs to done, even if you used a new sd card image and after every restore of a YAHM backup)
+         ```bash
+         sudo systemctl stop pivccu.service
+         sudo rm -rf /var/lib/piVCCU3/userfs/etc/config/crRFD/data/*
+         sudo systemctl start pivccu.service
+         ```
+      8. As the CCU3 firmware does a cherry picking of files beeing restored, you maybe need to restore some files by yourself (e.g. CUxD settings files).
+      9. If you used YAHM without radio module, you should check your interface assignments of the LAN Gateways in the control panel
       
 ### Using CUxD and USB devices
-1. You can find available devices on the host using
+* piVCCU (CCU2 firmware)
+   1. You can find available devices on the host using
+      ```bash
+      sudo pivccu-device listavailable
+      ```
+   2. Create a hook script on the host
+      ```bash
+      bash -c 'echo "#!/bin/bash" > /etc/piVCCU/post-start.sh'
+      sudo chmod +x /etc/piVCCU/post-start.sh
+      ```
+   3. For each device add an entry to this hook file, e.g. here for ```/dev/ttyUSB0```
+      ```bash
+      bash -c 'echo "pivccu-device add /dev/ttyUSB0" >> /etc/piVCCU/post-start.sh'
+      ```
+   4. The devices will now be available inside the container, just use them like it is described in the CUxD documentation
+* piVCCU3i (CCU3 firmware)
+   You can configure the USB devices using the installer. You can change it later using
    ```bash
-   sudo pivccu-device listavailable
+   sudo dpkg-reconfigure pivccu3
    ```
-2. Create a hook script on the host
-   ```bash
-   bash -c 'echo "#!/bin/bash" > /etc/piVCCU/post-start.sh'
-   sudo chmod +x /etc/piVCCU/post-start.sh
-   ```
-3. For each device add an entry to this hook file, e.g. here for ```/dev/ttyUSB0```
-   ```bash
-   bash -c 'echo "pivccu-device add /dev/ttyUSB0" >> /etc/piVCCU/post-start.sh'
-   ```
-4. The devices will now be available inside the container, just use them like it is described in the CUxD documentation
 
 ### Build packages by your own
 If you like to build the .deb package by yourself

@@ -1,7 +1,7 @@
 ### Prequisites
 
-* Raspberry Pi 2 or 3
-* Raspbian Stretch or Jessie
+* Raspberry Pi 2B/3B/3B+
+* Raspbian Stretch
 
 ### Installation
 0. Create full backup of your SD card
@@ -97,12 +97,17 @@
    sudo reboot
    ```
 
-8. Install CCU2 container
-   ```bash
-   sudo apt install pivccu
-   ```
+8. Install CCU container
+   * To use CCC2 firmware
+      ```bash
+      sudo apt install pivccu
+      ```
+   * To use CCU3 firmware
+      ```bash
+      sudo apt install pivccu3
+      ```
 
-9. Start using your new virtualized CCU2, you can get the IP of the container using
+9. Start using your new virtualized CCU, you can get the IP of the container using
    ```bash
    sudo pivccu-info
    ```

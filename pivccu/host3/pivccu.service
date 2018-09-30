@@ -1,0 +1,13 @@
+[Unit]
+Description=piVCCU
+After=network.target
+
+[Service]
+ExecStart=/var/lib/piVCCU3/start_container.sh
+ExecStop=/var/lib/piVCCU3/stop_container.sh
+Type=forking
+PIDFile=/var/run/pivccu3.pid
+
+[Install]
+WantedBy=multi-user.target
+

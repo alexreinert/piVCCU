@@ -1,0 +1,164 @@
+#!/bin/bash
+CONFIGFILE=/etc/default/pivccu3
+
+. /usr/share/debconf/confmodule
+
+set -e
+
+case "$1" in
+  configure|reconfigure)
+    if [ ! -e /usr/sbin/pivccu-attach ]; then
+      ln -s /var/lib/piVCCU3/pivccu-attach.sh /usr/sbin/pivccu-attach
+    fi
+    if [ ! -e /usr/sbin/pivccu-info ]; then
+      ln -s /var/lib/piVCCU3/pivccu-info.sh /usr/sbin/pivccu-info
+    fi
+    if [ ! -e /usr/sbin/pivccu-backup ]; then
+      ln -s /var/lib/piVCCU3/pivccu-backup.sh /usr/sbin/pivccu-backup
+    fi
+
+    if [ "$1" = "reconfigure" ] || [ "${DEBCONF_RECONFIGURE}" = "1" ]; then
+      db_fset pivccu/rf_mode seen false
+      db_input high pivccu/rf_mode || true
+    elif [ -e /pivccu.createimage ]; then
+      db_set pivccu/rf_mode "HM-MOD-RPI-PCB"
+    elif [ ! -z "$2" ]; then
+      db_get pivccu/rf_mode
+      if [ -z "$RET" ]; then
+        db_set pivccu/rf_mode "HM-MOD-RPI-PCB"
+      fi
+    else
+      db_input high pivccu/rf_mode || true
+    fi
+
+    db_go || true
+
+    db_get pivccu/rf_mode
+
+    case "$RET" in
+      "HM-MOD-RPI-PCB")
+        PIVCCU_HMRF_MODE="HM-MOD-RPI-PCB"
+        PIVCCU_HMIP_MODE="Multimacd"
+        ;;
+      "HmIP-RFUSB")
+        PIVCCU_HMRF_MODE="Fake-HmRF"
+        PIVCCU_HMIP_MODE="HmIP-RFUSB"
+        ;;
+      "HM-MOD-RPI-PCB+HmIP-RFUSB")
+        PIVCCU_HMRF_MODE="HM-MOD-RPI-PCB"
+        PIVCCU_HMIP_MODE="HmIP-RFUSB"
+        ;;
+      "Fake")
+        PIVCCU_HMRF_MODE="Fake-HmRF"
+        PIVCCU_HMIP_MODE="Multimacd"
+        ;;
+    esac
+
+    grep -Eq '^ *PIVCCU_HMRF_MODE=' $CONFIGFILE || echo "PIVCCU_HMRF_MODE=" >> $CONFIGFILE
+    grep -Eq '^ *PIVCCU_HMIP_MODE=' $CONFIGFILE || echo "PIVCCU_HMIP_MODE=" >> $CONFIGFILE
+
+    sed -i $CONFIGFILE -e "s/^ *PIVCCU_HMRF_MODE=.*/PIVCCU_HMRF_MODE=\"$PIVCCU_HMRF_MODE\"/"
+    sed -i $CONFIGFILE -e "s/^ *PIVCCU_HMIP_MODE=.*/PIVCCU_HMIP_MODE=\"$PIVCCU_HMIP_MODE\"/"
+
+    if [ ! -e /pivccu.createimage ]; then 
+      if [ -z "$2" ]; then
+        if [ "$PIVCCU_HMRF_MODE" == "HM-MOD-RPI-PCB" ]; then
+          if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tree/model` == 1 ]; then
+            if ! cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
+              db_input critical pivccu/warn_gpio_uart_not_assigned || true
+            fi
+          fi
+
+          if [ ! -e /sys/devices/virtual/raw-uart ]; then
+            db_input critical pivccu/warn_raw_uart_not_found || true
+          else
+            . /var/lib/piVCCU3/detect_hardware.inc
+
+	    if [ -z "$BOARD_SERIAL" ]; then
+              db_input critical pivccu/warn_no_radio_module_found || true
+            fi
+          fi
+	fi
+
+        BRIDGE=`brctl show | sed -n 2p | awk '{print $1}'`
+        if [ -z "$BRIDGE" ]; then
+          db_input critical pivccu/warn_no_bridge_found || true
+        fi
+
+        db_go
+      fi
+
+      if [ "$1" = "reconfigure" ] || [ "${DEBCONF_RECONFIGURE}" = "1" ]; then
+        CHOICES=""
+        declare -A DEVICES=()
+
+        for sysdevpath in $(find /sys/bus/usb/devices/usb*/ -name dev); do
+          syspath="${sysdevpath%/dev}"
+
+          devname="$(udevadm info -q name -p $syspath)"
+          [[ "$devname" == "bus/"* ]] && continue
+
+          declare -A UDEV_PROPERTIES=()
+          while IFS='=' read -r a b; do UDEV_PROPERTIES["$a"]="$b"; done < <(udevadm info -q property -p $syspath)
+
+          [[ -z "${UDEV_PROPERTIES[ID_SERIAL]}" ]] && continue
+
+          [[ "${UDEV_PROPERTIES[DEVTYPE]}" == "disk" ]] && continue
+
+	  [[ "${UDEV_PROPERTIES[ID_VENDOR_ID]}:${UDEV_PROPERTIES[ID_MODEL_ID]}" == "1b1f:c020" ]] && continue
+
+          if [ ! -z "$CHOICES" ]; then
+            CHOICES="$CHOICES, /dev/$devname (${UDEV_PROPERTIES[ID_SERIAL]})"
+          else
+            CHOICES="/dev/$devname (${UDEV_PROPERTIES[ID_SERIAL]})"
+          fi
+          DEVICES["/dev/$devname"]=$syspath
+        done
+
+        db_fset pivccu/usbdevices seen false
+        db_subst pivccu/usbdevices choices $CHOICES
+        db_input high pivccu/usbdevices || true
+        db_go
+
+        db_get pivccu/usbdevices
+
+        IFS=","
+        SELECTED=($RET)
+
+        NEWDEVCONFIG=""
+
+        for dev in "${SELECTED[@]}"
+        do
+          dev=`echo "$dev" | awk '{print $1}'`
+          syspath="${DEVICES[$dev]}"
+
+          declare -A UDEV_PROPERTIES=()
+          while IFS='=' read -r a b; do UDEV_PROPERTIES["$a"]="$b"; done < <(udevadm info -q property -p $syspath)
+
+          DEVCONFIG="${UDEV_PROPERTIES[ID_VENDOR_ID]};${UDEV_PROPERTIES[ID_MODEL_ID]};${UDEV_PROPERTIES[ID_SERIAL_SHORT]};${UDEV_PROPERTIES[ID_USB_INTERFACE_NUM]};${UDEV_PROPERTIES[ID_PART_ENTRY_UUID]}"
+          if [ -z "$NEWDEVCONFIG" ]; then
+            NEWDEVCONFIG="$DEVCONFIG"
+          else
+            NEWDEVCONFIG="$NEWDEVCONFIG,$DEVCONFIG"
+          fi
+        done
+
+        grep -Eq '^ *PIVCCU_USB_DEVICES=' $CONFIGFILE || echo "PIVCCU_USB_DEVICES=" >> $CONFIGFILE
+        sed -i $CONFIGFILE -e "s/^ *PIVCCU_USB_DEVICES=.*/PIVCCU_USB_DEVICES=\"$NEWDEVCONFIG\"/"
+      fi
+    fi
+
+    db_stop
+
+    systemctl enable pivccu.service
+
+    if [ ! -e /pivccu.createimage ]; then
+      systemctl start pivccu.service || true
+    fi
+  ;;
+
+  abort-upgrade|abort-remove|abort-deconfigure)
+  ;;
+
+esac
+

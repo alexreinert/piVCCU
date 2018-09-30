@@ -27,6 +27,7 @@ Because of that, you need a bridge without a physical interface and to use port 
    ```
 
 2. Configure (private) static IP for CCU (this needs to be done after each restore, too)
+   (If you are using piVCCU3, please you the path /var/lib/piVCCU3 instead of /var/lib/piVCCU)
    ```bash
    sudo systemctl stop pivccu
    sudo bash -c 'cat << EOT > /var/lib/piVCCU/userfs/etc/config/netconfig

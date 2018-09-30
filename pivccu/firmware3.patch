@@ -1,0 +1,1274 @@
+diff -ruN /mnt/bin/dhcp.script rootfs/bin/dhcp.script
+--- /mnt/bin/dhcp.script	2018-08-27 17:36:55.000000000 +0200
++++ rootfs/bin/dhcp.script	2018-09-05 14:11:55.518436489 +0200
+@@ -6,37 +6,25 @@
+ action=${1}
+ nfsroot=false
+ 
+-if grep -q nfsroot /proc/cmdline ; then
+-    if [[ ${interface} == "eth0" ]]; then
+-      nfsroot=true
+-    fi
+-fi
+-
+ handle_deconfig() {
+-  if [[ ${nfsroot} == true ]]; then
+-      exit 0
+-  fi
+   /sbin/ip link set ${interface} up
+   /sbin/ip addr flush dev ${interface}
+ }
+ 
+ handle_renew() {
+ 
+-  # bring interface up if not nfs rooted
+-  if [[ ${nfsroot} == false ]]; then
+-    # make sure we can deal with DHCP servers not providing broadcast or subnet
+-    [[ -n "${broadcast}" ]] && BROADCAST="broadcast ${broadcast}"
+-    [[ -n "${subnet}" ]] && NETMASK="netmask ${subnet}"
+-    /sbin/ifconfig ${interface} ${ip} ${BROADCAST} ${NETMASK}
+-
+-    # update the info in /etc/config/netconfig
+-    eq3configcmd netconfigcmd -i ${ip} -n ${subnet} -g ${router}
+-    j=1
+-    for i in ${dns}; do
+-      eq3configcmd netconfigcmd -d${j} ${i}
+-      j=$((${j} + 1))
+-    done
+-  fi
++  # make sure we can deal with DHCP servers not providing broadcast or subnet
++  [[ -n "${broadcast}" ]] && BROADCAST="broadcast ${broadcast}"
++  [[ -n "${subnet}" ]] && NETMASK="netmask ${subnet}"
++  /sbin/ifconfig ${interface} ${ip} ${BROADCAST} ${NETMASK}
++
++  # update the info in /etc/config/netconfig
++  eq3configcmd netconfigcmd -i ${ip} -n ${subnet} -g ${router}
++  j=1
++  for i in ${dns}; do
++    eq3configcmd netconfigcmd -d${j} ${i}
++    j=$((${j} + 1))
++  done
+ 
+   # add default routes
+   if [[ -n "${router}" ]]; then
+diff -ruN /mnt/etc/fstab rootfs/etc/fstab
+--- /mnt/etc/fstab	2018-08-08 03:43:03.000000000 +0200
++++ rootfs/etc/fstab	2018-09-06 14:54:56.598731181 +0200
+@@ -1,15 +1,3 @@
+ # /etc/fstab: static file system information.
+ #
+ # <file system> <mount pt>     <type>   <options>                                <dump> <pass>
+-/dev/root       /              ext4     ro,noauto                                0      1
+-proc            /proc          proc     defaults                                 0      0
+-devpts          /dev/pts       devpts   defaults,gid=5,mode=620                  0      0
+-tmpfs           /dev/shm       tmpfs    mode=0777                                0      0
+-tmpfs           /tmp           tmpfs    defaults,noatime,mode=1777               0      0
+-tmpfs           /run           tmpfs    defaults,noatime,mode=0755,nosuid,nodev  0      0
+-sysfs           /sys           sysfs    defaults                                 0      0
+-tmpfs           /var           tmpfs    defaults,noatime,size=50%                0      0
+-tmpfs           /media         tmpfs    defaults,noatime                         0      0
+-debugfs         /sys/kernel/debug debugfs noauto                                 0      0
+-LABEL=userfs    /usr/local     ext4     defaults,noatime,nodiratime,rw,data=journal         0      0
+-LABEL=bootfs    /mnt/boot_par  vfat     defaults,ro                              0      0
+diff -ruN /mnt/etc/init.d/S00watchdog rootfs/etc/init.d/S00watchdog
+--- /mnt/etc/init.d/S00watchdog	2018-07-31 17:30:11.000000000 +0200
++++ rootfs/etc/init.d/S00watchdog	1970-01-01 01:00:00.000000000 +0100
+@@ -1,20 +0,0 @@
+-#!/bin/sh
+-#
+-# Start watchdog
+-#
+-
+-case "$1" in
+- start)
+-	echo "Starting watchdog..."
+-	watchdog -t 5 /dev/watchdog
+-	;;
+-  stop)
+-	;;
+-  restart|reload)
+-	;;
+-  *)
+-	echo "Usage: $0 {start|stop|restart}"
+-	exit 1
+-esac
+-
+-exit $?
+diff -ruN /mnt/etc/init.d/S01InitHost rootfs/etc/init.d/S01InitHost
+--- /mnt/etc/init.d/S01InitHost	2018-07-31 17:30:11.000000000 +0200
++++ rootfs/etc/init.d/S01InitHost	1970-01-01 01:00:00.000000000 +0100
+@@ -1,135 +0,0 @@
+-#!/bin/sh
+-#
+-# startup script to identify the host hardware
+-#
+-
+-identify_host() {
+-
+-  # default/fallback values
+-  HM_HOST=""
+-  HM_MODE="NORMAL"
+-  HM_LED_GREEN=""
+-  HM_LED_GREEN_MODE1="none"
+-  HM_LED_GREEN_MODE2="none"
+-  HM_LED_RED=""
+-  HM_LED_RED_MODE1="none"
+-  HM_LED_RED_MODE2="none"
+-  HM_LED_YELLOW=""
+-  HM_LED_YELLOW_MODE1="none"
+-  HM_LED_YELLOW_MODE2="none"
+-
+-  # identify the RaspberryPi version used
+-  # http://elinux.org/RPi_HardwareHistory
+-  # https://github.com/MilhouseVH/bcmstat/blob/master/bcmstat.sh#L67
+-  hostid=$(cat /proc/cpuinfo | grep 'Revision' | awk '{print $3}')
+-  case "${hostid}" in
+-    *a020d3)                                         HM_HOST="rpi3p"      ;; # Raspberry Pi 3 Model B+
+-    *a02080|*a02082|*a22082|*a32082)                 HM_HOST="rpi3"       ;; # Raspberry Pi 3 Model B
+-    *a020a0)                                         HM_HOST="rpi3cm"     ;; # Raspberry Pi Compute Module 3
+-    *a01040|*a01041|*a02041|*a02042|*a21041|*a22042) HM_HOST="rpi2"       ;; # Raspberry Pi 2 Model B
+-    *9000c?)                                         HM_HOST="rpi0w"      ;; # Raspberry Pi Zero W
+-    *90009?|*920093)                                 HM_HOST="rpi0"       ;; # Raspberry Pi Zero
+-    *0011|*0014)                                     HM_HOST="rpi1cm"     ;; # Raspberry Pi Compute Module 1
+-    *0010|*0013|*900032|*90003f)                     HM_HOST="rpi1bp"     ;; # Raspberry Pi B+/512MB
+-    *0015|*900021|*900012)                           HM_HOST="rpi1ap512"  ;; # Raspberry Pi A+/512MB
+-    *0012)                                           HM_HOST="rpi1ap256"  ;; # Raspberry Pi A+/256MB
+-    *000d|*000e|*000f)                               HM_HOST="rpi1b512"   ;; # Raspberry Pi B/512MB
+-    *0002|*0003|*0004|*0005|*0006)                   HM_HOST="rpi1b256"   ;; # Raspberry Pi B/256MB
+-    *0007|*0008|*0009)                               HM_HOST="rpi1a"      ;; # Raspberry Pi A/256MB
+-
+-    # No RaspberryPi identified, try other boards
+-    *)
+-      hardware=$(cat /proc/cpuinfo | grep 'Hardware' | awk '{print $3}')
+-      case "${hardware}" in
+-        # ASUS Tinkerboard
+-        Rockchip)
+-          HM_HOST="tinkerboard"
+-        ;;
+-      esac
+-    ;;
+-  esac
+-
+-  # if HOST is still empty we fall back to RaspberryPi3
+-  if [[ -z "${HM_HOST}" ]]; then
+-    HM_HOST="rpi3"
+-    echo "couldn't identify hardware platform (${hostid}). Using RaspberryPi3 as fallback"
+-  fi
+-
+-  # depending on the host hardware we have to define different
+-  # HM settings
+-  case "${HM_HOST}" in
+-
+-    # RaspberryPi
+-    rpi*)
+-      HM_HOST_GPIO_UART="/dev/raw-uart"
+-      HM_HOST_GPIO_RESET="18"
+-      HM_LED_GREEN="/sys/class/leds/led0"
+-      HM_LED_RED="/sys/class/leds/led1"
+-      HM_LED_YELLOW=""
+-    ;;
+-
+-    # ASUS Tinkerboard
+-    tinkerboard*)
+-      HM_HOST_GPIO_UART="/dev/raw-uart"
+-      HM_HOST_GPIO_RESET="184"
+-      HM_LED_GREEN="/sys/class/leds/act-led"
+-      HM_LED_RED="/sys/class/leds/pwr-led"
+-      HM_LED_YELLOW="/sys/class/leds/led1-led"
+-    ;;
+-
+-    *)
+-      echo "ERROR: couldn't identify host hardware: ${hostid}"
+-    ;;
+-
+-  esac
+-
+-  # make sure the LEDs are actually setup correctly
+-  if [[ -f "${HM_LED_GREEN}/trigger" ]]; then
+-    echo ${HM_LED_GREEN_MODE1} >${HM_LED_GREEN}/trigger
+-  fi
+-  if [[ -f "${HM_LED_RED}/trigger" ]]; then
+-    echo ${HM_LED_RED_MODE1} >${HM_LED_RED}/trigger
+-  fi
+-  if [[ -f "${HM_LED_YELLOW}/trigger" ]]; then
+-    echo ${HM_LED_YELLOW_MODE1} >${HM_LED_YELLOW}/trigger
+-  fi
+-}
+-
+-start() {
+-  echo -n "Identifying onboard hardware: "
+-
+-  # source all data from /var/hm_mode
+-  [[ -r /var/hm_mode ]] && . /var/hm_mode
+-
+-  identify_host
+-
+-  # save all HM_ env variables
+-  set | grep '^HM_' >/var/hm_mode
+-
+-  if [[ -n "${HM_HOST}" ]]; then
+-    echo "${HM_HOST}, OK"
+-  else
+-    echo "ERROR"
+-  fi
+-}
+-
+-restart() {
+-  start
+-}
+-
+-case "$1" in
+-  start)
+-    start
+-  ;;
+-  stop)
+-    # nothing
+-  ;;
+-  restart|reload)
+-    restart
+-  ;;
+-  *)
+-    echo "Usage: $0 {start|stop|restart}"
+-    exit 1
+-esac
+-
+-exit $?
+diff -ruN /mnt/etc/init.d/S02InitRTC rootfs/etc/init.d/S02InitRTC
+--- /mnt/etc/init.d/S02InitRTC	2018-08-02 03:43:03.000000000 +0200
++++ rootfs/etc/init.d/S02InitRTC	1970-01-01 01:00:00.000000000 +0100
+@@ -1,157 +0,0 @@
+-#!/bin/sh
+-#
+-# Startup script to identify and setup RTC clocks
+-#
+-
+-# initialize a potentially existing RTC clock
+-init_rtc_device() {
+-
+-  # load the common i2c kernel modules
+-  if [[ "${HM_HOST}" != "tinkerboard" ]]; then
+-    modprobe i2c_bcm2835
+-  fi
+-  modprobe i2c_dev
+-
+-  # check for RX8130-CE RTC clock at 0x32 (Epson RX8130CE) which
+-  # is the RPI-RF-MOD onboard RTC.
+-  i2cget -y 1 0x32 0x32 2>/dev/null >/dev/null
+-  if [[ $? -eq 0 ]]; then
+-    i2cset -y 1 0x32 0x1f 0x30 > /dev/null
+-    modprobe i2c:rx8130
+-    if [[ $? -eq 0 ]]; then
+-      HM_RTC="rx8130"
+-      [[ -c /dev/rtc0 ]] || echo rx8130 0x32 >/sys/class/i2c-dev/i2c-1/device/new_device
+-      [[ -c /dev/rtc0 ]] || echo 0x32 >/sys/class/i2c-dev/i2c-1/device/delete_device
+-
+-      # we found a RX8130, thus we assume the RPI-RF-MOD to
+-      # be present, thus we setup the LED GPIOs to OUT
+-      if [[ -c /dev/rtc0 ]]; then
+-
+-        # setup the LEDs to show a constant yellow light
+-        echo default-on >/sys/class/leds/rpi_rf_mod\:green/trigger
+-        echo default-on >/sys/class/leds/rpi_rf_mod\:red/trigger
+-        echo none >/sys/class/leds/rpi_rf_mod\:blue/trigger
+-
+-        return 0
+-      fi
+-    fi
+-  fi
+-
+-  # only continue if we don't have a valid rtc yet or otherwise
+-  # this must be an onboard RTC (e.g. tinkerboard)
+-  HM_RTC="onboard"
+-  [[ -c /dev/rtc0 ]] && return 0
+-
+-  HM_RTC=""
+-  # check for MCP7940N RTC clock at 0x6f (PiFace Shim RTC)
+-  i2cget -y 1 0x6f 0x00 2>/dev/null >/dev/null
+-  if [[ $? -eq 0 ]]; then
+-    # calibrate MCP7940N
+-    i2cset -y 1 0x6f 0x08 0x47 2>/dev/null >/dev/null
+-    if [[ $? -eq 0 ]]; then
+-      modprobe i2c:mcp7941x
+-      if [[ $? -eq 0 ]]; then
+-        HM_RTC="mcp7941x"
+-        [[ -c /dev/rtc0 ]] && return 0
+-        echo mcp7941x 0x6f >/sys/class/i2c-dev/i2c-1/device/new_device
+-        [[ -c /dev/rtc0 ]] && return 0
+-        echo 0x6f >/sys/class/i2c-dev/i2c-1/device/delete_device
+-      fi
+-    fi
+-  fi
+-
+-  HM_RTC=""
+-  # check for DS3231/DS1307 RTC clock at 0x68
+-  i2cget -y 1 0x68 0x00 2>/dev/null >/dev/null
+-  if [[ $? -eq 0 ]]; then
+-    # check for DS3231
+-    modprobe i2c:ds3231
+-    if [[ $? -eq 0 ]]; then
+-      HM_RTC="mcp7941x"
+-      [[ -c /dev/rtc0 ]] && return 0
+-      echo ds3231 0x68 >/sys/class/i2c-adapter/i2c-1/new_device
+-      [[ -c /dev/rtc0 ]] && return 0
+-      echo 0x68 >/sys/class/i2c-dev/i2c-1/device/delete_device
+-    fi
+-
+-    # check for DS1307
+-    modprobe i2c:ds1307
+-    if [[ $? -eq 0 ]]; then
+-      HM_RTC="ds1307"
+-      [[ -c /dev/rtc0 ]] && return 0
+-      echo ds1307 0x68 >/sys/class/i2c-adapter/i2c-1/new_device
+-      [[ -c /dev/rtc0 ]] && return 0
+-      echo 0x68 >/sys/class/i2c-dev/i2c-1/device/delete_device
+-    fi
+-  fi
+-
+-  HM_RTC=""
+-  # check for PCF8563 RTC clock at 0x51
+-  i2cget -y 1 0x51 0x00 2>/dev/null >/dev/null
+-  if [[ $? -eq 0 ]]; then
+-    # check for PCF8563
+-    modprobe i2c:pcf8563
+-    if [[ $? -eq 0 ]]; then
+-      HM_RTC="pcf8563"
+-      [[ -c /dev/rtc0 ]] && return 0
+-      echo pcf8563 0x51 >/sys/class/i2c-adapter/i2c-1/new_device
+-      [[ -c /dev/rtc0 ]] && return 0
+-      echo 0x51 >/sys/class/i2c-dev/i2c-1/device/delete_device
+-    fi
+-  fi
+-
+-  HM_RTC=""
+-  return 1
+-}
+-
+-start() {
+-  echo -n "Initializing RTC Clock: "
+-
+-  # source all data from /var/hm_mode
+-  [[ -r /var/hm_mode ]] && . /var/hm_mode
+-
+-  init_rtc_device
+-
+-  # save all HM_ env variables
+-  set | grep '^HM_' >/var/hm_mode
+-
+-  if [[ -c /dev/rtc0 ]]; then
+-    hwclock --hctosys --utc
+-    echo "${HM_RTC}, OK"
+-  else
+-    echo "no hardware found"
+-  fi
+-}
+-
+-stop() {
+-  echo -n "Cleaning up RTC Clock: "
+-
+-  if [[ -c /dev/rtc0 ]]; then
+-    hwclock --systohc --utc
+-    echo "OK"
+-  else
+-    echo "no hardware found"
+-  fi
+-}
+-
+-restart() {
+-  stop
+-  start
+-}
+-
+-case "$1" in
+-  start)
+-    start
+-  ;;
+-  stop)
+-    stop
+-  ;;
+-  restart|reload)
+-    restart
+-  ;;
+-  *)
+-    echo "Usage: $0 {start|stop|restart}"
+-    exit 1
+-esac
+-
+-exit $?
+diff -ruN /mnt/etc/init.d/S03InitURandom rootfs/etc/init.d/S03InitURandom
+--- /mnt/etc/init.d/S03InitURandom	2018-07-31 17:30:11.000000000 +0200
++++ rootfs/etc/init.d/S03InitURandom	1970-01-01 01:00:00.000000000 +0100
+@@ -1,63 +0,0 @@
+-#!/bin/sh
+-#
+-# Startup script to init the random number generator interface (urandom)
+-#
+-
+-init_urandom() {
+-  if [[ ! -c /dev/urandom ]]; then
+-    return
+-  fi
+-
+-  if [[ -s /etc/config/random-seed ]]; then
+-    cat /etc/config/random-seed >/dev/urandom
+-  else
+-    # initialize urandom with /proc/timer_list
+-    head -3 /proc/timer_list | tail -1 | cut -d' ' -f3 >/dev/urandom
+-  fi
+-}
+-
+-save_urandom() {
+-  if [[ ! -c /dev/urandom ]]; then
+-    return
+-  fi
+-
+-  dd if=/dev/urandom of=/etc/config/random-seed count=1 bs=512 2>/dev/null
+-}
+-
+-start() {
+-  echo -n "Initializing urandom: "
+-
+-  init_urandom
+-
+-  echo "OK"
+-}
+-
+-stop() {
+-  echo -n "Saving urandom: "
+-
+-  save_urandom
+-
+-  echo "OK"
+-}
+-
+-restart() {
+-  stop
+-  start
+-}
+-
+-case "$1" in
+-  start)
+-    start
+-  ;;
+-  stop)
+-    stop
+-  ;;
+-  restart|reload)
+-    restart
+-  ;;
+-  *)
+-    echo "Usage: $0 {start|stop|restart}"
+-    exit 1
+-esac
+-
+-exit $?
+diff -ruN /mnt/etc/init.d/S04CheckFactoryReset rootfs/etc/init.d/S04CheckFactoryReset
+--- /mnt/etc/init.d/S04CheckFactoryReset	2018-07-31 17:30:11.000000000 +0200
++++ rootfs/etc/init.d/S04CheckFactoryReset	2018-09-05 09:23:00.830001129 +0200
+@@ -13,38 +13,7 @@
+     return 1
+   fi
+ 
+-  # extract partition number and device name
+-  DEVNODE=$(mountpoint -d /usr/local)
+-  DEVNAME=$(mountpoint -n /usr/local | cut -d' ' -f1)
+-  PARTNUM=$(echo ${DEVNODE} | cut -d':' -f2)
+-  DEV="/dev/$(readlink /sys/dev/block/${DEVNODE} | awk -F/ '{print $(NF-1)}')"
+-
+-  # find out maximum SD card size (in cylinders)
+-  START_CHS=$(parted -s ${DEV} unit chs print | grep "^ ${PARTNUM} " | awk '{print $2}')
+-  END_CHS=$(parted -s ${DEV} unit chs print | grep "^ ${PARTNUM} " | awk '{print $3}')
+-  MAX_CHS=$(parted -s ${DEV} unit chs print | grep "Disk ${DEV}" | cut -d' ' -f3)
+-
+-  # umount /usr/local to regenerate it
+-  umount -f /usr/local
+-
+-  # only resize the partition if END_CHS != MAX_CHS
+-  if [[ -n "${START_CHS}" && -n "${END_CHS}" && -n "${MAX_CHS}" && "${END_CHS}" != "${MAX_CHS}" ]]; then
+-    # remove the third partition (/usr/local) and recreate it with
+-    # MAX_CHS
+-    parted -s ${DEV} rm ${PARTNUM}
+-    parted -s ${DEV} mkpart primary ${START_CHS} ${MAX_CHS}
+-
+-    # force PARTUUID to 0xDEEDBEEF (because parted changes partuuid)
+-    echo -en '\xEF\xBE\xED\xDE' | dd of=${DEV} conv=notrunc bs=1 seek=$((0x1B8)) 2>/dev/null
+-  fi
+-
+-  # we create a clean ext4 partition now
+-  mkfs.ext4 -F -L userfs "${DEVNAME}"
+-  tune2fs -c 0 -i 0 "${DEVNAME}"
+-  e2fsck -pDf "${DEVNAME}"
+-
+-  # mount /usr/local again
+-  mount /usr/local
++  rm -rf /usr/local
+ 
+   return 0
+ }
+diff -ruN /mnt/etc/init.d/S04CheckResizeLocalFS rootfs/etc/init.d/S04CheckResizeLocalFS
+--- /mnt/etc/init.d/S04CheckResizeLocalFS	2018-07-31 17:30:11.000000000 +0200
++++ rootfs/etc/init.d/S04CheckResizeLocalFS	1970-01-01 01:00:00.000000000 +0100
+@@ -1,53 +0,0 @@
+-#!/bin/sh
+-#
+-# Startup script to check for resize local filesystem (/usr/local)
+-#
+-
+-# function to check if a resize of local filesystem (/usr/local) should be performed
+-
+-check_resize_localfs() {
+-
+-  # only continue if .doResizeLocalFS file exists
+-  if [[ ! -r /usr/local/.doResizeLocalFS ]]; then
+-    return 1
+-  fi
+-
+-  # extract device name
+-  DEVNAME=$(mountpoint -n /usr/local | cut -d' ' -f1)
+-  resize2fs $DEVNAME
+-
+-  return 0
+-}
+-
+-start() {
+-  echo -n "Checking for resize file local filesystem: "
+-
+-  check_resize_localfs
+-
+-  if [[ $? -eq 0 ]]; then
+-    echo "resize, OK"
+-  else
+-    echo "not required"
+-  fi
+-}
+-
+-restart() {
+-  start
+-}
+-
+-case "$1" in
+-  start)
+-    start
+-  ;;
+-  stop)
+-    # nothing
+-  ;;
+-  restart|reload)
+-    restart
+-  ;;
+-  *)
+-    echo "Usage: $0 {start|stop|restart}"
+-    exit 1
+-esac
+-
+-exit $?
+diff -ruN /mnt/etc/init.d/S06InitSystem rootfs/etc/init.d/S06InitSystem
+--- /mnt/etc/init.d/S06InitSystem	2018-07-31 17:30:11.000000000 +0200
++++ rootfs/etc/init.d/S06InitSystem	2018-09-05 09:25:27.006983981 +0200
+@@ -80,14 +80,6 @@
+   if [[ ! -s /etc/config/shadow ]] ; then
+     cp -a ${CFG_TEMPLATE_DIR}/shadow /etc/config/
+   fi
+-
+-  # load watchdog kernel module
+-  if [[ "${HM_HOST}" != "tinkerboard" ]]; then
+-    modprobe bcm2835_wdt nowayout=1 heartbeat=15
+-  fi
+-
+-  # load tunneling interface support
+-  modprobe tun
+ }
+ 
+ start() {
+diff -ruN /mnt/etc/init.d/S10udev rootfs/etc/init.d/S10udev
+--- /mnt/etc/init.d/S10udev	2018-08-29 11:35:16.000000000 +0200
++++ rootfs/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
+@@ -1,46 +0,0 @@
+-#!/bin/sh
+-#
+-# udev	This is a minimal non-LSB version of a UDEV startup script.  It
+-#	was derived by stripping down the udev-058 LSB version for use
+-#	with buildroot on embedded hardware using Linux 2.6.34+ kernels.
+-#
+-#	You may need to customize this for your system's resource limits
+-#	(including startup time!) and administration.  For example, if
+-#	your early userspace has a custom initramfs or initrd you might
+-#	need /dev much earlier; or without hotpluggable busses (like USB,
+-#	PCMCIA, MMC/SD, and so on) your /dev might be static after boot.
+-#
+-#	This script assumes your system boots right into the eventual root
+-#	filesystem, and that init runs this udev script before any programs
+-#	needing more device nodes than the bare-bones set -- /dev/console,
+-#	/dev/zero, /dev/null -- that's needed to boot and run this script.
+-#
+-
+-# Check for config file and read it
+-UDEV_CONFIG=/etc/udev/udev.conf
+-test -r $UDEV_CONFIG || exit 6
+-. $UDEV_CONFIG
+-
+-case "$1" in
+-    start)
+-        printf "Populating %s using udev: " "${udev_root:-/dev}"
+-        [ -e /proc/sys/kernel/hotplug ] && printf '\000\000\000\000' > /proc/sys/kernel/hotplug
+-        /sbin/udevd -d || { echo "FAIL"; exit 1; }
+-        udevadm trigger --type=subsystems --action=add
+-        udevadm trigger --type=devices --action=add
+-        udevadm settle --timeout=30 || echo "udevadm settle failed"
+-        echo "done"
+-        ;;
+-    stop)
+-        # Stop execution of events
+-        udevadm control --stop-exec-queue
+-        killall udevd
+-        ;;
+-    *)
+-        echo "Usage: $0 {start|stop}"
+-        exit 1
+-        ;;
+-esac
+-
+-
+-exit 0
+diff -ruN /mnt/etc/init.d/S11InitRFHardware rootfs/etc/init.d/S11InitRFHardware
+--- /mnt/etc/init.d/S11InitRFHardware	2018-07-31 17:30:11.000000000 +0200
++++ rootfs/etc/init.d/S11InitRFHardware	1970-01-01 01:00:00.000000000 +0100
+@@ -1,234 +0,0 @@
+-#!/bin/sh
+-#
+-# Startup script checking for RF capabale hardware
+-#
+-
+-# function to identify rf hardware
+-identify_rf_hardware() {
+-
+-  # setup default HM RF variables
+-  HM_MODE="NORMAL"
+-  HM_HMRF_DEV=""
+-  HM_HMRF_DEVNODE=""
+-  HM_HMIP_DEV=""
+-  HM_HMIP_DEVNODE=""
+-
+-  # until we have a proper tool to identify the
+-  # type of the GPIO rf module we assume a RPI-RF-MOD
+-  # as soon as we have found a rx8130 RTC clock
+-  if [[ "${HM_RTC}" == "rx8130" ]]; then
+-    HM_HMRF_DEV="RPI-RF-MOD"
+-    HM_HMIP_DEV="RPI-RF-MOD"
+-
+-    # setup the LEDs to show a constant yellow light
+-    echo default-on >/sys/class/leds/rpi_rf_mod\:green/trigger
+-    echo default-on >/sys/class/leds/rpi_rf_mod\:red/trigger
+-    echo none >/sys/class/leds/rpi_rf_mod\:blue/trigger
+-  else
+-    HM_HMRF_DEV="HM-MOD-RPI-PCB"
+-    HM_HMIP_DEV="HM-MOD-RPI-PCB"
+-  fi
+-
+-  # check if a HmIP-RFUSB (1b1f:c020) USB stick is connected
+-  # and set HMIP_DEV and HMIP_DEVNODE accordingly
+-  if lsusb | grep -q 1b1f:c020; then
+-    modprobe cp210x
+-    echo 1b1f c020 >/sys/bus/usb-serial/drivers/cp210x/new_id
+-    for i in $(find /sys/bus/usb/devices/usb*/ -name "ttyUSB*" -maxdepth 4); do
+-      DEVDIR=$(dirname $i)
+-      if [[ -f "${DEVDIR}/uevent" ]]; then
+-        if grep -q PRODUCT=1b1f/c020 ${DEVDIR}/uevent; then
+-          HM_HMIP_DEV="HMIP-RFUSB"
+-          HM_HMIP_DEVNODE=/dev/$(basename $i)
+-          break
+-        fi
+-      fi
+-    done
+-  fi
+-
+-  # check if a HM-CFG-USB-2 (1b1f:c00f) USB stick is connected
+-  # and HMRF_DEV accordingly
+-  if lsusb | grep -q 1b1f:c00f; then
+-    HM_HMRF_DEV="HM-CFG-USB-2"
+-  fi
+-
+-  # check if we should boot in LAN gateway mode
+-  if [[ -e /usr/local/HMLGW ]]; then
+-    HM_MODE="HM-LGW"
+-  fi
+-}
+-
+-# function to init rf hardware
+-init_rf_hardware() {
+-  # depending on the HomeMatic mode (HmRF, HmIP) we
+-  # have to load different kernel modules.
+-  if [[ "${HM_HMRF_DEV}" == "HM-MOD-RPI-PCB" ]] ||
+-     [[ "${HM_HMIP_DEV}" == "HM-MOD-RPI-PCB" ]] ||
+-     [[ "${HM_HMRF_DEV}" == "RPI-RF-MOD" ]] ||
+-     [[ "${HM_HMIP_DEV}" == "RPI-RF-MOD" ]]; then
+-
+-    if [[ "${HM_HMRF_DEV}" == "HM-MOD-RPI-PCB" ]] ||
+-       [[ "${HM_HMRF_DEV}" == "RPI-RF-MOD" ]]; then
+-      if [[ -c "${HM_HOST_GPIO_UART}" ]]; then
+-        HM_HMRF_DEVNODE="${HM_HOST_GPIO_UART}"
+-      fi
+-    fi
+-
+-    if [[ "${HM_HMIP_DEV}" == "HM-MOD-RPI-PCB" ]] ||
+-       [[ "${HM_HMIP_DEV}" == "RPI-RF-MOD" ]]; then
+-      if [[ -c "${HM_HOST_GPIO_UART}" ]]; then
+-        HM_HMIP_DEVNODE="${HM_HOST_GPIO_UART}"
+-      fi
+-    fi
+-
+-    # make sure to set low latency serial mode
+-    if [[ "${HM_HOST_GPIO_UART}" != "/dev/raw-uart" ]]; then
+-      /bin/setserial ${HM_HOST_GPIO_UART} low_latency >/dev/null 2>&1
+-    fi
+-
+-    # reset the GPIO rf module by switching its reset pin
+-    # (pin 12 - GPIO.1) off and on with a short delay
+-    if [[ -n "${HM_HOST_GPIO_RESET}" ]]; then
+-      echo ${HM_HOST_GPIO_RESET} >/sys/class/gpio/export
+-      echo out >/sys/class/gpio/gpio${HM_HOST_GPIO_RESET}/direction
+-      echo 0 >/sys/class/gpio/gpio${HM_HOST_GPIO_RESET}/value
+-      sleep 0.1
+-      echo 1 >/sys/class/gpio/gpio${HM_HOST_GPIO_RESET}/value
+-    fi
+-  fi
+-}
+-
+-# function to read out the serial, version and address of the corresponding
+-# rf module
+-query_rf_parameters() {
+-
+-  # check for BidCos-RF (HmRF) Hardware
+-  if [[ -n "${HM_HMRF_DEVNODE}" ]]; then
+-
+-    if [[ "${HM_HMRF_DEV}" == "RPI-RF-MOD" ]] ||
+-       [[ "${HM_HMRF_DEV}" == "HM-MOD-RPI-PCB" ]]; then
+-
+-      if [[ "${HM_HMRF_DEV}" == "RPI-RF-MOD" ]]; then
+-        # use hmip-copro-update only to query all rf module related info (eq3configcmd is not supported for RPI-RF-MOD)
+-        RF_INFO=$(/opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=${HM_HMRF_DEVNODE} -jar /opt/HmIP/hmip-copro-update.jar -p ${HM_HMRF_DEVNODE} -v -a 2>&1)
+-        RF_INFO_SGTIN=$(echo ${RF_INFO} | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p')
+-
+-        # use the last 10 chars of the SGTIN as the serial number of the rf module
+-        HM_HMRF_SERIAL=$(echo ${RF_INFO_SGTIN} | tail -c 11)
+-      else
+-        # use eq3configcmd to query the serial number
+-        HM_HMRF_SERIAL=$(/bin/eq3configcmd update-coprocessor -p ${HM_HMRF_DEVNODE} -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5 | tr -d '[:space:]')
+-      fi
+-
+-      if [[ -n "${HM_HMRF_SERIAL}" ]]; then
+-        if [[ "${HM_HMRF_DEV}" == "RPI-RF-MOD" ]]; then
+-          HM_HMRF_VERSION=$(echo ${RF_INFO} | sed -n 's/.*Application version = \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')
+-          HM_HMRF_ADDRESS=$(echo ${RF_INFO} | sed -n 's/.*Radio address = \([0-9A-F]\{6\}\).*/0x\1/p')
+-        else
+-          HM_HMRF_VERSION=$(/bin/eq3configcmd update-coprocessor -p ${HM_HMRF_DEVNODE} -t HM-MOD-UART -c -v 2>&1 | grep "Version:" | cut -d' ' -f5 | tr -d '[:space:]')
+-          HM_HMRF_ADDRESS=$(/bin/eq3configcmd read-default-rf-address -f ${HM_HMRF_DEVNODE} -h 2>&1 | grep "^0x" | tr -d '[:space:]')
+-        fi
+-      else
+-        HM_HMRF_DEV=""
+-        HM_HMRF_DEVNODE=""
+-      fi
+-    fi
+-
+-  fi
+-
+-  # check for HmIP Hardware
+-  if [[ -n "${HM_HMIP_DEVNODE}" ]]; then
+-
+-    if [[ "${HM_HMIP_DEV}" == "RPI-RF-MOD" ]] ||
+-       [[ "${HM_HMIP_DEV}" == "HMIP-RFUSB" ]]; then
+-
+-      if [[ "${HM_HMIP_DEV}" != "RPI-RF-MOD" ]] || [[ "${HM_HMIP_DEV}" != "${HM_HMRF_DEV}" ]]; then
+-        # run hmip-copro-update to query info and get copro into app mode
+-        RF_INFO=$(/opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=${HM_HMIP_DEVNODE} -jar /opt/HmIP/hmip-copro-update.jar -p ${HM_HMIP_DEVNODE} -v -a 2>&1)
+-
+-        # get the SGTIN
+-        HM_HMIP_SGTIN=$(echo ${RF_INFO} | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p')
+-
+-        # use the last 10 chars of the SGTIN as the serial number of the rf module
+-        HM_HMIP_SERIAL=$(echo ${HM_HMIP_SGTIN} | tail -c 11)
+-        if [[ -n "${HM_HMIP_SERIAL}" ]]; then
+-          HM_HMIP_VERSION=$(echo ${RF_INFO} | sed -n 's/.*Application version = \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')
+-          HM_HMIP_ADDRESS=$(echo ${RF_INFO} | sed -n 's/.*Radio address = \([0-9A-F]\{6\}\).*/0x\1/p')
+-        else
+-          HM_HMIP_DEV=""
+-          HM_HMIP_DEVNODE=""
+-        fi
+-      else
+-        HM_HMIP_SERIAL=${HM_HMRF_SERIAL}
+-        HM_HMIP_VERSION=${HM_HMRF_VERSION}
+-        HM_HMIP_ADDRESS=${HM_HMRF_ADDRESS}
+-        if [[ -n "${RF_INFO_SGTIN}" ]]; then
+-          HM_HMIP_SGTIN=${RF_INFO_SGTIN}
+-        fi
+-      fi
+-    fi
+-
+-  fi
+-
+-  # save all info about the RF module
+-  if [[ -n "${HM_HMRF_SERIAL}" ]]; then
+-    echo "${HM_HMRF_SERIAL}" >/var/board_serial
+-    echo "${HM_HMRF_VERSION}" >/var/rf_firmware_version
+-    echo "${HM_HMRF_ADDRESS}" >/var/rf_address
+-  elif [[ -n "${HM_HMIP_SERIAL}" ]]; then
+-    echo "${HM_HMIP_SERIAL}" >/var/board_serial
+-    echo "${HM_HMIP_VERSION}" >/var/rf_firmware_version
+-    echo "${HM_HMIP_ADDRESS}" >/var/rf_address
+-  else
+-    echo "" >/var/board_serial
+-    echo "" >/var/rf_firmware_version
+-    echo "" >/var/rf_address
+-  fi
+-
+-  if [[ -n "${HM_HMIP_SERIAL}" ]]; then
+-    echo "${HM_HMIP_SERIAL}" >/var/hmip_board_serial
+-    echo "${HM_HMIP_VERSION}" >/var/hmip_firmware_version
+-    echo "${HM_HMIP_ADDRESS}" >/var/hmip_address
+-    if [[ -n "${HM_HMIP_SGTIN}" ]]; then
+-      echo "${HM_HMIP_SGTIN}" >/var/board_sgtin
+-      echo "${HM_HMIP_SGTIN}" >/var/hmip_board_sgtin
+-    fi
+-  fi
+-}
+-
+-start() {
+-  echo -n "Identifying Homematic RF-Hardware: "
+-
+-  # source all data from /var/hm_mode
+-  [[ -r /var/hm_mode ]] && . /var/hm_mode
+-
+-  identify_rf_hardware
+-  init_rf_hardware
+-  query_rf_parameters
+-
+-  # save all HM_ env variables
+-  set | grep '^HM_' >/var/hm_mode
+-
+-  echo "BidCos-RF: ${HM_HMRF_DEV}, HmIP: ${HM_HMIP_DEV}, OK"
+-}
+-
+-restart() {
+-  start
+-}
+-
+-case "$1" in
+-  start)
+-    start
+-  ;;
+-  stop)
+-    # nothing
+-  ;;
+-  restart|reload)
+-    restart
+-  ;;
+-  *)
+-    echo "Usage: $0 {start|stop|restart}"
+-    exit 1
+-esac
+-
+-exit $?
+diff -ruN /mnt/etc/init.d/S13irqbalance rootfs/etc/init.d/S13irqbalance
+--- /mnt/etc/init.d/S13irqbalance	2018-08-29 11:42:34.000000000 +0200
++++ rootfs/etc/init.d/S13irqbalance	1970-01-01 01:00:00.000000000 +0100
+@@ -1,34 +0,0 @@
+-#!/bin/sh
+-#
+-# Starts irqbalance
+-#
+-
+-EXEC="/usr/sbin/irqbalance"
+-ARGS=""
+-PID="/var/run/irqbalance.pid"
+-
+-case "$1" in
+-    start)
+-	printf "Starting irqbalance: "
+-	start-stop-daemon -S -q -x $EXEC -- $ARGS
+-	if [ $? != 0 ]; then
+-	    echo "FAILED"
+-	    exit 1
+-	else
+-	    echo "OK"
+-	fi
+-	pidof irqbalance > $PID
+-	;;
+-    stop)
+-	printf "Stopping irqbalance: "
+-	start-stop-daemon -K -q -p $PID
+-	echo "OK"
+-	;;
+-    restart|reload)
+-	$0 stop
+-	$0 start
+-	;;
+-    *)
+-	echo "Usage: $0 {start|stop|restart}"
+-	exit 1
+-esac
+diff -ruN /mnt/etc/init.d/S21rngd rootfs/etc/init.d/S21rngd
+--- /mnt/etc/init.d/S21rngd	2018-07-31 17:30:11.000000000 +0200
++++ rootfs/etc/init.d/S21rngd	1970-01-01 01:00:00.000000000 +0100
+@@ -1,51 +0,0 @@
+-#!/bin/sh
+-
+-NAME="rngd"
+-DAEMON="/usr/sbin/${NAME}"
+-DAEMON_ARGS=""
+-CFG_FILE="/etc/default/${NAME}"
+-PID_FILE="/var/run/${NAME}.pid"
+-
+-# Read configuration variable file if it is present
+-[ -r "${CFG_FILE}" ] && . "${CFG_FILE}"
+-
+-start()
+-{
+-	printf "Starting ${NAME}: "
+-	if ! head -c 1 /dev/hwrng >/dev/null 2>&1; then
+-		DAEMON_ARGS="-r /dev/urandom"
+-	fi
+-	start-stop-daemon -S -q -x "${DAEMON}" -- ${DAEMON_ARGS}
+-	[ $? = 0 ] && echo "OK" || echo "FAIL"
+-}
+-
+-stop()
+-{
+-	printf "Stopping ${NAME}: "
+-	# This daemon does not exit properly with the default TERM signal unless
+-	# it's forced to work by something reading /dev/random. Killing it and
+-	# removing its PID file is more straightforward.
+-	if start-stop-daemon -K -q -s KILL -p "${PID_FILE}" -n "${NAME}"; then
+-		rm -f "${PID_FILE}"
+-		echo "OK"
+-	else
+-		echo "FAIL"
+-	fi
+-}
+-
+-case "$1" in
+-	start)
+-		start
+-		;;
+-	stop)
+-		stop
+-		;;
+-	restart|reload)
+-		stop
+-		start
+-		;;
+-	*)
+-		echo "Usage: $0 {start|stop|restart|reload}" >&2
+-		exit 1
+-		;;
+-esac
+diff -ruN /mnt/etc/init.d/S31bluetooth rootfs/etc/init.d/S31bluetooth
+--- /mnt/etc/init.d/S31bluetooth	2018-07-31 17:30:11.000000000 +0200
++++ rootfs/etc/init.d/S31bluetooth	1970-01-01 01:00:00.000000000 +0100
+@@ -1,89 +0,0 @@
+-#!/bin/sh
+-#
+-# Bluetooth subsystem starting and stopping
+-#
+-
+-PATH=/sbin:/bin:/usr/sbin:/usr/bin
+-DESC=bluetooth
+-
+-DAEMON=/usr/libexec/bluetooth/bluetoothd
+-HCIATTACH=/usr/bin/hciattach
+-HCICONFIG=/usr/bin/hciconfig
+-RFKILL=/usr/sbin/rfkill
+-DEVICE=/dev/ttyS0
+-
+-SSD_OPTIONS="--oknodo --quiet --exec $DAEMON -- --compat"
+-
+-test -f $DAEMON || exit 0
+-
+-case $1 in
+-  start)
+-    echo -n "Starting bluetooth: "
+-    if [[ -f /etc/config/enableBluetooth ]]; then
+-      if [[ -c ${DEVICE} ]]; then
+-
+-        [[ -r /var/hm_mode ]] && . /var/hm_mode
+-
+-        if [[ "${HM_HOST}" == "tinkerboard" ]]; then
+-          HCIATTACH=/usr/bin/rtk_hciattach
+-          HCIATTACH_OPT="-s 115200 ${DEVICE} rtk_h5"
+-        else
+-          HCIATTACH=/usr/bin/hciattach
+-          HCIATTACH_OPT="${DEVICE} bcm43xx 921600 noflow -"
+-        fi
+-
+-        # first call will flash the firmware
+-        ${RFKILL} unblock bluetooth
+-        ${HCIATTACH} ${HCIATTACH_OPT} 2>/dev/null >/dev/null
+-        echo -n "."
+-
+-        # wait for hciattach
+-        sleep 2
+-
+-        # bring hci0 up
+-        ${HCICONFIG} dev 2>/dev/null >/dev/null
+-        if [ $? -eq 0 ]; then
+-          ${HCICONFIG} hci0 up
+-
+-          start-stop-daemon --start --background ${SSD_OPTIONS}
+-          echo "OK"
+-
+-          exit 0
+-        fi
+-
+-        echo "WARNING: bluetooth setup failed"
+-      else
+-        echo "not required"
+-      fi
+-    else
+-      echo "disabled"
+-    fi
+-
+-    ${RFKILL} block bluetooth 2>/dev/null
+-  ;;
+-
+-  stop)
+-    echo -n "Stopping bluetooth: "
+-    start-stop-daemon --stop ${SSD_OPTIONS}
+-    pkill ".*hciattach"
+-    ${RFKILL} block bluetooth 2>/dev/null
+-    echo "OK"
+-  ;;
+-
+-  restart|force-reload)
+-    $0 stop
+-    sleep 1
+-    $0 start
+-  ;;
+-
+-  status)
+-    echo "$DAEMON" "$DESC" && exit 0 || exit $?
+-  ;;
+-
+-  *)
+-    echo "Usage: $0 {start|stop|restart|force-reload|status}" >&2
+-    exit 1
+-  ;;
+-esac
+-
+-exit 0
+diff -ruN /mnt/etc/inittab rootfs/etc/inittab
+--- /mnt/etc/inittab	2018-07-31 17:30:11.000000000 +0200
++++ rootfs/etc/inittab	2018-09-05 14:19:28.193490286 +0200
+@@ -14,10 +14,7 @@
+ # process   == program to run
+ 
+ # Startup the system
+-null::sysinit:/bin/mount -t proc proc /proc
+ #null::sysinit:/bin/mount -o remount,rw / # REMOUNT_ROOTFS_RW
+-null::sysinit:/bin/mkdir -p /dev/pts
+-null::sysinit:/bin/mkdir -p /dev/shm
+ null::sysinit:/bin/mount -a
+ null::sysinit:/bin/hostname -F /etc/hostname
+ null::sysinit:/usr/bin/psplash -n &
+@@ -25,7 +22,7 @@
+ ::sysinit:/etc/init.d/rcS
+ 
+ # Put a getty on the serial port
+-tty2::askfirst:/sbin/getty -L tty2 0 vt100
++#tty2::askfirst:/sbin/getty -L tty2 0 vt100
+ 
+ # Stuff to do for the 3-finger salute
+ ::ctrlaltdel:/sbin/reboot
+diff -ruN /mnt/www/config/cp_maintenance.cgi rootfs/www/config/cp_maintenance.cgi
+--- /mnt/www/config/cp_maintenance.cgi	2018-08-29 12:49:43.000000000 +0200
++++ rootfs/www/config/cp_maintenance.cgi	2018-09-12 12:56:43.246628023 +0200
+@@ -364,109 +364,13 @@
+                 puts "\${dialogSettingsCMLblActualSoftwareVersion}"
+               }
+               table_data {
+-                puts "$cur_version"
+-              }
+-            }
+-            table_row {
+-              table_data {align="left"} {colspan="2"} {
+-                puts "\${dialogSettingsCMLblAvailableSoftwareVersion}"
+-              }
+-              table_data {id="availableSWVersion"} {
+-                # This doesn´t work properly
+-                # puts [iframe "$REMOTE_FIRMWARE_SCRIPT?cmd=check_version&version=$cur_version&serial=$serial&lang=de&product=HM-CCU3" marginheight=0 marginwidth=0 frameborder=0 width=100 height=20 {scrolling="no"} ]
+-                # The available version will be set further down with "jQuery('#availableSWVersion').html(homematic.com.getLatestVersion());"
+-              }
+-            }
+-            table_row {
+-              table_data {align="left"} {colspan="3"} {
+-                #puts "[bold "Software-Update durchführen"]"
+-                puts "<b>\${dialogSettingsCMLblPerformSoftwareUpdate}</b>"
+-              }
+-            }
+-            table_row {
+-              td {width="20"} {}
+-              table_data {align="left"} {
+-                puts "\${dialogSettingsCMLblPerformSoftwareUpdateStep1}"
+-              }
+-              table_data {
+-                division {class="popupControls CLASS20905"} {
+-                  table {
+-                    table_row {
+-                      table_data {
+-                        division {class="CLASS20908" style="display: none"} {id="btnFwDownload"} {} "onClick=\"window.location.href='$REMOTE_FIRMWARE_SCRIPT?cmd=download&version=$cur_version&serial=$serial&lang=de&product=HM-CCU3';\"" {}
+-                        division {class="CLASS20908"}  "onClick=\"showCCULicense();\"" {puts "\${dialogSettingsCMBtnPerformSoftwareUpdateDownload}"}
+-                      }
+-                    }
+-                  }
+-                }
+-              }
+-            }
+-            table_row {
+-              td {width="20"} {}
+-              table_data {align="left"} {colspan="2"} {
+-                puts "\${dialogSettingsCMLblPerformSoftwareUpdateStep2}"
+-              }
+-            }
+-            table_row {
+-              td {width="20"} {}
+-              table_data {colspan="2"} {
+-                form "$env(SCRIPT_NAME)?sid=$sid" name=firmware_form {target=firmware_upload_iframe} enctype=multipart/form-data method=post {
+-                  export action=firmware_upload
+-                  export downloadOnly=$downloadOnly
+-                  file_button firmware_file size=30 maxlength=1000000
+-                }
+-                puts {<iframe name="firmware_upload_iframe" style="display: none;"></iframe>}
+-              }
+-            }
+-            table_row {
+-              td {width="20"} {}
+-              table_data {align="left"} {
+-                puts "\${dialogSettingsCMLblPerformSoftwareUpdateStep3}"
+-              }
+-              table_data {
+-                division {class="popupControls CLASS20905"} {
+-                  table {
+-                    table_row {
+-                      table_data {
+-                        division {class="CLASS20919"} {onClick="document.firmware_form.submit();showUserHint();"} {
+-                          puts "\${dialogSettingsCMBtnPerformSoftwareUpdateUpload}"
+-                        }
+-                      }
+-                    }
+-                  }
+-                }
+-              }
+-            }
+-            table_row {
+-              td {width="20"} {}
+-              table_data {align="left"} {colspan="2"} {class="CLASS20920"} {
+-                puts "\${dialogSettingsCMLblPerformSoftwareUpdateStep4}"
++                puts "@@@pivccu_version@@@"
+               }
+             }
+           }
+         }
+-        table_data {align="left"} {class="CLASS20921"} {
+-          puts "\${dialogSettingsCMHintSoftwareUpdate1}"
+-          number_list {class="j_noForcedUpdate"} {
+-            li {
+-              ${dialogSettingsCMHintSoftwareUpdate2}            }
+-            li {
+-               ${dialogSettingsCMHintSoftwareUpdate3}
+-            }
+-            li {
+-               ${dialogSettingsCMHintSoftwareUpdate3a}
+-            }
+-            set bat_level [get_bat_level]
+-            if {$bat_level < 50} {
+-              set msg " \${dialogSettingsCMHintSoftwareUpdate4a} $bat_level%. "
+-              append msg  \${dialogSettingsCMHintSoftwareUpdate4b}
+-              li $msg
+-            }
+-          }
+-
+-          division {class="j_forcedUpdate" style="padding:10px;"} {
+-            puts "<br/>\${dialogSettingsCMHintSoftwareUpdate2}"
+-          }
++	table_data {align="left"} {class="CLASS20904"} {
++          puts "\${dialogSettingspiVCCUDonateHint}"
+         }
+       }
+       table_row {class="CLASS20902 j_noForcedUpdate j_fwUpdateOnly"} {
+@@ -831,10 +735,6 @@
+   cgi_javascript {
+     puts "translatePage('#messagebox');"
+     puts "jQuery('#messagebox').show();"
+-    puts "var latestVersion = translateKey('lblAvailableFirmwareVersionNotKnown');"
+-    puts "latestVersion = homematic.com.getLatestVersion();"
+-    puts "if (latestVersion == undefined || isNaN(parseInt(latestVersion.split('.')\[0\]))) {latestVersion = translateKey('lblAvailableFirmwareVersionNotKnown');}"
+-    puts "jQuery('#availableSWVersion').html(latestVersion);"
+ 
+     # Hide all elements with class j_noForcedUpdate when an update is enforced
+     puts "if (forceUpdate) {"
+diff -ruN /mnt/www/config/cp_security.cgi rootfs/www/config/cp_security.cgi
+--- /mnt/www/config/cp_security.cgi	2018-08-29 12:49:43.000000000 +0200
++++ rootfs/www/config/cp_security.cgi	2018-09-11 16:16:50.898656769 +0200
+@@ -258,7 +258,7 @@
+         } else {
+           exec touch /usr/local/.doFactoryReset
+         }
+-        exec kill -SIGQUIT 1
++        exec /sbin/reboot
+     }]} {
+ 
+       # TWIST-22
+@@ -738,8 +738,6 @@
+   cgi_javascript {puts "MessageBox.close();"}
+ 
+   if { "false" == $backuperror } {
+-        exec mount -o remount,ro /usr/local
+-        exec mount -o remount,rw /usr/local
+         division {class="popupTitle"} {
+             puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
+         }
+diff -ruN /mnt/www/webui/js/lang/de/translate.lang.js rootfs/www/webui/js/lang/de/translate.lang.js
+--- /mnt/www/webui/js/lang/de/translate.lang.js	2018-08-29 12:49:43.000000000 +0200
++++ rootfs/www/webui/js/lang/de/translate.lang.js	2018-09-13 14:31:41.918625268 +0200
+@@ -452,7 +452,8 @@
+     "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
+     "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
+     "dialogSettingsCMTDErrorProtocol" : "Fehler-<br/>protokoll",
+-    "dialogSettingsCMLblActualSoftwareVersion" : "Aktuelle Software-Version:",
++    "dialogSettingsCMLblActualSoftwareVersion" : "Aktuelle piVCCU-Version:",
++    "dialogSettingspiVCCUDonateHint" : "Bitte unterst%FCtzen Sie die Entwicklung von piVCCU mit einer Spende via <a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=KJ3UWNDMXLJKU' rel='nofollow'>PayPal</a> oder eine Aufmerksamkeit auf meinem <a href='https://www.amazon.de/gp/registry/wishlist/3NNUQIQO20AAP/ref=nav_wishlist_lists_1'>Amazon Wunschzettel</a>.",
+     "dialogSettingsCMLblAvailableSoftwareVersion" : "Verf%FCgbare Software-Version:",
+     "dialogSettingsCMLblPerformSoftwareUpdate" : "Software-Update durchf%FChren",
+     "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
+@@ -478,8 +479,8 @@
+     "dialogSettingsCMHintSoftwareUpdate3" : "F%FChren Sie vor dem Update eine Datensicherung durch.",
+     "dialogSettingsCMHintSoftwareUpdate4a" : "Der Ladezustand der Batterien betr%E4gt nur noch ",
+     "dialogSettingsCMHintSoftwareUpdate4b" : "Um einem Datenverlust durch Ausfall der Stromversorgung vorzubeugen, empfehlen wir, die Batterien vor dem Update zu erneuern.",
+-    "dialogSettingsCMHintRestart" : "Zentrale neu starten. Ver%E4nderte Einstellungen werden vorher gespeichert.",
+-    "dialogSettingsCMHintShutdown" : "Zentrale herunterfahren. Ver%E4nderte Einstellungen werden vorher gespeichert.",
++    "dialogSettingsCMHintRestart" : "CCU Container neu starten. Ver%E4nderte Einstellungen werden vorher gespeichert.",
++    "dialogSettingsCMHintShutdown" : "CCU Container herunterfahren. Ver%E4nderte Einstellungen werden vorher gespeichert.",
+     "dialogSettingsCMHintRestartSafeMode" : "Homematic Zentrale einmalig im abgesicherten Modus starten. Im abgesicherten Modus wird die installierte Zusatzsoftware nicht gestartet. Ver%E4nderte Einstellungen werden vorher gespeichert.",
+     "dialogSettingsCMHintErrorLog" : "Stellen Sie die Anzahl der Logmeldungen ein, die von der Zentrale generiert werden sollen.<br>Sie k%F6nnen zus%E4tzlich einen Rechner angeben, dem die Zentrale ihre Logmeldungen per Syslog schickt. Auf diesem Rechner mu%DF entsprechende Software installiert sein, die die Meldungen entgegennimmt.<br>Zu Diagnosezwecken k%F6nnen die aktuellen Logmeldungen der Zentrale in einer Textdatei heruntergeladen werden.",
+     "dialogSettingsCMLogLevel0" : "Alles loggen",
+diff -ruN /mnt/www/webui/js/lang/en/translate.lang.js rootfs/www/webui/js/lang/en/translate.lang.js
+--- /mnt/www/webui/js/lang/en/translate.lang.js	2018-08-29 12:49:43.000000000 +0200
++++ rootfs/www/webui/js/lang/en/translate.lang.js	2018-09-13 14:32:23.134901920 +0200
+@@ -451,7 +451,8 @@
+     "dialogSettingsCMTDCCUShutdown" : "Shutdown",
+     "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
+     "dialogSettingsCMTDErrorProtocol" : "Error<br/>log",
+-    "dialogSettingsCMLblActualSoftwareVersion" : "Current software version:",
++    "dialogSettingsCMLblActualSoftwareVersion" : "Current piVCCU version:",
++    "dialogSettingspiVCCUDonateHint" : "Please support the development of piVCCU with a donation via <a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=KJ3UWNDMXLJKU' rel='nofollow'>PayPal</a> or a gift of my <a href='https://www.amazon.de/gp/registry/wishlist/3NNUQIQO20AAP/ref=nav_wishlist_lists_1'>Amazom wishlist</a>.",
+     "dialogSettingsCMLblAvailableSoftwareVersion" : "Available software version:",
+     "dialogSettingsCMLblPerformSoftwareUpdate" : "Perform software update",
+     "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Step 1: Download new software",
+@@ -477,8 +478,8 @@
+     "dialogSettingsCMHintSoftwareUpdate3" : "Please perform a data backup before starting the update.",
+     "dialogSettingsCMHintSoftwareUpdate4a" : "The charging status the batteries is only at ",
+     "dialogSettingsCMHintSoftwareUpdate4b" : "To prevent from data loss due to power failure, it is recommended to replace the batteries before starting the update.",
+-    "dialogSettingsCMHintRestart" : "Restart CCU. The changed settings will be saved before.",
+-    "dialogSettingsCMHintShutdown" : "Shutdown CCU. The changed settings will be saved before.",
++    "dialogSettingsCMHintRestart" : "Restart CCU Container. The changed settings will be saved before.",
++    "dialogSettingsCMHintShutdown" : "Shutdown CCU Container. The changed settings will be saved before.",
+     "dialogSettingsCMHintRestartSafeMode" : "Start Homematic Central Control Unit in safe mode once. In safe mode, the installed additional software will not be started. The changed settings will be saved before.",
+     "dialogSettingsCMHintErrorLog" : "Please set the number of log messages to be generated by the CCU.<br>You can also specify a computer that will receive the log messages from the CCU via syslog. An additional software that will be able to receive this messages has to be installed on the computer.<br>To analyse the results, the current log messages of the CCU can be downloaded in a text file.",
+     "dialogSettingsCMLogLevel0" : "Log all",
