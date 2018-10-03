@@ -101,7 +101,7 @@ To restore a backup file use the WebUI of the CCU.
 9. If you used hook scripts or a customized lxc config, you need to apply your changes in the new directory /etc/piVCCU3 by yourself.
 10. After successful migration you can delete the old piVCCU (CCU2 firmware) data using
    ```bash
-   sudo apt purge pivccu3
+   sudo apt purge pivccu
    ```
 
 ### Migration from other systems
