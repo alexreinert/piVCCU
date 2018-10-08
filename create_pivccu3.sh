@@ -4,7 +4,7 @@ CCU_VERSION=3.37.8
 CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=287"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/Downloads/Software/CCU3-Firmware/CCU3-$CCU_VERSION/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=4
+PKG_BUILD=5
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -16,7 +16,6 @@ CNT_ROOT=$TARGET_DIR/var/lib/piVCCU3
 CNT_ROOTFS=$CNT_ROOT/rootfs
 
 cd $WORK_DIR
-
 
 # download firmware image
 wget -O /dev/null --save-cookies=cookies.txt --keep-session-cookies $CCU_DOWNLOAD_SPLASH_URL
@@ -69,11 +68,34 @@ cp -p $CURRENT_DIR/package/pivccu3/* $TARGET_DIR/DEBIAN
 for file in $TARGET_DIR/DEBIAN/*; do
   sed -i "s/{PKG_VERSION}/$PKG_VERSION/g" $file
   sed -i "s/{CCU_VERSION}/$CCU_VERSION/g" $file
+  sed -i "s/{PKG_ARCH}/armhf/g" $file
 done
 
 cd $WORK_DIR
 
 dpkg-deb --build pivccu3-$PKG_VERSION
 
-cp pivccu3-*.deb $CURRENT_DIR
+cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-armhf.deb
+
+wget -O openjdk-8-jre.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u181-b13-1~deb9u1_armhf.deb
+wget -O openjdk-8-jre-headless.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre-headless_8u181-b13-1~deb9u1_armhf.deb
+
+dpkg-deb -x openjdk-8-jre.deb .
+dpkg-deb -x openjdk-8-jre-headless.deb .
+
+mv usr/lib/jvm/java-8-openjdk-armhf/jre $CNT_ROOTFS/opt/openjdk
+rm -f $CNT_ROOTFS/opt/java
+ln -s /opt/openjdk $CNT_ROOTFS/opt/java
+
+rm -rf $TARGET_DIR/DEBIAN/*
+cp -p $CURRENT_DIR/package/pivccu3/* $TARGET_DIR/DEBIAN
+for file in $TARGET_DIR/DEBIAN/*; do
+  sed -i "s/{PKG_VERSION}/$PKG_VERSION/g" $file
+  sed -i "s/{CCU_VERSION}/$CCU_VERSION/g" $file
+  sed -i "s/{PKG_ARCH}/arm64/g" $file
+done
+
+dpkg-deb --build pivccu3-$PKG_VERSION
+
+cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-arm64.deb
 

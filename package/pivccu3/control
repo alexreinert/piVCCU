@@ -1,6 +1,6 @@
 Package: pivccu3
 Version: {PKG_VERSION}
-Architecture: all
+Architecture: {PKG_ARCH}
 Maintainer: Alexander Reinert <alex@areinert.de>
 Depends: pivccu-modules-dkms (>= 1.0.10)
 Pre-Depends: perl, lxc, bridge-utils, systemd, debconf (>= 0.5) | debconf-2.0
