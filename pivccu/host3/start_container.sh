@@ -58,7 +58,7 @@ IFS=,
 declare -a devices=($PIVCCU_USB_DEVICES)
 IFS=$OIFS
 
-USBDISKINDEX=0
+USBDISKINDEX=1
 
 for dev in ${devices[@]}; do
   IFS=";" read vendor_id model_id serial_short usb_interface_num part_entry_uuid  <<< "$dev"
@@ -82,6 +82,9 @@ for dev in ${devices[@]}; do
       DEVTYPE="b"
       echo "mount -t ${UDEV_PROPERTIES[ID_FS_TYPE]} -o noexec,nodev,noatime,nodiratime ${UDEV_PROPERTIES[DEVNAME]} /media/usb$USBDISKINDEX" >> /tmp/pivccu-var/pivccu/create-mounts
       mkdir -p /tmp/pivccu-media/usb$USBDISKINDEX
+      if [ ! -e /tmp/pivccu-media/usb0 ]; then
+        ln -s /media/usb$USBDISKINDEX /tmp/pivccu-media/usb0
+      fi
       mkdir -p /tmp/pivccu-var/status
       touch /tmp/pivccu-var/status/hasUSB
       touch /tmp/pivccu-var/status/hasSD
