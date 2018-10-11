@@ -4,7 +4,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 
 ### Goals
 * Option to run CCU2 and other software parallel on one device
-* Usage of original CCU2 or CCU3 firmware (and not OCCU) (CCU3 is Experimental)
+* Usage of original CCU2 or CCU3 firmware (and not OCCU)
 * As compatible as possible with original CCU2
 * Full Homematic and Homematic IP support on all supported platforms (if RF hardware supports it)
 * Support for backup/restore between piVCCU and original CCU2 without modification
@@ -21,16 +21,16 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 
 ### Prequisites
 * Debian or Ubuntu based distribution
-* armhf or arm64 architecture (arm64 is only supported on CCU2 version at the moment; x64 is not supported at all)
+* armhf or arm64 architecture (x64 is not supported right now)
 * At least kernel 4.4
 
 ### Prequisites for HM-MOD-RPI-PCB and RPI-RF-MOD
 * Supported Single Board Computer
   * Raspberry Pi 2B/3B/3B+ running Raspbian Stretch
   * Asus Tinkerboard running Armbian with Mainline kernel
-  * Asus Tinkerboard S running Armbian with Mainline kernel (Experimental)
+  * Asus Tinkerboard S running Armbian with Mainline kernel
   * Banana Pi M1 running Armbian with Mainline kernel
-  * Libre Computer AML-S905X-CC (Le Potato) running Armbian with Mainline kernel (Experimental)
+  * Libre Computer AML-S905X-CC (Le Potato) running Armbian with Mainline kernel
   * Odroid C2 running Armbian with Mainline kernel
   * Orange Pi Zero, One, 2, Lite, Plus, Plus 2, Plus 2E, PC, PC Plus, R1 running Armbian with Mainline kernel
 
