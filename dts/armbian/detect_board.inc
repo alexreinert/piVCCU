@@ -17,6 +17,11 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         OVERLAY_FILE='pivccu-orangepi-h2plus.dtbo'
         break
         ;;
+      xunlong,orangepi-zero-plus)
+        OVERLAY_MODE='overlay'
+        OVERLAY_FILE='pivccu-orangepi-h5.dtbo'
+        break
+        ;;
       lemaker,bananapi)
         OVERLAY_MODE='overlay'
         OVERLAY_FILE='pivccu-bananapi-m1.dtbo'

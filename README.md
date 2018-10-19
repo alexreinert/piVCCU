@@ -34,7 +34,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
   * Banana Pi Pro running Armbian with Mainline kernel (Experimental)
   * Libre Computer AML-S905X-CC (Le Potato) running Armbian with Mainline kernel
   * Odroid C2 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
-  * Orange Pi Zero, R1 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
+  * Orange Pi Zero, Zero Plus, R1 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
   * Orange Pi One, 2, Lite, Plus, Plus 2, Plus 2E, PC, PC Plus running Armbian with Mainline kernel
 
     :warning: WARNING: Some models of the Orange Pi have a rotated GPIO socket. Please ensure the correct position of Pin 1!
