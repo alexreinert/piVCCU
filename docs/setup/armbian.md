@@ -1,7 +1,7 @@
 ### Prequisites
 
 * Armbian
-* At least kernel 4.4 (Mainline is prefered)
+* At least kernel 4.14 (Mainline is prefered)
 * The HM-MOD-RPI-PCB and the RPI-RF-MOD are only working on supported platforms
 
 ### Installation

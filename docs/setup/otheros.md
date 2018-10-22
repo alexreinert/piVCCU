@@ -2,7 +2,7 @@
 
 * Debian or Ubuntu based distribution
 * armhf or arm64 architecture (no x64 at the moment!)
-* At least kernel 4.4 (Mainline is prefered)
+* At least kernel 4.14 (Mainline is prefered)
 * HM-MOD-RPI-PCB is supported only on Armbian and on supported hardware platforms
 
 ### Installation

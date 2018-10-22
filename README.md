@@ -22,7 +22,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 ### Prequisites
 * Debian or Ubuntu based distribution
 * armhf or arm64 architecture (x64 is not supported right now)
-* At least kernel 4.4
+* At least kernel 4.14
 
 ### Prequisites for HM-MOD-RPI-PCB and RPI-RF-MOD
 * Supported Single Board Computer
