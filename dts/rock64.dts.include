@@ -1,0 +1,11 @@
+/ {
+        serial@ff130000 {
+                compatible = "pivccu,dw_apb";
+                pivccu,gpio_pin = <67>;
+        };
+        chosen {
+                stdout-path = "";
+                bootargs = "";
+        };
+};
+

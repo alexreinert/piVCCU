@@ -26,6 +26,12 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         INCLUDE_FILE='/var/lib/piVCCU/dts/tinkerboard.dts.include'
         break
         ;;
+      pine64,rock64)
+        OVERLAY_MODE='patch'
+        INCLUDE_FILE='/var/lib/piVCCU/dts/rock64.dts.include'
+        FDT_FILE=rockchip/rk3328-rock64.dtb
+        break
+        ;;
       hardkernel,odroid-c2)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/odroidc2.dts.include'

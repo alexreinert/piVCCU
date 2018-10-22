@@ -35,6 +35,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
   * Orange Pi Zero, One, 2, Lite, Plus, Plus 2, Plus 2E, PC, PC Plus, R1 running Armbian with Mainline kernel
 
     :warning: WARNING: Some models of the Orange Pi have a rotated GPIO socket. Please ensure the correct position of Pin 1!
+  * Rock64 running Armbian with Dev kernel (Experimental)
 * Properly installed HM-MOD-RPI-PCB or RPI-RF-MOD
 
 ### Pre-prepared sd card images
