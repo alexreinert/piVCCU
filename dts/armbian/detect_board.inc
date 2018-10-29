@@ -20,7 +20,13 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
       lemaker,bananapi)
         OVERLAY_MODE='overlay'
         OVERLAY_FILE='pivccu-bananapi-m1.dtbo'
+	break;
 	;;
+      lemaker,bananapro)
+        OVERLAY_MODE='overlay'
+        OVERLAY_FILE='pivccu-bananapi-pro.dtbo'
+	break;
+        ;;
       rockchip,rk3288-miniarm|asus,rk3288-tinker)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/tinkerboard.dts.include'

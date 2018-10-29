@@ -30,6 +30,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
   * Asus Tinkerboard running Armbian with Mainline kernel
   * Asus Tinkerboard S running Armbian with Mainline kernel
   * Banana Pi M1 running Armbian with Mainline kernel
+  * Banana Pi Pro running Armbian with Mainline kernel (Experimental)
   * Libre Computer AML-S905X-CC (Le Potato) running Armbian with Mainline kernel
   * Odroid C2 running Armbian with Mainline kernel
   * Orange Pi Zero, One, 2, Lite, Plus, Plus 2, Plus 2E, PC, PC Plus, R1 running Armbian with Mainline kernel
