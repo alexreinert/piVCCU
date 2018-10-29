@@ -12,7 +12,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 * Support not only on Raspberry
 * Support for 
   * HM-MOD-RPI-PCB (HmRF+HmIP),
-  * RPI-RF-MOD (HmRF+HmIP, LEDs, Pushbutton and RTC are not supported inside CCU Container)
+  * RPI-RF-MOD (HmRF+HmIP, Pushbutton and RTC are not supported inside CCU Container)
   * HmIP-RFUSB (HmIP only)
   * HM-LGW-O-TW-W-EU (HmRF only)
 
@@ -29,14 +29,15 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
   * Raspberry Pi 2B/3B/3B+ running Raspbian Stretch
   * Asus Tinkerboard running Armbian with Mainline kernel
   * Asus Tinkerboard S running Armbian with Mainline kernel
-  * Banana Pi M1 running Armbian with Mainline kernel
+  * Banana Pi M1 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
   * Banana Pi Pro running Armbian with Mainline kernel (Experimental)
   * Libre Computer AML-S905X-CC (Le Potato) running Armbian with Mainline kernel
-  * Odroid C2 running Armbian with Mainline kernel
-  * Orange Pi Zero, One, 2, Lite, Plus, Plus 2, Plus 2E, PC, PC Plus, R1 running Armbian with Mainline kernel
+  * Odroid C2 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
+  * Orange Pi Zero, R1 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
+  * Orange Pi One, 2, Lite, Plus, Plus 2, Plus 2E, PC, PC Plus running Armbian with Mainline kernel
 
     :warning: WARNING: Some models of the Orange Pi have a rotated GPIO socket. Please ensure the correct position of Pin 1!
-  * Rock64 running Armbian with Dev kernel (Experimental)
+  * Rock64 running Armbian with Dev kernel (Experimental) (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
 * Properly installed HM-MOD-RPI-PCB or RPI-RF-MOD
 
 ### Pre-prepared sd card images

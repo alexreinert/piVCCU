@@ -1,11 +1,15 @@
 / {
-        serial@ff130000 {
-                compatible = "pivccu,dw_apb";
-                pivccu,gpio_pin = <67>;
-        };
-        chosen {
-                stdout-path = "";
-                bootargs = "";
-        };
+  serial@ff130000 {
+    compatible = "pivccu,dw_apb";
+    pivccu,reset_pin = <&pivccu_gpio2 3 0>;
+  };
+  pinctrl {
+    pivccu_gpio2: gpio2@ff230000 {
+    };
+  };
+  chosen {
+    stdout-path = "";
+    bootargs = "";
+  };
 };
 

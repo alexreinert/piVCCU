@@ -2,14 +2,17 @@
 /plugin/;
 
 / {
-    compatible = "allwinner,sun7i-a20";
-    fragment@0 {
-        target = <&uart4>;
-        __overlay__ {
-            status = "okay";
-            compatible = "pivccu,dw_apb";
-            pivccu,gpio_pin = <259>;
-        };
+  compatible = "allwinner,sun7i-a20";
+  fragment@0 {
+    target = <&uart4>;
+    __overlay__ {
+      status = "okay";
+      compatible = "pivccu,dw_apb";
+      pivccu,gpio_pin = <&pio 8 3 0>;
+      pivccu,red_pin = <&pio 1 6 0>;
+      pivccu,green_pin = <&pio 1 12 0>;
+      pivccu,blue_pin = <&pio 1 8 0>;
     };
+  };
 };
 

@@ -2,17 +2,20 @@
   soc {
     periphs@c8834000 {
       pinctrl@4b0 {
+        pivccu_gpio: bank@4b0 {
+        };
         pivccu_uart_a_pins: uart_a {
         };
       };
     };
+
     bus@c1100000 {
       serial@84c0 {
         pinctrl-names = "default";
         pinctrl-0 = <&pivccu_uart_a_pins>;
         status = "okay";
         compatible = "pivccu,meson";
-        pivccu,gpio_pin = <238>;
+        pivccu,reset_pin = <&pivccu_gpio 102 0>;
       };
     };
   };

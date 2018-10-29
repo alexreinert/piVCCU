@@ -19,4 +19,5 @@ rm -rf /tmp/pivccu-var
 # unload kernel modules
 rmmod eq3_char_loop || true
 rmmod fake_hmrf || true
-
+rmmod dummy_rx8130 || true
+rmmod rpi_rf_mod_led || true

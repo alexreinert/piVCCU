@@ -27,7 +27,7 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         OVERLAY_FILE='pivccu-bananapi-pro.dtbo'
 	break;
         ;;
-      rockchip,rk3288-miniarm|asus,rk3288-tinker)
+      asus,rk3288-tinker|asus,rk3288-tinker-s)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/tinkerboard.dts.include'
         break

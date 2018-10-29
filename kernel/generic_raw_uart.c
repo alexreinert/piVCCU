@@ -37,12 +37,25 @@
 #include <asm/ioctls.h>
 #include <asm/termios.h>
 #include <linux/gpio.h>
+#include <linux/gpio/consumer.h>
 #include <linux/delay.h>
 
 #include "generic_raw_uart.h"
 
 #define MODULE_NAME "generic-raw-uart"
 #define DRIVER_NAME "raw-uart"
+
+static int red_gpio_pin = true;
+module_param(red_gpio_pin, int, S_IRUSR | S_IRGRP);
+MODULE_PARM_DESC(red_gpio_pin, "GPIO Pin of red LED");
+
+static int green_gpio_pin = true;
+module_param(green_gpio_pin, int, S_IRUSR | S_IRGRP);
+MODULE_PARM_DESC(green_gpio_pin, "GPIO Pin of green LED");
+
+static int blue_gpio_pin = true;
+module_param(blue_gpio_pin, int, S_IRUSR | S_IRGRP);
+MODULE_PARM_DESC(blue_gpio_pin, "GPIO Pin of blue LED");
 
 #define CIRCBUF_SIZE 1024
 #define CON_DATA_TX_BUF_SIZE 4096
@@ -661,16 +674,26 @@ static int generic_raw_uart_proc_show(struct seq_file *m, void *v)
   return 0;
 }
 
-static int generic_raw_uart_proc_open(struct inode *inode, struct  file *file)
+static int generic_raw_uart_proc_open(struct inode *inode, struct file *file)
 {
   return single_open( file, generic_raw_uart_proc_show, NULL );
 }
 #endif /*PROC_DEBUG*/
 
+int generic_raw_uart_get_gpio_pin_number(struct device *dev, const char *label)
+{
+  struct fwnode_handle *fwnode = dev_fwnode(dev);
+  struct gpio_desc *gpiod = fwnode_get_named_gpiod(fwnode, label, 0, GPIOD_ASIS, label);
+
+  if (IS_ERR_OR_NULL(gpiod))
+    return 0;
+
+  return desc_to_gpio(gpiod);
+}
+
 int generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *drv)
 {
   int err;
-  int val;
   void *ptr_err;
 
   driver = drv;
@@ -709,20 +732,22 @@ int generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *drv)
   if (IS_ERR(ptr_err))
     goto failed_device_create;
 
-  err = device_property_read_u32(dev, "pivccu,gpio_pin", &val);
-  if (!err)
-    instance->gpio_pin = val;
+  instance->gpio_pin = generic_raw_uart_get_gpio_pin_number(dev, "pivccu,reset_pin");
 
-  if (instance->gpio_pin != 0 && gpio_is_valid(instance->gpio_pin))
+  if (instance->gpio_pin != 0)
   {
     gpio_request(instance->gpio_pin, NULL);
     gpio_direction_output(instance->gpio_pin, true);
   }
   else
   {
-    dev_info(dev, "No reset pin configured in device tree");
+    dev_info(dev, "No valid reset pin configured in device tree");
     instance->gpio_pin = 0;
   }
+
+  red_gpio_pin = generic_raw_uart_get_gpio_pin_number(dev, "pivccu,red_pin");
+  green_gpio_pin = generic_raw_uart_get_gpio_pin_number(dev, "pivccu,green_pin");
+  blue_gpio_pin = generic_raw_uart_get_gpio_pin_number(dev, "pivccu,blue_pin");
 
   sema_init( &instance->sem, 1 );
   spin_lock_init( &instance->lock_tx );
@@ -789,7 +814,7 @@ module_exit(generic_raw_uart_exit);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.2");
+MODULE_VERSION("1.3");
 MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
