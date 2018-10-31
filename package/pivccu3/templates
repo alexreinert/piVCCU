@@ -32,6 +32,7 @@ Type: select
 Description: Which module should be used for HmRF?
 Choices: HM-MOD-RPI-PCB, HmIP-RFUSB, Fake
 Choices-EN: HM-MOD-RPI-PCB or RPI-RF-MOD (Only on supported platforms), HmIP-RFUSB (HmIP only), Fake radio module emulation
+Choices-DE: HM-MOD-RPI-PCB or RPI-RF-MOD (Only on supported platforms), HmIP-RFUSB (HmIP only), Fake radio module emulation
 
 Template: pivccu/usbdevices
 Type: multiselect
