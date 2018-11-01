@@ -3,6 +3,8 @@
 . /etc/default/pivccu3
 
 modprobe -a eq3_char_loop &> /dev/null
+modprobe ip6_tables &> /dev/null
+
 if [ $? -ne 0 ]; then
   logger -t piVCCU3 -p user.err -s "Could not load kernel modules plat_eq3ccu2 and eq3_char_loop." 1>&2
   exit 1

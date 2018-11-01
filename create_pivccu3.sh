@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CCU_VERSION=3.37.8
-CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=287"
+CCU_VERSION=3.41.7
+CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=293"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/Downloads/Software/CCU3-Firmware/CCU3-$CCU_VERSION/ccu3-$CCU_VERSION.tgz"
 
 PKG_BUILD=7
@@ -26,7 +26,7 @@ tar xzf ccu3.tar.gz
 gunzip rootfs.ext4.gz
 
 mkdir $WORK_DIR/image
-mount -t ext4 -o loop,ro /root/ccu3/unpacked/rootfs.ext4 $WORK_DIR/image
+mount -t ext4 -o loop,ro rootfs.ext4 $WORK_DIR/image
 
 mkdir -p $CNT_ROOTFS
 

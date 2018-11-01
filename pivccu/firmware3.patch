@@ -1,6 +1,6 @@
-diff -ruN /mnt/bin/dhcp.script rootfs/bin/dhcp.script
---- /mnt/bin/dhcp.script	2018-08-27 17:36:55.000000000 +0200
-+++ rootfs/bin/dhcp.script	2018-09-05 14:11:55.518436489 +0200
+diff -ruN fw.3.41.7.orig/bin/dhcp.script fw.3.41.7.patched/bin/dhcp.script
+--- fw.3.41.7.orig/bin/dhcp.script	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/bin/dhcp.script	2018-11-01 15:54:18.930439442 +0100
 @@ -6,37 +6,25 @@
  action=${1}
  nfsroot=false
@@ -51,9 +51,9 @@ diff -ruN /mnt/bin/dhcp.script rootfs/bin/dhcp.script
  
    # add default routes
    if [[ -n "${router}" ]]; then
-diff -ruN /mnt/etc/fstab rootfs/etc/fstab
---- /mnt/etc/fstab	2018-08-08 03:43:03.000000000 +0200
-+++ rootfs/etc/fstab	2018-09-06 14:54:56.598731181 +0200
+diff -ruN fw.3.41.7.orig/etc/fstab fw.3.41.7.patched/etc/fstab
+--- fw.3.41.7.orig/etc/fstab	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/fstab	2018-11-01 15:54:18.990439837 +0100
 @@ -1,15 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -70,9 +70,9 @@ diff -ruN /mnt/etc/fstab rootfs/etc/fstab
 -debugfs         /sys/kernel/debug debugfs noauto                                 0      0
 -LABEL=userfs    /usr/local     ext4     defaults,noatime,nodiratime,rw,data=journal         0      0
 -LABEL=bootfs    /mnt/boot_par  vfat     defaults,ro                              0      0
-diff -ruN /mnt/etc/init.d/S00watchdog rootfs/etc/init.d/S00watchdog
---- /mnt/etc/init.d/S00watchdog	2018-07-31 17:30:11.000000000 +0200
-+++ rootfs/etc/init.d/S00watchdog	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.3.41.7.orig/etc/init.d/S00watchdog fw.3.41.7.patched/etc/init.d/S00watchdog
+--- fw.3.41.7.orig/etc/init.d/S00watchdog	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/init.d/S00watchdog	1970-01-01 01:00:00.000000000 +0100
 @@ -1,20 +0,0 @@
 -#!/bin/sh
 -#
@@ -94,9 +94,9 @@ diff -ruN /mnt/etc/init.d/S00watchdog rootfs/etc/init.d/S00watchdog
 -esac
 -
 -exit $?
-diff -ruN /mnt/etc/init.d/S01InitHost rootfs/etc/init.d/S01InitHost
---- /mnt/etc/init.d/S01InitHost	2018-07-31 17:30:11.000000000 +0200
-+++ rootfs/etc/init.d/S01InitHost	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.3.41.7.orig/etc/init.d/S01InitHost fw.3.41.7.patched/etc/init.d/S01InitHost
+--- fw.3.41.7.orig/etc/init.d/S01InitHost	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/init.d/S01InitHost	1970-01-01 01:00:00.000000000 +0100
 @@ -1,135 +0,0 @@
 -#!/bin/sh
 -#
@@ -233,10 +233,10 @@ diff -ruN /mnt/etc/init.d/S01InitHost rootfs/etc/init.d/S01InitHost
 -esac
 -
 -exit $?
-diff -ruN /mnt/etc/init.d/S02InitRTC rootfs/etc/init.d/S02InitRTC
---- /mnt/etc/init.d/S02InitRTC	2018-08-02 03:43:03.000000000 +0200
-+++ rootfs/etc/init.d/S02InitRTC	1970-01-01 01:00:00.000000000 +0100
-@@ -1,157 +0,0 @@
+diff -ruN fw.3.41.7.orig/etc/init.d/S02InitRTC fw.3.41.7.patched/etc/init.d/S02InitRTC
+--- fw.3.41.7.orig/etc/init.d/S02InitRTC	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/init.d/S02InitRTC	1970-01-01 01:00:00.000000000 +0100
+@@ -1,163 +0,0 @@
 -#!/bin/sh
 -#
 -# Startup script to identify and setup RTC clocks
@@ -255,7 +255,7 @@ diff -ruN /mnt/etc/init.d/S02InitRTC rootfs/etc/init.d/S02InitRTC
 -  # is the RPI-RF-MOD onboard RTC.
 -  i2cget -y 1 0x32 0x32 2>/dev/null >/dev/null
 -  if [[ $? -eq 0 ]]; then
--    i2cset -y 1 0x32 0x1f 0x30 > /dev/null
+-    i2cset -y 1 0x32 0x1f 0x30 >/dev/null # turn on coldcap charging
 -    modprobe i2c:rx8130
 -    if [[ $? -eq 0 ]]; then
 -      HM_RTC="rx8130"
@@ -274,6 +274,12 @@ diff -ruN /mnt/etc/init.d/S02InitRTC rootfs/etc/init.d/S02InitRTC
 -        return 0
 -      fi
 -    fi
+-  fi
+-
+-  # make sure we load the RTC kernel module for
+-  # the tinkerboard
+-  if [[ "${HM_HOST}" == "tinkerboard" ]]; then
+-    modprobe rtc_rk808
 -  fi
 -
 -  # only continue if we don't have a valid rtc yet or otherwise
@@ -394,9 +400,9 @@ diff -ruN /mnt/etc/init.d/S02InitRTC rootfs/etc/init.d/S02InitRTC
 -esac
 -
 -exit $?
-diff -ruN /mnt/etc/init.d/S03InitURandom rootfs/etc/init.d/S03InitURandom
---- /mnt/etc/init.d/S03InitURandom	2018-07-31 17:30:11.000000000 +0200
-+++ rootfs/etc/init.d/S03InitURandom	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.3.41.7.orig/etc/init.d/S03InitURandom fw.3.41.7.patched/etc/init.d/S03InitURandom
+--- fw.3.41.7.orig/etc/init.d/S03InitURandom	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/init.d/S03InitURandom	1970-01-01 01:00:00.000000000 +0100
 @@ -1,63 +0,0 @@
 -#!/bin/sh
 -#
@@ -461,9 +467,9 @@ diff -ruN /mnt/etc/init.d/S03InitURandom rootfs/etc/init.d/S03InitURandom
 -esac
 -
 -exit $?
-diff -ruN /mnt/etc/init.d/S04CheckFactoryReset rootfs/etc/init.d/S04CheckFactoryReset
---- /mnt/etc/init.d/S04CheckFactoryReset	2018-07-31 17:30:11.000000000 +0200
-+++ rootfs/etc/init.d/S04CheckFactoryReset	2018-09-05 09:23:00.830001129 +0200
+diff -ruN fw.3.41.7.orig/etc/init.d/S04CheckFactoryReset fw.3.41.7.patched/etc/init.d/S04CheckFactoryReset
+--- fw.3.41.7.orig/etc/init.d/S04CheckFactoryReset	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/init.d/S04CheckFactoryReset	2018-11-01 15:54:19.010439969 +0100
 @@ -13,38 +13,7 @@
      return 1
    fi
@@ -504,9 +510,9 @@ diff -ruN /mnt/etc/init.d/S04CheckFactoryReset rootfs/etc/init.d/S04CheckFactory
  
    return 0
  }
-diff -ruN /mnt/etc/init.d/S04CheckResizeLocalFS rootfs/etc/init.d/S04CheckResizeLocalFS
---- /mnt/etc/init.d/S04CheckResizeLocalFS	2018-07-31 17:30:11.000000000 +0200
-+++ rootfs/etc/init.d/S04CheckResizeLocalFS	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.3.41.7.orig/etc/init.d/S04CheckResizeLocalFS fw.3.41.7.patched/etc/init.d/S04CheckResizeLocalFS
+--- fw.3.41.7.orig/etc/init.d/S04CheckResizeLocalFS	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/init.d/S04CheckResizeLocalFS	1970-01-01 01:00:00.000000000 +0100
 @@ -1,53 +0,0 @@
 -#!/bin/sh
 -#
@@ -561,9 +567,9 @@ diff -ruN /mnt/etc/init.d/S04CheckResizeLocalFS rootfs/etc/init.d/S04CheckResize
 -esac
 -
 -exit $?
-diff -ruN /mnt/etc/init.d/S06InitSystem rootfs/etc/init.d/S06InitSystem
---- /mnt/etc/init.d/S06InitSystem	2018-07-31 17:30:11.000000000 +0200
-+++ rootfs/etc/init.d/S06InitSystem	2018-09-05 09:25:27.006983981 +0200
+diff -ruN fw.3.41.7.orig/etc/init.d/S06InitSystem fw.3.41.7.patched/etc/init.d/S06InitSystem
+--- fw.3.41.7.orig/etc/init.d/S06InitSystem	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/init.d/S06InitSystem	2018-11-01 15:54:19.010439969 +0100
 @@ -80,14 +80,6 @@
    if [[ ! -s /etc/config/shadow ]] ; then
      cp -a ${CFG_TEMPLATE_DIR}/shadow /etc/config/
@@ -579,9 +585,9 @@ diff -ruN /mnt/etc/init.d/S06InitSystem rootfs/etc/init.d/S06InitSystem
  }
  
  start() {
-diff -ruN /mnt/etc/init.d/S10udev rootfs/etc/init.d/S10udev
---- /mnt/etc/init.d/S10udev	2018-08-29 11:35:16.000000000 +0200
-+++ rootfs/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.3.41.7.orig/etc/init.d/S10udev fw.3.41.7.patched/etc/init.d/S10udev
+--- fw.3.41.7.orig/etc/init.d/S10udev	2018-10-30 15:49:10.000000000 +0100
++++ fw.3.41.7.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
 @@ -1,46 +0,0 @@
 -#!/bin/sh
 -#
@@ -629,10 +635,10 @@ diff -ruN /mnt/etc/init.d/S10udev rootfs/etc/init.d/S10udev
 -
 -
 -exit 0
-diff -ruN /mnt/etc/init.d/S11InitRFHardware rootfs/etc/init.d/S11InitRFHardware
---- /mnt/etc/init.d/S11InitRFHardware	2018-07-31 17:30:11.000000000 +0200
-+++ rootfs/etc/init.d/S11InitRFHardware	1970-01-01 01:00:00.000000000 +0100
-@@ -1,234 +0,0 @@
+diff -ruN fw.3.41.7.orig/etc/init.d/S11InitRFHardware fw.3.41.7.patched/etc/init.d/S11InitRFHardware
+--- fw.3.41.7.orig/etc/init.d/S11InitRFHardware	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/init.d/S11InitRFHardware	1970-01-01 01:00:00.000000000 +0100
+@@ -1,244 +0,0 @@
 -#!/bin/sh
 -#
 -# Startup script checking for RF capabale hardware
@@ -801,6 +807,11 @@ diff -ruN /mnt/etc/init.d/S11InitRFHardware rootfs/etc/init.d/S11InitRFHardware
 -          HM_HMIP_SGTIN=${RF_INFO_SGTIN}
 -        fi
 -      fi
+-
+-    elif [[ -z "${HM_HMRF_DEV}" ]] &&
+-         [[ -z "${HM_HMRF_DEVNODE}" ]]; then
+-      HM_HMIP_DEV=""
+-      HM_HMIP_DEVNODE=""
 -    fi
 -
 -  fi
@@ -844,7 +855,12 @@ diff -ruN /mnt/etc/init.d/S11InitRFHardware rootfs/etc/init.d/S11InitRFHardware
 -  # save all HM_ env variables
 -  set | grep '^HM_' >/var/hm_mode
 -
--  echo "BidCos-RF: ${HM_HMRF_DEV}, HmIP: ${HM_HMIP_DEV}, OK"
+-  # output some status information
+-  echo -n "BidCos-RF: "
+-  [[ -n "${HM_HMRF_DEV}" ]] && echo -n "${HM_HMRF_DEV}, " || echo -n "none, "
+-  echo -n "HmIP: "
+-  [[ -n "${HM_HMIP_DEV}" ]] && echo -n "${HM_HMIP_DEV}, " || echo -n "none, "
+-  echo "OK"
 -}
 -
 -restart() {
@@ -867,9 +883,9 @@ diff -ruN /mnt/etc/init.d/S11InitRFHardware rootfs/etc/init.d/S11InitRFHardware
 -esac
 -
 -exit $?
-diff -ruN /mnt/etc/init.d/S13irqbalance rootfs/etc/init.d/S13irqbalance
---- /mnt/etc/init.d/S13irqbalance	2018-08-29 11:42:34.000000000 +0200
-+++ rootfs/etc/init.d/S13irqbalance	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.3.41.7.orig/etc/init.d/S13irqbalance fw.3.41.7.patched/etc/init.d/S13irqbalance
+--- fw.3.41.7.orig/etc/init.d/S13irqbalance	2018-10-30 15:55:48.000000000 +0100
++++ fw.3.41.7.patched/etc/init.d/S13irqbalance	1970-01-01 01:00:00.000000000 +0100
 @@ -1,34 +0,0 @@
 -#!/bin/sh
 -#
@@ -905,9 +921,9 @@ diff -ruN /mnt/etc/init.d/S13irqbalance rootfs/etc/init.d/S13irqbalance
 -	echo "Usage: $0 {start|stop|restart}"
 -	exit 1
 -esac
-diff -ruN /mnt/etc/init.d/S21rngd rootfs/etc/init.d/S21rngd
---- /mnt/etc/init.d/S21rngd	2018-07-31 17:30:11.000000000 +0200
-+++ rootfs/etc/init.d/S21rngd	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.3.41.7.orig/etc/init.d/S21rngd fw.3.41.7.patched/etc/init.d/S21rngd
+--- fw.3.41.7.orig/etc/init.d/S21rngd	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/init.d/S21rngd	1970-01-01 01:00:00.000000000 +0100
 @@ -1,51 +0,0 @@
 -#!/bin/sh
 -
@@ -960,9 +976,9 @@ diff -ruN /mnt/etc/init.d/S21rngd rootfs/etc/init.d/S21rngd
 -		exit 1
 -		;;
 -esac
-diff -ruN /mnt/etc/init.d/S31bluetooth rootfs/etc/init.d/S31bluetooth
---- /mnt/etc/init.d/S31bluetooth	2018-07-31 17:30:11.000000000 +0200
-+++ rootfs/etc/init.d/S31bluetooth	1970-01-01 01:00:00.000000000 +0100
+diff -ruN fw.3.41.7.orig/etc/init.d/S31bluetooth fw.3.41.7.patched/etc/init.d/S31bluetooth
+--- fw.3.41.7.orig/etc/init.d/S31bluetooth	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/init.d/S31bluetooth	1970-01-01 01:00:00.000000000 +0100
 @@ -1,89 +0,0 @@
 -#!/bin/sh
 -#
@@ -1053,33 +1069,27 @@ diff -ruN /mnt/etc/init.d/S31bluetooth rootfs/etc/init.d/S31bluetooth
 -esac
 -
 -exit 0
-diff -ruN /mnt/etc/inittab rootfs/etc/inittab
---- /mnt/etc/inittab	2018-07-31 17:30:11.000000000 +0200
-+++ rootfs/etc/inittab	2018-09-05 14:19:28.193490286 +0200
-@@ -14,10 +14,7 @@
+diff -ruN fw.3.41.7.orig/etc/inittab fw.3.41.7.patched/etc/inittab
+--- fw.3.41.7.orig/etc/inittab	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/inittab	2018-11-01 15:58:34.804126414 +0100
+@@ -14,10 +14,10 @@
  # process   == program to run
  
  # Startup the system
 -null::sysinit:/bin/mount -t proc proc /proc
++#null::sysinit:/bin/mount -t proc proc /proc
  #null::sysinit:/bin/mount -o remount,rw / # REMOUNT_ROOTFS_RW
 -null::sysinit:/bin/mkdir -p /dev/pts
 -null::sysinit:/bin/mkdir -p /dev/shm
++#null::sysinit:/bin/mkdir -p /dev/pts
++#null::sysinit:/bin/mkdir -p /dev/shm
  null::sysinit:/bin/mount -a
  null::sysinit:/bin/hostname -F /etc/hostname
  null::sysinit:/usr/bin/psplash -n &
-@@ -25,7 +22,7 @@
- ::sysinit:/etc/init.d/rcS
- 
- # Put a getty on the serial port
--tty2::askfirst:/sbin/getty -L tty2 0 vt100
-+#tty2::askfirst:/sbin/getty -L tty2 0 vt100
- 
- # Stuff to do for the 3-finger salute
- ::ctrlaltdel:/sbin/reboot
-diff -ruN /mnt/www/config/cp_maintenance.cgi rootfs/www/config/cp_maintenance.cgi
---- /mnt/www/config/cp_maintenance.cgi	2018-08-29 12:49:43.000000000 +0200
-+++ rootfs/www/config/cp_maintenance.cgi	2018-09-12 12:56:43.246628023 +0200
-@@ -364,109 +364,13 @@
+diff -ruN fw.3.41.7.orig/www/config/cp_maintenance.cgi fw.3.41.7.patched/www/config/cp_maintenance.cgi
+--- fw.3.41.7.orig/www/config/cp_maintenance.cgi	2018-10-30 17:00:21.000000000 +0100
++++ fw.3.41.7.patched/www/config/cp_maintenance.cgi	2018-11-01 16:23:18.857917116 +0100
+@@ -376,109 +376,13 @@
                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                }
                table_data {
@@ -1192,7 +1202,7 @@ diff -ruN /mnt/www/config/cp_maintenance.cgi rootfs/www/config/cp_maintenance.cg
          }
        }
        table_row {class="CLASS20902 j_noForcedUpdate j_fwUpdateOnly"} {
-@@ -831,10 +735,6 @@
+@@ -843,10 +747,6 @@
    cgi_javascript {
      puts "translatePage('#messagebox');"
      puts "jQuery('#messagebox').show();"
@@ -1203,30 +1213,30 @@ diff -ruN /mnt/www/config/cp_maintenance.cgi rootfs/www/config/cp_maintenance.cg
  
      # Hide all elements with class j_noForcedUpdate when an update is enforced
      puts "if (forceUpdate) {"
-diff -ruN /mnt/www/config/cp_security.cgi rootfs/www/config/cp_security.cgi
---- /mnt/www/config/cp_security.cgi	2018-08-29 12:49:43.000000000 +0200
-+++ rootfs/www/config/cp_security.cgi	2018-09-11 16:16:50.898656769 +0200
-@@ -258,7 +258,7 @@
-         } else {
-           exec touch /usr/local/.doFactoryReset
-         }
--        exec kill -SIGQUIT 1
-+        exec /sbin/reboot
-     }]} {
+diff -ruN fw.3.41.7.orig/www/config/cp_security.cgi fw.3.41.7.patched/www/config/cp_security.cgi
+--- fw.3.41.7.orig/www/config/cp_security.cgi	2018-10-30 17:00:21.000000000 +0100
++++ fw.3.41.7.patched/www/config/cp_security.cgi	2018-11-01 16:24:34.466416248 +0100
+@@ -296,7 +296,7 @@
+     } else {
+       exec touch /usr/local/.doFactoryReset
+     }
+-    exec kill -SIGQUIT 1
++    exec /sbin/reboot
+   }]} {
  
-       # TWIST-22
-@@ -738,8 +738,6 @@
+     # TWIST-22
+@@ -780,8 +780,6 @@
    cgi_javascript {puts "MessageBox.close();"}
  
    if { "false" == $backuperror } {
--        exec mount -o remount,ro /usr/local
--        exec mount -o remount,rw /usr/local
-         division {class="popupTitle"} {
-             puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
-         }
-diff -ruN /mnt/www/webui/js/lang/de/translate.lang.js rootfs/www/webui/js/lang/de/translate.lang.js
---- /mnt/www/webui/js/lang/de/translate.lang.js	2018-08-29 12:49:43.000000000 +0200
-+++ rootfs/www/webui/js/lang/de/translate.lang.js	2018-09-13 14:31:41.918625268 +0200
+-    exec mount -o remount,ro /usr/local
+-    exec mount -o remount,rw /usr/local
+     division {class="popupTitle"} {
+       puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
+     }
+diff -ruN fw.3.41.7.orig/www/webui/js/lang/de/translate.lang.js fw.3.41.7.patched/www/webui/js/lang/de/translate.lang.js
+--- fw.3.41.7.orig/www/webui/js/lang/de/translate.lang.js	2018-10-30 17:00:21.000000000 +0100
++++ fw.3.41.7.patched/www/webui/js/lang/de/translate.lang.js	2018-11-01 15:54:19.014439996 +0100
 @@ -452,7 +452,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
@@ -1248,9 +1258,9 @@ diff -ruN /mnt/www/webui/js/lang/de/translate.lang.js rootfs/www/webui/js/lang/d
      "dialogSettingsCMHintRestartSafeMode" : "Homematic Zentrale einmalig im abgesicherten Modus starten. Im abgesicherten Modus wird die installierte Zusatzsoftware nicht gestartet. Ver%E4nderte Einstellungen werden vorher gespeichert.",
      "dialogSettingsCMHintErrorLog" : "Stellen Sie die Anzahl der Logmeldungen ein, die von der Zentrale generiert werden sollen.<br>Sie k%F6nnen zus%E4tzlich einen Rechner angeben, dem die Zentrale ihre Logmeldungen per Syslog schickt. Auf diesem Rechner mu%DF entsprechende Software installiert sein, die die Meldungen entgegennimmt.<br>Zu Diagnosezwecken k%F6nnen die aktuellen Logmeldungen der Zentrale in einer Textdatei heruntergeladen werden.",
      "dialogSettingsCMLogLevel0" : "Alles loggen",
-diff -ruN /mnt/www/webui/js/lang/en/translate.lang.js rootfs/www/webui/js/lang/en/translate.lang.js
---- /mnt/www/webui/js/lang/en/translate.lang.js	2018-08-29 12:49:43.000000000 +0200
-+++ rootfs/www/webui/js/lang/en/translate.lang.js	2018-09-13 14:32:23.134901920 +0200
+diff -ruN fw.3.41.7.orig/www/webui/js/lang/en/translate.lang.js fw.3.41.7.patched/www/webui/js/lang/en/translate.lang.js
+--- fw.3.41.7.orig/www/webui/js/lang/en/translate.lang.js	2018-10-30 17:00:21.000000000 +0100
++++ fw.3.41.7.patched/www/webui/js/lang/en/translate.lang.js	2018-11-01 15:54:19.014439996 +0100
 @@ -451,7 +451,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Shutdown",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
