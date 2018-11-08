@@ -59,6 +59,9 @@ case "$OVERLAY_MODE" in
     if [ -z "$FDT_FILE" ]; then
       if [ -e /boot/armbianEnv.txt ]; then
         FDT_FILE=`grep -e '^fdt_file=' /boot/armbianEnv.txt | cut -d= -f2`
+        if [ -z "$FDT_FILE" ]; then
+          FDT_FILE=`grep -e '^fdtfile=' /boot/armbianEnv.txt | cut -d= -f2`
+        fi
       fi
     fi
 
