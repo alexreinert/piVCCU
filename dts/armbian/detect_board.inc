@@ -51,6 +51,11 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         FDT_FILE=amlogic/meson-gxl-s905x-libretech-cc.dtb
         break
         ;;
+     friendlyelec,nanopc-t4)
+        OVERLAY_MODE='patch'
+        INCLUDE_FILE='/var/lib/piVCCU/dts/nanopct4.dts.include'
+        break
+        ;; 
     esac
   done
 fi

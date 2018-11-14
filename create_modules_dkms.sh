@@ -1,5 +1,5 @@
 #!/bin/bash
-PKG_BUILD=16
+PKG_BUILD=17
 
 PKG_VERSION=1.0.$PKG_BUILD
 
@@ -20,8 +20,8 @@ cat <<EOF >> $DKMS_CONF_FILE
 PACKAGE_NAME="pivccu"
 PACKAGE_VERSION="$PKG_VERSION"
 
-MAKE="make all"
-CLEAN="make clean"
+MAKE="make ARCH=\`uname -m | sed -e s/i.86/x86/ -e s/x86_64/x86/ -e s/arm.*/arm/ -e s/aarch64.*/arm64/\` all"
+CLEAN="make ARCH=\`uname -m | sed -e s/i.86/x86/ -e s/x86_64/x86/ -e s/arm.*/arm/ -e s/aarch64.*/arm64/\` clean"
 
 AUTOINSTALL="yes"
 

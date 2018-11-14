@@ -37,6 +37,9 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
   * Orange Pi One, 2, Lite, Plus, Plus 2, Plus 2E, PC, PC Plus running Armbian with Mainline kernel
 
     :warning: WARNING: Some models of the Orange Pi have a rotated GPIO socket. Please ensure the correct position of Pin 1!
+  * NanoPC T4 running Armbian with Dev kernel (Experimental)
+
+   : warning: WARNING: Do not connect RPI-RF-MOD to a power source. Do connect the NanoPC to a power source only.
   * Rock64 running Armbian with Dev kernel (Experimental) (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
 * Properly installed HM-MOD-RPI-PCB or RPI-RF-MOD
 

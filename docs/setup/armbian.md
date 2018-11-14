@@ -36,46 +36,21 @@
 6. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
    * Verify, that *eth0* is the name of your primary network interface:
       ```bash
-      sudo ip link show | cut -d' ' -f2 | cut -d: -f1 | grep -e '^e.*'
+      sudo nmcli connection show --active
       ```
 
    * Update your config. (Replace *eth0* if necessary)
       ```bash
       sudo apt install bridge-utils
-      sudo bash -c 'cat << EOT > /etc/network/interfaces
-      source-directory /etc/network/interfaces.d
-
-      auto lo
-      iface lo inet loopback
-   
-      iface eth0 inet manual
-   
-      auto br0
-      iface br0 inet dhcp
-        bridge_ports eth0
-      EOT'
+      sudo nmcli connection add ifname br0 type bridge con-name br0
+      sudo nmcli connection add type bridge-slave ifname eth0 master br0
       ```
-   * You can use an static IP address, too. In that case use instead:
+   * You can use an static IP address, too:
       ```bash
-      sudo apt install bridge-utils
-      sudo bash -c 'cat << EOT > /etc/network/interfaces
-      source-directory /etc/network/interfaces.d
-
-      auto lo
-      iface lo inet loopback
-   
-      iface eth0 inet manual
-   
-      auto br0
-      iface br0 inet static
-        bridge_ports eth0
-        address <address>
-        netmask <netmask>
-        gateway <gateway>
-        dns-nameservers <dns1> <dns2>
-      EOT'
+      nmcli connection modify br0 ipv4.addresses "<address>/<prefix>" ipv4.gateway "<gateway>" ipv4.dns "<dns1>,<dns2>" ipv4.method "manual"
       ```
-   * To use Wireless LAN, please take a look [here](wlan.md)
+      Replace <address>, <prefix>, <gateway>, <dns1>, <dns2> with your settings.
+      <prefix> ist the subnet prefix (e.g. 24 for netmask 255.255.255.0)
 
 7. Reboot the system
    ```bash
