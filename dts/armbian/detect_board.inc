@@ -30,6 +30,7 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
       asus,rk3288-tinker|asus,rk3288-tinker-s)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/tinkerboard.dts.include'
+        FDT_FILE=rk3288-tinker.dtb
         break
         ;;
       pine64,rock64)
@@ -56,13 +57,14 @@ fi
 
 case "$OVERLAY_MODE" in
   patch)
-    if [ -z "$FDT_FILE" ]; then
-      if [ -e /boot/armbianEnv.txt ]; then
-        FDT_FILE=`grep -e '^fdt_file=' /boot/armbianEnv.txt | cut -d= -f2`
-        if [ -z "$FDT_FILE" ]; then
-          FDT_FILE=`grep -e '^fdtfile=' /boot/armbianEnv.txt | cut -d= -f2`
-        fi
-      fi
+    CONFIG_FDT_FILE=`grep -e '^fdt_file=' /boot/armbianEnv.txt | cut -d= -f2`
+    if [ ! -z "$CONFIG_FDT_FILE" ]; then
+      FDT_FILE=$CONFIG_FDT_FILE
+    fi
+
+    CONFIG_FDT_FILE=`grep -e '^fdtfile=' /boot/armbianEnv.txt | cut -d= -f2`
+    if [ ! -z "$CONFIG_FDT_FILE" ]; then
+      FDT_FILE=$CONFIG_FDT_FILE
     fi
 
     if [ -z "$FDT_FILE" ]; then
