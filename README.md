@@ -39,7 +39,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
     :warning: WARNING: Some models of the Orange Pi have a rotated GPIO socket. Please ensure the correct position of Pin 1!
   * NanoPC T4 running Armbian with Dev kernel (Experimental)
 
-   : warning: WARNING: Do not connect RPI-RF-MOD to a power source. Do connect the NanoPC to a power source only.
+    :warning: WARNING: Do not connect RPI-RF-MOD to a power source. Do connect the NanoPC to a power source only.
   * Rock64 running Armbian with Dev kernel (Experimental) (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
 * Properly installed HM-MOD-RPI-PCB or RPI-RF-MOD
 
