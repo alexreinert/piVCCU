@@ -1,10 +1,10 @@
 #!/bin/bash
 
-CCU_VERSION=2.35.16
-CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=285"
+CCU_VERSION=2.41.5
+CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=297"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/Downloads/Software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tgz"
 
-PKG_BUILD=38
+PKG_BUILD=39
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -40,7 +40,7 @@ mkdir -p $CNT_ROOTFS/firmware/HMIP-RFUSB
 wget -q -O $CNT_ROOTFS/firmware/HMIP-RFUSB/hmip_coprocessor_update-2.8.4.eq3 https://raw.githubusercontent.com/eq-3/occu/04877bbc3b36a716e50d774554cf88959c51d54e/firmware/HmIP-RFUSB/hmip_coprocessor_update-2.8.4.eq3
 
 mkdir -p $CNT_ROOTFS/firmware/RPI-RF-MOD
-wget -q -O $CNT_ROOTFS/firmware/RPI-RF-MOD/dualcopro_update_blhmip-3.4.2.eq3 https://raw.githubusercontent.com/eq-3/occu/1120262d0efd6f1ae1129646dbeea61eb12ae111/firmware/RPI-RF-MOD/dualcopro_update_blhmip-3.4.2.eq3
+wget -q -O $CNT_ROOTFS/firmware/RPI-RF-MOD/dualcopro_update_blhmip-3.4.8.eq3 https://raw.githubusercontent.com/eq-3/occu/4b32a8709d12202f1ed0d17bf7a13170aabaafcc/firmware/RPI-RF-MOD/dualcopro_update_blhmip-3.4.8.eq3
 
 rm -rf $CNT_ROOTFS/dev/*
 
