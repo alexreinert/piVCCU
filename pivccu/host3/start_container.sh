@@ -105,8 +105,7 @@ for dev in ${devices[@]}; do
         ln -s /media/usb$USBDISKINDEX /tmp/pivccu-media/usb0
       fi
       mkdir -p /tmp/pivccu-var/status
-      touch /tmp/pivccu-var/status/hasUSB
-      touch /tmp/pivccu-var/status/hasSD
+      echo "HAS_USB=1" >> /tmp/pivccu-var/pivccu/conf
       let "USBDISKINDEX++"
     else
       DEVTYPE="c"

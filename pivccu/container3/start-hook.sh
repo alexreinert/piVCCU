@@ -2,6 +2,9 @@
 
 . /var/pivccu/conf
 
+find /var/* -maxdepth 0 ! -name pivccu -exec rm -rf {} \;
+rm -rf /tmp/*
+
 rm -f /dev/eq3loop
 rm -f /dev/mmd_bidcos
 rm -f /dev/mmd_hmip
@@ -30,7 +33,9 @@ fi
 
 mkdir -p /var/status
 
-if [ -f /var/status/hasUSB ]; then
+if [ "0$HAS_USB" -eq 1 ]; then
+  touch /var/status/hasUSB
+  touch /var/status/hasSD
   mkdir -p /media/usb0/measurement
   if [ -d /media/usb0/measurement ]; then
     touch /var/status/USBinitialised
