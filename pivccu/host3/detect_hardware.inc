@@ -123,7 +123,7 @@ case $PIVCCU_HMIP_MODE in
 esac
 
 BRIDGE=`brctl show | sed -n 2p | awk '{print $1}'`
-MAIN_INTERFACE=`route | grep 'default' | awk '{print $8}'`
+MAIN_INTERFACE=`route | grep 'default' | awk '{print $5" "$8}' | sort | awk '{print $2}' | uniq | head -n 1`
 HOST_MAC=`cat /sys/class/net/$MAIN_INTERFACE/address`
 MAC=`echo $HOST_MAC | md5sum | sed 's/\(.\)\(..\)\(..\)\(..\)\(..\)\(..\).*/\1a:\2:\3:\4:\5:\6/'`
 
