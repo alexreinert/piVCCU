@@ -57,7 +57,7 @@ static struct rpi_rf_mod_led_led* rpi_rf_mod_led_createled(const char* name, int
 
     if (gpio != 0 && gpio_is_valid(gpio))
     {
-      gpio_request(gpio, NULL);
+      gpio_request(gpio, name);
       gpio_direction_output(gpio, true);
       gpio_set_value(gpio, 0);
     }
@@ -111,7 +111,7 @@ module_exit(rpi_rf_mod_led_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("GPIO LED driver for RPI-RF-MOD");
-MODULE_VERSION("1.0");
+MODULE_VERSION("1.1");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("rpi_rf_mod_led");
 

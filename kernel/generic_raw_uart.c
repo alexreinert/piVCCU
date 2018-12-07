@@ -682,13 +682,19 @@ static int generic_raw_uart_proc_open(struct inode *inode, struct file *file)
 
 int generic_raw_uart_get_gpio_pin_number(struct device *dev, const char *label)
 {
+  int res;
+
   struct fwnode_handle *fwnode = dev_fwnode(dev);
   struct gpio_desc *gpiod = fwnode_get_named_gpiod(fwnode, label, 0, GPIOD_ASIS, label);
 
   if (IS_ERR_OR_NULL(gpiod))
     return 0;
 
-  return desc_to_gpio(gpiod);
+  res = desc_to_gpio(gpiod);
+
+  gpiod_put(gpiod);
+
+  return res;
 }
 
 int generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *drv)
@@ -736,7 +742,7 @@ int generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *drv)
 
   if (instance->gpio_pin != 0)
   {
-    gpio_request(instance->gpio_pin, NULL);
+    gpio_request(instance->gpio_pin, "pivccu:reset");
     gpio_direction_output(instance->gpio_pin, true);
   }
   else
@@ -814,7 +820,7 @@ module_exit(generic_raw_uart_exit);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.3");
-MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
+MODULE_VERSION("1.4");
+MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
