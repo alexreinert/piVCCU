@@ -21,19 +21,20 @@ if [ -z "$HMIP_HARDWARE" ]; then
   logger -t piVCCU3 -p user.warn -s "HMIP hardware was not detected" 1>&2
 fi
 
+RED_PIN=0
+GREEN_PIN=0
+BLUE_PIN=0
+
 if [ "$HMRF_HARDWARE" == "RPI-RF-MOD" ]; then
   modprobe dummy_rx8130 || true
+
+  if [ -e /sys/module/generic_raw_uart/parameters/red_gpio_pin ]; then
+    RED_PIN=`cat /sys/module/generic_raw_uart/parameters/red_gpio_pin`
+    GREEN_PIN=`cat /sys/module/generic_raw_uart/parameters/green_gpio_pin`
+    BLUE_PIN=`cat /sys/module/generic_raw_uart/parameters/blue_gpio_pin`
+  fi
 fi
 
-if [ -e /sys/module/generic_raw_uart/parameters/red_gpio_pin ]; then
-  RED_PIN=`cat /sys/module/generic_raw_uart/parameters/red_gpio_pin`
-  GREEN_PIN=`cat /sys/module/generic_raw_uart/parameters/green_gpio_pin`
-  BLUE_PIN=`cat /sys/module/generic_raw_uart/parameters/blue_gpio_pin`
-else
-  RED_PIN=0
-  GREEN_PIN=0
-  BLUE_PIN=0
-fi
 modprobe ledtrig-timer || modprobe led_trigger_timer || true
 modprobe rpi_rf_mod_led red_gpio_pin=$RED_PIN green_gpio_pin=$GREEN_PIN blue_gpio_pin=$BLUE_PIN || true
 
