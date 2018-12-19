@@ -43,33 +43,47 @@ case $PIVCCU_HMRF_MODE in
     ;;
 
   "HM-MOD-RPI-PCB"|"RPI-RF-MOD"|"")
-    if [ -e /dev/raw-uart ]; then
-      UART_MAJOR=`cat /sys/devices/virtual/raw-uart/raw-uart/dev | cut -d: -f1`
+    mount --bind /dev /var/lib/piVCCU3/rootfs/dev
+    mount --bind /proc /var/lib/piVCCU3/rootfs/proc
 
-      mount --bind /dev /var/lib/piVCCU3/rootfs/dev
-      mount --bind /proc /var/lib/piVCCU3/rootfs/proc
-
-      RADIO_MAC=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd read-default-rf-address -f /dev/raw-uart -h 2>&1 | grep "^0x"` || true
-      if [ -z "$RADIO_MAC" ] || [ "$RADIO_MAC" == "0x00ffff" ]; then
-        RF_RPI_MOD_INFO=`timeout 20 chroot /var/lib/piVCCU3/rootfs /opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/raw-uart -jar /opt/HmIP/hmip-copro-update.jar -p /dev/raw-uart -v 2>&1` || true
-        RADIO_MAC=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*Radio address = \([0-9A-Fa-f]\{6\}\).*/0x\1/p'`
-        SGTIN=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p'`
-	FW_VERSION=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*Application version = \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p'`
-
-	if [ ! -z "$RADIO_MAC" ] || [ ! -z "$SGTIN" ] ; then
-          HMRF_HARDWARE='RPI-RF-MOD'
-          BOARD_SERIAL=`echo -n "$SGTIN" | tail -c 10`
-        fi
+    for dev_no in {0..5}
+    do
+      if [ $dev_no -eq 0 ]; then
+        UART_DEV="raw-uart"
       else
-        HMRF_HARDWARE='HM-MOD-RPI-PCB'
-        SGTIN=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -sg 2>&1 | grep "SGTIN:" | cut -d' ' -f5`
-        BOARD_SERIAL=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5`
-        FW_VERSION=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd update-coprocessor -p /dev/raw-uart -t HM-MOD-UART -c -v 2>&1 | grep "Version:" | cut -d' ' -f5`
+        UART_DEV="raw-uart$dev_no"
       fi
 
-      umount /var/lib/piVCCU3/rootfs/dev
-      umount /var/lib/piVCCU3/rootfs/proc
-    fi
+      if [ -e "/dev/$UART_DEV" ]; then
+        UART_MAJOR=`cat /sys/class/raw-uart/$UART_DEV/dev | cut -d: -f1`
+        UART_MINOR=`cat /sys/class/raw-uart/$UART_DEV/dev | cut -d: -f2`
+
+        RADIO_MAC=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd read-default-rf-address -f /dev/$UART_DEV -h 2>&1 | grep "^0x"` || true
+        if [-z "$RADIO_MAC" ] || [ "$RADIO_MAC" == "0x00ffff" ]; then
+          RF_RPI_MOD_INFO=`timeout 20 chroot /var/lib/piVCCU3/rootfs /opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/$UART_DEV -jar /opt/HmIP/hmip-copro-update.jar -p /dev/$UART_DEV -v 2>&1` || true
+          RADIO_MAC=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*Radio address = \([0-9A-Fa-f]\{6\}\).*/0x\1/p'`
+          SGTIN=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p'`
+          FW_VERSION=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*Application version = \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p'`
+
+          if [ ! -z "$RADIO_MAC" ] || [ ! -z "$SGTIN" ] ; then
+            HMRF_HARDWARE='RPI-RF-MOD'
+            BOARD_SERIAL=`echo -n "$SGTIN" | tail -c 10`
+          fi
+        else
+          HMRF_HARDWARE='HM-MOD-RPI-PCB'
+          SGTIN=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd update-coprocessor -p /dev/$UART_DEV -t HM-MOD-UART -c -sg 2>&1 | grep "SGTIN:" | cut -d' ' -f5`
+          BOARD_SERIAL=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd update-coprocessor -p /dev/$UART_DEV -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5`
+          FW_VERSION=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd update-coprocessor -p /dev/$UART_DEV -t HM-MOD-UART -c -v 2>&1 | grep "Version:" | cut -d' ' -f5`
+        fi
+
+        if [ ! -z "$HMRF_HARDWARE" ]; then
+          break
+        fi
+      fi
+    done
+
+    umount /var/lib/piVCCU3/rootfs/dev
+    umount /var/lib/piVCCU3/rootfs/proc
     ;;
 esac
 

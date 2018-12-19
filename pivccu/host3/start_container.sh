@@ -28,10 +28,15 @@ BLUE_PIN=0
 if [ "$HMRF_HARDWARE" == "RPI-RF-MOD" ]; then
   modprobe dummy_rx8130 || true
 
-  if [ -e /sys/module/generic_raw_uart/parameters/red_gpio_pin ]; then
+  if [ -e "/sys/module/generic_raw_uart/parameters/red_gpio_pin" ]; then
     RED_PIN=`cat /sys/module/generic_raw_uart/parameters/red_gpio_pin`
     GREEN_PIN=`cat /sys/module/generic_raw_uart/parameters/green_gpio_pin`
     BLUE_PIN=`cat /sys/module/generic_raw_uart/parameters/blue_gpio_pin`
+  fi
+  if [ -e "/sys/class/raw-uart/$UART_DEV/red_gpio_pin" ]; then
+    RED_PIN=`cat /sys/class/raw-uart/$UART_DEV/red_gpio_pin`
+    GREEN_PIN=`cat /sys/class/raw-uart/$UART_DEV/green_gpio_pin`
+    BLUE_PIN=`cat /sys/class/raw-uart/$UART_DEV/blue_gpio_pin`
   fi
 fi
 
@@ -57,6 +62,7 @@ sed -i $CONFIG_FILE -e "s/<mac_auto>/$MAC/"
 sed -i $CONFIG_FILE -e "s/<bridge_auto>/$BRIDGE/"
 sed -i $CONFIG_FILE -e "s/<eq3loop_major>/$EQ3LOOP_MAJOR/"
 sed -i $CONFIG_FILE -e "s/<uart_major>/$UART_MAJOR/"
+sed -i $CONFIG_FILE -e "s/<uart_minor>/$UART_MINOR/"
 sed -i $CONFIG_FILE -e "s/<hmip_major>/$HMIP_MAJOR/"
 sed -i $CONFIG_FILE -e "s/<hmip_minor>/$HMIP_MINOR/"
 
@@ -67,6 +73,7 @@ SGTIN="$SGTIN"
 FW_VERSION="$FW_VERSION"
 EQ3LOOP_MAJOR="$EQ3LOOP_MAJOR"
 UART_MAJOR="$UART_MAJOR"
+UART_MINOR="$UART_MINOR"
 HMIP_MAJOR="$HMIP_MAJOR"
 HMIP_MINOR="$HMIP_MINOR"
 BOARD_SERIAL="$BOARD_SERIAL"

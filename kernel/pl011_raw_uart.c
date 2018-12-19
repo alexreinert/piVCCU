@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2017 by Alexander Reinert
+ * Copyright (c) 2018 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -39,15 +39,15 @@
 #define MODULE_NAME "pl011_raw_uart"
 #define TX_CHUNK_SIZE 11
 
-static int pl011_raw_uart_start_connection(void);
-static void pl011_raw_uart_stop_connection(void);
-static void pl011_raw_uart_stop_tx(void);
-static bool pl011_raw_uart_isready_for_tx(void);
-static void pl011_raw_uart_tx_char(unsigned char chr);
-static void pl011_raw_uart_init_tx(void);
-static void pl011_raw_uart_rx_chars(void);
+static int pl011_raw_uart_start_connection(struct generic_raw_uart *raw_uart);
+static void pl011_raw_uart_stop_connection(struct generic_raw_uart *raw_uart);
+static void pl011_raw_uart_stop_tx(struct generic_raw_uart *raw_uart);
+static bool pl011_raw_uart_isready_for_tx(struct generic_raw_uart *raw_uart);
+static void pl011_raw_uart_tx_chars(struct generic_raw_uart *raw_uart, unsigned char *chr, int index, int len);
+static void pl011_raw_uart_init_tx(struct generic_raw_uart *raw_uart);
+static void pl011_raw_uart_rx_chars(struct generic_raw_uart *raw_uart);
 static irqreturn_t pl011_raw_uart_irq_handle(int irq, void *context);
-static int pl011_raw_uart_probe(struct platform_device *pdev);
+static int pl011_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev);
 static int pl011_raw_uart_remove(struct platform_device *pdev);
 
 struct pl011_port_s
@@ -61,7 +61,7 @@ struct pl011_port_s
 
 static struct pl011_port_s *pl011_port;
 
-static int pl011_raw_uart_start_connection(void)
+static int pl011_raw_uart_start_connection(struct generic_raw_uart *raw_uart)
 {
   int ret = 0;
   unsigned int bauddiv;
@@ -77,7 +77,7 @@ static int pl011_raw_uart_start_connection(void)
   writel( 0x7ff, pl011_port->membase + UART011_ICR );
 
   /*Register interrupt handler*/
-  ret = request_irq(pl011_port->irq, pl011_raw_uart_irq_handle, 0, dev_name(pl011_port->dev), pl011_port);
+  ret = request_irq(pl011_port->irq, pl011_raw_uart_irq_handle, 0, dev_name(pl011_port->dev), raw_uart);
   if ( ret )
   {
     dev_err(pl011_port->dev, "irq could not be registered");
@@ -121,7 +121,7 @@ static int pl011_raw_uart_start_connection(void)
   return 0;
 }
 
-static void pl011_raw_uart_stop_connection(void)
+static void pl011_raw_uart_stop_connection(struct generic_raw_uart *raw_uart)
 {
   /*If uart is enabled, wait until it is not busy*/
   while( (readl(pl011_port->membase + UART011_CR) & UART01x_CR_UARTEN) && (readl(pl011_port->membase + UART01x_FR) & UART01x_FR_BUSY) )
@@ -133,10 +133,10 @@ static void pl011_raw_uart_stop_connection(void)
 
   writel( 0, pl011_port->membase + UART011_IMSC );  /*Disable interrupts*/
 
-  free_irq(pl011_port->irq, pl011_port);
+  free_irq(pl011_port->irq, raw_uart);
 }
 
-static void pl011_raw_uart_stop_tx(void)
+static void pl011_raw_uart_stop_tx(struct generic_raw_uart *raw_uart)
 {
   unsigned long imsc;
 
@@ -148,17 +148,17 @@ static void pl011_raw_uart_stop_tx(void)
   writel( imsc, pl011_port->membase + UART011_IMSC );
 }
 
-static bool pl011_raw_uart_isready_for_tx(void)
+static bool pl011_raw_uart_isready_for_tx(struct generic_raw_uart *raw_uart)
 {
   return !(readl(pl011_port->membase + UART01x_FR) & UART01x_FR_TXFF);
 }
 
-static void pl011_raw_uart_tx_char(unsigned char chr)
+static void pl011_raw_uart_tx_chars(struct generic_raw_uart *raw_uart, unsigned char *chr, int index, int len)
 {
-  writel(chr, pl011_port->membase + UART01x_DR );
+  writel(chr[index], pl011_port->membase + UART01x_DR );
 }
 
-static void pl011_raw_uart_init_tx(void)
+static void pl011_raw_uart_init_tx(struct generic_raw_uart *raw_uart)
 {
   unsigned long imsc;
 
@@ -173,7 +173,7 @@ static void pl011_raw_uart_init_tx(void)
   writel( imsc, pl011_port->membase + UART011_IMSC );
 }
 
-static void pl011_raw_uart_rx_chars(void)
+static void pl011_raw_uart_rx_chars(struct generic_raw_uart *raw_uart)
 {
   unsigned long status;
   unsigned long data;
@@ -211,14 +211,16 @@ static void pl011_raw_uart_rx_chars(void)
       }
     }
 
-    generic_raw_uart_handle_rx_char(flags, (unsigned char)data);
+    generic_raw_uart_handle_rx_char(raw_uart, flags, (unsigned char)data);
   }
 
-  generic_raw_uart_rx_completed();
+  generic_raw_uart_rx_completed(raw_uart);
 }
 
 static irqreturn_t pl011_raw_uart_irq_handle(int irq, void *context)
 {
+  struct generic_raw_uart *raw_uart = context;
+
   u32 istat;
 
   istat = readl( pl011_port->membase + UART011_MIS );
@@ -231,12 +233,12 @@ static irqreturn_t pl011_raw_uart_irq_handle(int irq, void *context)
 
   if( istat & (UART011_RXIS | UART011_RTIS))
   {
-    pl011_raw_uart_rx_chars( );
+    pl011_raw_uart_rx_chars(raw_uart);
   }
 
   if( istat & UART011_TXIS )
   {
-    generic_raw_uart_tx_queued();
+    generic_raw_uart_tx_queued(raw_uart);
   }
 
   return IRQ_HANDLED;
@@ -247,12 +249,13 @@ static struct raw_uart_driver pl011_raw_uart = {
   .stop_connection = pl011_raw_uart_stop_connection,
   .init_tx = pl011_raw_uart_init_tx,
   .isready_for_tx = pl011_raw_uart_isready_for_tx,
-  .tx_char = pl011_raw_uart_tx_char,
+  .tx_chars = pl011_raw_uart_tx_chars,
   .stop_tx = pl011_raw_uart_stop_tx,
   .tx_chunk_size = TX_CHUNK_SIZE,
+  .tx_bulktransfer_size = 1,
 };
 
-static int pl011_raw_uart_probe(struct platform_device *pdev)
+static int pl011_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev)
 {
   int err;
   struct device *dev = &pdev->dev;
@@ -321,7 +324,7 @@ module_raw_uart_driver(MODULE_NAME, pl011_raw_uart, pl011_raw_uart_of_match);
 
 MODULE_ALIAS("platform:pl011-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.3");
-MODULE_DESCRIPTION("PL011 raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
+MODULE_VERSION("1.4");
+MODULE_DESCRIPTION("PL011 raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

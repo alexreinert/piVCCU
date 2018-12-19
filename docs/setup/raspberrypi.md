@@ -17,7 +17,12 @@
    ```
    Instead of `stable` you can also use the `testing` tree, but be aware testing sometimes means not that stable.
 
-3. Install the neccessary kernel modules for the low level communication with the HM-MOD-RPI-PCB
+3. Install the neccessary kernel modules
+   ```bash
+   sudo apt install pivccu-modules-dkms
+   ```
+
+4. Install the neccessary device tree patches (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
    ```bash
    sudo apt install pivccu-modules-raspberrypi
    ```

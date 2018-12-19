@@ -15,6 +15,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
   * RPI-RF-MOD (HmRF+HmIP, Pushbutton and RTC are not supported inside CCU Container)
   * HmIP-RFUSB (HmIP only)
   * HM-LGW-O-TW-W-EU (HmRF only)
+  * [HB-RF-USB](https://github.com/alexreinert/PCB/tree/master/HB-RF-USB) (HmRF+HmIP, Experimental, piVCCU3 only)
 
 ### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU)
 Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU). Or you can send me a gift from my [Amazon wishlist](https://www.amazon.de/gp/registry/wishlist/3NNUQIQO20AAP/ref=nav_wishlist_lists_1).
@@ -24,7 +25,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 * armhf or arm64 architecture (x64 is not supported right now)
 * At least kernel 4.14
 
-### Prequisites for HM-MOD-RPI-PCB and RPI-RF-MOD
+### Prequisites for HM-MOD-RPI-PCB and RPI-RF-MOD on GPIO header
 * Supported Single Board Computer
   * Raspberry Pi 2B/3B/3B+ running Raspbian Stretch
   * Asus Tinkerboard running Armbian with Mainline kernel

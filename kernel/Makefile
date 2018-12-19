@@ -8,6 +8,7 @@ obj-m += fake_hmrf.o
 obj-m += rpi_rf_mod_led.o
 obj-m += dummy_rx8130.o
 obj-m += led_trigger_timer.o
+obj-m += hb_rf_usb.o
 
 ifeq ($(KERNELRELEASE),)
   KERNELRELEASE := $(shell uname -r)

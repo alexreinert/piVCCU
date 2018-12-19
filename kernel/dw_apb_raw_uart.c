@@ -36,7 +36,6 @@
 
 #include "generic_raw_uart.h"
 
-
 #define MODULE_NAME "dw_apb_raw_uart"
 #define TX_CHUNK_SIZE 9
 
@@ -55,15 +54,15 @@
 
 static inline void dw_apb_raw_uart_writeb(int value, int offset);
 static inline unsigned int dw_apb_raw_uart_readb(int offset);
-static int dw_apb_raw_uart_start_connection(void);
-static void dw_apb_raw_uart_stop_connection(void);
-static void dw_apb_raw_uart_stop_tx(void);
-static bool dw_apb_raw_uart_isready_for_tx(void);
-static void dw_apb_raw_uart_tx_char(unsigned char chr);
-static void dw_apb_raw_uart_init_tx(void);
-static void dw_apb_raw_uart_rx_chars(void);
+static int dw_apb_raw_uart_start_connection(struct generic_raw_uart *raw_uart);
+static void dw_apb_raw_uart_stop_connection(struct generic_raw_uart *raw_uart);
+static void dw_apb_raw_uart_stop_tx(struct generic_raw_uart *raw_uart);
+static bool dw_apb_raw_uart_isready_for_tx(struct generic_raw_uart *raw_uart);
+static void dw_apb_raw_uart_tx_chars(struct generic_raw_uart *raw_uart, unsigned char *chr, int index, int len);
+static void dw_apb_raw_uart_init_tx(struct generic_raw_uart *raw_uart);
+static void dw_apb_raw_uart_rx_chars(struct generic_raw_uart *raw_uart);
 static irqreturn_t dw_apb_raw_uart_irq_handle(int irq, void *context);
-static int dw_apb_raw_uart_probe(struct platform_device *pdev);
+static int dw_apb_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev);
 static int dw_apb_raw_uart_remove(struct platform_device *pdev);
 
 struct dw_apb_port_s
@@ -111,7 +110,7 @@ static void dw_apb_raw_uart_write_lcr(int value) {
   }
 }
 
-static void dw_apb_raw_uart_init_uart(void)
+static void dw_apb_raw_uart_init_uart(struct generic_raw_uart *raw_uart)
 {
   long rate;
   int divisor;
@@ -135,7 +134,7 @@ static void dw_apb_raw_uart_init_uart(void)
   dw_apb_raw_uart_write_lcr(UART_LCR_WLEN8);
 }
 
-static int dw_apb_raw_uart_start_connection(void)
+static int dw_apb_raw_uart_start_connection(struct generic_raw_uart *raw_uart)
 {
   int ret = 0;
 
@@ -146,7 +145,7 @@ static int dw_apb_raw_uart_start_connection(void)
   dw_apb_raw_uart_writeb(0, UART_FCR);
 
   /*Register interrupt handler*/
-  ret = request_irq(dw_apb_port->irq, dw_apb_raw_uart_irq_handle, 0, dev_name(dw_apb_port->dev), dw_apb_port);
+  ret = request_irq(dw_apb_port->irq, dw_apb_raw_uart_irq_handle, 0, dev_name(dw_apb_port->dev), raw_uart);
   if (ret)
   {
     dev_err(dw_apb_port->dev, "irq could not be registered");
@@ -162,7 +161,7 @@ static int dw_apb_raw_uart_start_connection(void)
   return 0;
 }
 
-static void dw_apb_raw_uart_stop_connection(void)
+static void dw_apb_raw_uart_stop_connection(struct generic_raw_uart *raw_uart)
 {
   // wait until uart is not busy
   while (dw_apb_raw_uart_readb(DW_UART_USR) & DW_UART_USR_BUSY)
@@ -172,33 +171,34 @@ static void dw_apb_raw_uart_stop_connection(void)
 
   /* disable interrupts */
   dw_apb_raw_uart_writeb(0, UART_IER);
-  free_irq(dw_apb_port->irq, dw_apb_port);
+  free_irq(dw_apb_port->irq, raw_uart);
 
   /* clear and disable fifo */
   dw_apb_raw_uart_writeb(0, UART_FCR);
 }
 
-static void dw_apb_raw_uart_stop_tx(void)
+static void dw_apb_raw_uart_stop_tx(struct generic_raw_uart *raw_uart)
 {
   dw_apb_raw_uart_writeb(UART_IER_RDI | DW_UART_IER_PTIME, UART_IER);
 }
 
-static bool dw_apb_raw_uart_isready_for_tx(void)
+static bool dw_apb_raw_uart_isready_for_tx(struct generic_raw_uart *raw_uart)
 {
   return !(dw_apb_raw_uart_readb(UART_LSR) & UART_LSR_THRE); // FIFO not full
 }
 
-static void dw_apb_raw_uart_tx_char(unsigned char chr)
+
+static void dw_apb_raw_uart_tx_chars(struct generic_raw_uart *raw_uart, unsigned char *chr, int index, int len)
 {
-  dw_apb_raw_uart_writeb(chr, UART_TX);
+  dw_apb_raw_uart_writeb(chr[index], UART_TX);
 }
 
-static void dw_apb_raw_uart_init_tx(void)
+static void dw_apb_raw_uart_init_tx(struct generic_raw_uart *raw_uart)
 {
   dw_apb_raw_uart_writeb(UART_IER_RDI | DW_UART_IER_PTIME | UART_IER_THRI, UART_IER);
 }
 
-static void dw_apb_raw_uart_rx_chars(void)
+static void dw_apb_raw_uart_rx_chars(struct generic_raw_uart *raw_uart)
 {
   int status;
   int data;
@@ -231,16 +231,17 @@ static void dw_apb_raw_uart_rx_chars(void)
 
     data = dw_apb_raw_uart_readb(UART_RX);
 
-    generic_raw_uart_handle_rx_char(flags, (unsigned char)data);
+    generic_raw_uart_handle_rx_char(raw_uart, flags, (unsigned char)data);
 
     status = dw_apb_raw_uart_readb(UART_LSR);
   }
 
-  generic_raw_uart_rx_completed();
+  generic_raw_uart_rx_completed(raw_uart);
 }
 
 static irqreturn_t dw_apb_raw_uart_irq_handle(int irq, void *context)
 {
+  struct generic_raw_uart *raw_uart = context;
   int iid;
 
   iid = dw_apb_raw_uart_readb(UART_IIR) & DW_UART_IIR_IID;
@@ -249,11 +250,11 @@ static irqreturn_t dw_apb_raw_uart_irq_handle(int irq, void *context)
   {
     case UART_IIR_RDI:
     case DW_UART_IIR_CTO:
-      dw_apb_raw_uart_rx_chars( );
+      dw_apb_raw_uart_rx_chars(raw_uart);
       break;
 
     case UART_IIR_THRI:
-      generic_raw_uart_tx_queued();
+      generic_raw_uart_tx_queued(raw_uart);
       break;
 
     case UART_IIR_NO_INT:
@@ -272,12 +273,13 @@ static struct raw_uart_driver dw_apb_raw_uart = {
   .stop_connection = dw_apb_raw_uart_stop_connection,
   .init_tx = dw_apb_raw_uart_init_tx,
   .isready_for_tx = dw_apb_raw_uart_isready_for_tx,
-  .tx_char = dw_apb_raw_uart_tx_char,
+  .tx_chars = dw_apb_raw_uart_tx_chars,
   .stop_tx = dw_apb_raw_uart_stop_tx,
   .tx_chunk_size = TX_CHUNK_SIZE,
+  .tx_bulktransfer_size = 1,
 };
 
-static int dw_apb_raw_uart_probe(struct platform_device *pdev)
+static int dw_apb_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev)
 {
   int err;
   u32 val;
@@ -344,7 +346,7 @@ static int dw_apb_raw_uart_probe(struct platform_device *pdev)
 
   dw_apb_port->dev = dev;
 
-  dw_apb_raw_uart_init_uart();
+  dw_apb_raw_uart_init_uart(raw_uart);
 
   dev_info(dev, "Initialized dw_apb device; mapbase=0x%08lx; irq=%lu; sclk rate=%lu; pclk rate=%ld",
     dw_apb_port->mapbase,
@@ -389,7 +391,7 @@ module_raw_uart_driver(MODULE_NAME, dw_apb_raw_uart, dw_apb_raw_uart_of_match);
 
 MODULE_ALIAS("platform:dw_apb-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.4");
-MODULE_DESCRIPTION("dw_apb raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
+MODULE_VERSION("1.5");
+MODULE_DESCRIPTION("dw_apb raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

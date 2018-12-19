@@ -1,3 +1,21 @@
+/*-----------------------------------------------------------------------------
+ * Copyright (c) 2018 by Alexander Reinert
+ * Author: Alexander Reinert
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *---------------------------------------------------------------------------*/
 #include <linux/err.h>
 #include <linux/gpio.h>
 #include <linux/gpio/consumer.h>
@@ -58,7 +76,7 @@ static struct rpi_rf_mod_led_led* rpi_rf_mod_led_createled(const char* name, int
     if (gpio != 0 && gpio_is_valid(gpio))
     {
       gpio_request(gpio, name);
-      gpio_direction_output(gpio, true);
+      gpio_direction_output(gpio, false);
       gpio_set_value(gpio, 0);
     }
     else
@@ -111,7 +129,7 @@ module_exit(rpi_rf_mod_led_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("GPIO LED driver for RPI-RF-MOD");
-MODULE_VERSION("1.1");
+MODULE_VERSION("1.2");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("rpi_rf_mod_led");
 

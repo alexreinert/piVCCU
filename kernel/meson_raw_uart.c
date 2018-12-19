@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2017 by Alexander Reinert
+ * Copyright (c) 2018 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -67,15 +67,15 @@
 #define MESON_RX_RST      BIT(23)
 #define MESON_TX_RST      BIT(22)
 
-static int meson_raw_uart_start_connection(void);
-static void meson_raw_uart_stop_connection(void);
-static void meson_raw_uart_stop_tx(void);
-static bool meson_raw_uart_isready_for_tx(void);
-static void meson_raw_uart_tx_char(unsigned char chr);
-static void meson_raw_uart_init_tx(void);
-static void meson_raw_uart_rx_chars(void);
+static int meson_raw_uart_start_connection(struct generic_raw_uart *raw_uart);
+static void meson_raw_uart_stop_connection(struct generic_raw_uart *raw_uart);
+static void meson_raw_uart_stop_tx(struct generic_raw_uart *raw_uart);
+static bool meson_raw_uart_isready_for_tx(struct generic_raw_uart *raw_uart);
+static void meson_raw_uart_tx_chars(struct generic_raw_uart *raw_uart, unsigned char *chr, int index, int len);
+static void meson_raw_uart_init_tx(struct generic_raw_uart *raw_uart);
+static void meson_raw_uart_rx_chars(struct generic_raw_uart *raw_uart);
 static irqreturn_t meson_raw_uart_irq_handle(int irq, void *context);
-static int meson_raw_uart_probe(struct platform_device *pdev);
+static int meson_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev);
 static int meson_raw_uart_remove(struct platform_device *pdev);
 
 struct meson_port_s
@@ -92,7 +92,7 @@ struct meson_port_s
 
 static struct meson_port_s *meson_port;
 
-static int meson_raw_uart_start_connection(void)
+static int meson_raw_uart_start_connection(struct generic_raw_uart *raw_uart)
 {
   int ret = 0;
   unsigned long val;
@@ -134,7 +134,7 @@ static int meson_raw_uart_start_connection(void)
   writel(val, meson_port->membase + MESON_REG5);
 
   /*Register interrupt handler*/
-  ret = request_irq(meson_port->irq, meson_raw_uart_irq_handle, 0, dev_name(meson_port->dev), meson_port);
+  ret = request_irq(meson_port->irq, meson_raw_uart_irq_handle, 0, dev_name(meson_port->dev), (void*)raw_uart);
   if (ret)
   {
     dev_err(meson_port->dev, "irq could not be registered");
@@ -144,15 +144,15 @@ static int meson_raw_uart_start_connection(void)
   return 0;
 }
 
-static void meson_raw_uart_stop_connection(void)
+static void meson_raw_uart_stop_connection(struct generic_raw_uart *raw_uart)
 {
   writel(0, meson_port->membase + MESON_CONTROL);  /*Disable UART*/
   writel(0, meson_port->membase + MESON_MISC);  /*Disable interrupts*/
 
-  free_irq(meson_port->irq, meson_port);
+  free_irq(meson_port->irq, raw_uart);
 }
 
-static void meson_raw_uart_stop_tx(void)
+static void meson_raw_uart_stop_tx(struct generic_raw_uart *raw_uart)
 {
   unsigned long control;
 
@@ -162,17 +162,17 @@ static void meson_raw_uart_stop_tx(void)
   writel(control, meson_port->membase + MESON_CONTROL);
 }
 
-static bool meson_raw_uart_isready_for_tx(void)
+static bool meson_raw_uart_isready_for_tx(struct generic_raw_uart *raw_uart)
 {
   return !(readl(meson_port->membase + MESON_STATUS) & MESON_TX_FULL);
 }
 
-static void meson_raw_uart_tx_char(unsigned char chr)
+static void meson_raw_uart_tx_chars(struct generic_raw_uart *raw_uart, unsigned char *chr, int index, int len)
 {
-  writel(chr, meson_port->membase + MESON_WFIFO);
+  writel(chr[index], meson_port->membase + MESON_WFIFO);
 }
 
-static void meson_raw_uart_init_tx(void)
+static void meson_raw_uart_init_tx(struct generic_raw_uart *raw_uart)
 {
   unsigned long control;
 
@@ -182,7 +182,7 @@ static void meson_raw_uart_init_tx(void)
   writel(control, meson_port->membase + MESON_CONTROL);
 }
 
-static void meson_raw_uart_rx_chars(void)
+static void meson_raw_uart_rx_chars(struct generic_raw_uart *raw_uart)
 {
   unsigned long status;
   unsigned long control;
@@ -224,24 +224,26 @@ static void meson_raw_uart_rx_chars(void)
       writel(control, meson_port->membase + MESON_CONTROL);
     }
 
-    generic_raw_uart_handle_rx_char(flags, (unsigned char)data);
+    generic_raw_uart_handle_rx_char(raw_uart, flags, (unsigned char)data);
   }
 
-  generic_raw_uart_rx_completed();
+  generic_raw_uart_rx_completed(raw_uart);
 }
 
 static irqreturn_t meson_raw_uart_irq_handle(int irq, void *context)
 {
+  struct generic_raw_uart *raw_uart = context;
+
   if(!(readl(meson_port->membase + MESON_STATUS) & MESON_RX_EMPTY))
   {
-    meson_raw_uart_rx_chars();
+    meson_raw_uart_rx_chars(raw_uart);
   }
 
   if(readl(meson_port->membase + MESON_CONTROL) & MESON_TX_INT_EN)
   {
     if(!(readl(meson_port->membase + MESON_STATUS) & MESON_TX_FULL))
     {
-      generic_raw_uart_tx_queued();
+      generic_raw_uart_tx_queued(raw_uart);
     }
   }
 
@@ -253,9 +255,10 @@ static struct raw_uart_driver meson_raw_uart = {
   .stop_connection = meson_raw_uart_stop_connection,
   .init_tx = meson_raw_uart_init_tx,
   .isready_for_tx = meson_raw_uart_isready_for_tx,
-  .tx_char = meson_raw_uart_tx_char,
+  .tx_chars = meson_raw_uart_tx_chars,
   .stop_tx = meson_raw_uart_stop_tx,
   .tx_chunk_size = TX_CHUNK_SIZE,
+  .tx_bulktransfer_size = 1,
 };
 
 static inline struct clk *meson_raw_uart_probe_clk(struct device *dev, const char *id)
@@ -278,7 +281,7 @@ static inline struct clk *meson_raw_uart_probe_clk(struct device *dev, const cha
   return clk;
 }
 
-static int meson_raw_uart_probe(struct platform_device *pdev)
+static int meson_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev)
 {
   int err;
   struct device *dev = &pdev->dev;
@@ -371,7 +374,7 @@ module_raw_uart_driver(MODULE_NAME, meson_raw_uart, meson_raw_uart_of_match);
 
 MODULE_ALIAS("platform:meson-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.1");
-MODULE_DESCRIPTION("MESON raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB module");
+MODULE_VERSION("1.2");
+MODULE_DESCRIPTION("MESON raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

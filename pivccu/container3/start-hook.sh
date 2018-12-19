@@ -13,7 +13,7 @@ rm -f /dev/raw-uart
 mknod -m 666 /dev/eq3loop c $EQ3LOOP_MAJOR 0
 mknod -m 666 /dev/mmd_hmip c $HMIP_MAJOR $HMIP_MINOR
 mknod -m 666 /dev/mmd_bidcos c $EQ3LOOP_MAJOR 2
-mknod -m 666 /dev/raw-uart c $UART_MAJOR 0
+mknod -m 666 /dev/raw-uart c $UART_MAJOR $UART_MINOR
 
 mkdir -p /dev/net
 if [ ! -e /dev/net/tun ]; then

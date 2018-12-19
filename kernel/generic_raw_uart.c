@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2017 by Alexander Reinert
+ * Copyright (c) 2018 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -42,20 +42,9 @@
 
 #include "generic_raw_uart.h"
 
-#define MODULE_NAME "generic-raw-uart"
 #define DRIVER_NAME "raw-uart"
 
-static int red_gpio_pin = true;
-module_param(red_gpio_pin, int, S_IRUSR | S_IRGRP);
-MODULE_PARM_DESC(red_gpio_pin, "GPIO Pin of red LED");
-
-static int green_gpio_pin = true;
-module_param(green_gpio_pin, int, S_IRUSR | S_IRGRP);
-MODULE_PARM_DESC(green_gpio_pin, "GPIO Pin of green LED");
-
-static int blue_gpio_pin = true;
-module_param(blue_gpio_pin, int, S_IRUSR | S_IRGRP);
-MODULE_PARM_DESC(blue_gpio_pin, "GPIO Pin of blue LED");
+#define MAX_DEVICES 5
 
 #define CIRCBUF_SIZE 1024
 #define CON_DATA_TX_BUF_SIZE 4096
@@ -65,6 +54,9 @@ MODULE_PARM_DESC(blue_gpio_pin, "GPIO Pin of blue LED");
 #define MAX_CONNECTIONS 3
 #define IOCTL_IOCSPRIORITY _IOW(IOCTL_MAGIC,  1, uint32_t) /* Set the priority for the current channel */
 #define IOCTL_IOCGPRIORITY _IOR(IOCTL_MAGIC,  2, uint32_t) /* Get the priority for the current channel */
+
+static dev_t devid;
+static struct class *class;
 
 struct generic_raw_uart_instance
 {
@@ -76,7 +68,11 @@ struct generic_raw_uart_instance
   int open_count;                             /*number of open connections*/
   struct per_connection_data *tx_connection;  /*connection which is currently sending*/
   struct termios termios;                     /*dummy termios for emulating ttyp ioctls*/
-  int gpio_pin;
+
+  int reset_pin;
+  int red_pin;
+  int green_pin;
+  int blue_pin;
 
   int count_tx;                               /*Statistic counter: Number of bytes transmitted*/
   int count_rx;                               /*Statistic counter: Number of bytes received*/
@@ -85,6 +81,13 @@ struct generic_raw_uart_instance
   int count_frame;                            /*Statistic counter: Number of frame errors*/
   int count_overrun;                          /*Statistic counter: Number of RX overruns in hardware FIFO*/
   int count_buf_overrun;                      /*Statistic counter: Number of RX overruns in user space buffer*/
+
+  struct raw_uart_driver *driver;
+  dev_t devid;
+  struct cdev cdev;
+  struct device *dev;
+
+  struct generic_raw_uart raw_uart;
 };
 
 struct per_connection_data
@@ -102,9 +105,9 @@ static int generic_raw_uart_open(struct inode *inode, struct file *filep);
 static int generic_raw_uart_close(struct inode *inode, struct file *filep);
 static unsigned int generic_raw_uart_poll(struct file* filep, poll_table* wait);
 static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigned long arg);
-static int generic_raw_uart_acquire_sender( struct per_connection_data *conn );
-static int generic_raw_uart_send_completed( struct per_connection_data *conn );
-static void generic_raw_uart_tx_queued_unlocked(void);
+static int generic_raw_uart_acquire_sender(struct generic_raw_uart_instance *instance, struct per_connection_data *conn);
+static int generic_raw_uart_send_completed(struct generic_raw_uart_instance *instance, struct per_connection_data *conn);
+static void generic_raw_uart_tx_queued_unlocked(struct generic_raw_uart_instance *instance);
 #ifdef PROC_DEBUG
 static int generic_raw_uart_proc_show(struct seq_file *m, void *v);
 static int generic_raw_uart_proc_open(struct inode *inode, struct  file *file);
@@ -134,16 +137,9 @@ static const struct file_operations generic_raw_uart_proc_fops =
 };
 #endif /*PROC_DEBUG*/
 
-static struct generic_raw_uart_instance *instance;
-static dev_t generic_raw_uart_devid;
-static struct cdev generic_raw_uart_cdev;
-static struct class *generic_raw_uart_class;
-static struct device *generic_raw_uart_dev;
-
-const struct raw_uart_driver *driver;
-
 static ssize_t generic_raw_uart_read(struct file *filep, char __user *buf, size_t count, loff_t *offset)
 {
+  struct generic_raw_uart_instance *instance = container_of(filep->f_inode->i_cdev, struct generic_raw_uart_instance, cdev);
   int ret = 0;
 
   if( down_interruptible( &instance->sem ))
@@ -198,6 +194,7 @@ exit:
 
 static ssize_t generic_raw_uart_write(struct file *filep, const char __user *buf, size_t count, loff_t *offset)
 {
+  struct generic_raw_uart_instance *instance = container_of(filep->f_inode->i_cdev, struct generic_raw_uart_instance, cdev);
   struct per_connection_data *conn = filep->private_data;
   int ret = 0;
 
@@ -209,14 +206,14 @@ static ssize_t generic_raw_uart_write(struct file *filep, const char __user *buf
 
   if( count > sizeof(conn->txbuf)  )
   {
-    dev_err(generic_raw_uart_dev, "generic_raw_uart_write(): Error message size.");
+    dev_err(instance->dev, "generic_raw_uart_write(): Error message size.");
     ret = -EMSGSIZE;
     goto exit_sem;
   }
 
   if( copy_from_user(conn->txbuf, buf, count) )
   {
-    dev_err(generic_raw_uart_dev, "generic_raw_uart_write(): Copy from user.");
+    dev_err(instance->dev, "generic_raw_uart_write(): Copy from user.");
     ret = -EFAULT;
     goto exit_sem;
   }
@@ -225,14 +222,14 @@ static ssize_t generic_raw_uart_write(struct file *filep, const char __user *buf
   conn->tx_buf_length = count;
   smp_wmb();  /*Wait until completion of all writes*/
 
-  if( wait_event_interruptible(instance->writeq, generic_raw_uart_acquire_sender(conn)) )
+  if( wait_event_interruptible(instance->writeq, generic_raw_uart_acquire_sender(instance, conn)) )
   {
     ret = -ERESTARTSYS;
     goto exit_sem;
   }
 
   /*wait for sending to complete*/
-  if( wait_event_interruptible(instance->writeq, generic_raw_uart_send_completed(conn)) )
+  if( wait_event_interruptible(instance->writeq, generic_raw_uart_send_completed(instance, conn)) )
   {
     ret = -ERESTARTSYS;
     goto exit_sem;
@@ -248,13 +245,17 @@ exit:
   return ret;
 }
 
-static void generic_raw_uart_reset_radio_module(void)
+static void generic_raw_uart_reset_radio_module(struct generic_raw_uart_instance *instance)
 {
-  if (instance->gpio_pin != 0)
+  if (instance->reset_pin != 0)
   {
-    gpio_set_value(instance->gpio_pin, 0);
-    msleep(100);
-    gpio_set_value(instance->gpio_pin, 1);
+    gpio_direction_output(instance->reset_pin, false);
+    gpio_set_value(instance->reset_pin, 0);
+    msleep(50);
+    gpio_set_value(instance->reset_pin, 1);
+    msleep(50);
+    gpio_direction_input(instance->reset_pin);
+    msleep(50);
   }
 }
 
@@ -262,6 +263,7 @@ static int generic_raw_uart_open(struct inode *inode, struct file *filep)
 {
   int ret;
   struct per_connection_data *conn;
+  struct generic_raw_uart_instance *instance = container_of(inode->i_cdev, struct generic_raw_uart_instance, cdev);
 
   if( instance == NULL )
   {
@@ -277,7 +279,7 @@ static int generic_raw_uart_open(struct inode *inode, struct file *filep)
   /* check for the maximum number of connections */
   if( instance->open_count >= MAX_CONNECTIONS )
   {
-    dev_err(generic_raw_uart_dev, "generic_raw_uart_open(): Too many open connections.");
+    dev_err(instance->dev, "generic_raw_uart_open(): Too many open connections.");
 
     /*Release semaphore*/
     up( &instance->sem );
@@ -288,7 +290,7 @@ static int generic_raw_uart_open(struct inode *inode, struct file *filep)
 
   if( !instance->open_count )  /*Enable HW for the first connection.*/
   {
-    ret = driver->start_connection();
+    ret = instance->driver->start_connection(&instance->raw_uart);
     if( ret )
     {
       /*Release semaphore*/
@@ -320,6 +322,7 @@ static int generic_raw_uart_open(struct inode *inode, struct file *filep)
 static int generic_raw_uart_close(struct inode *inode, struct file *filep)
 {
   struct per_connection_data *conn = filep->private_data;
+  struct generic_raw_uart_instance *instance = container_of(inode->i_cdev, struct generic_raw_uart_instance, cdev);
 
   if( down_interruptible(&conn->sem) )
   {
@@ -340,8 +343,8 @@ static int generic_raw_uart_close(struct inode *inode, struct file *filep)
 
   if( !instance->open_count )
   {
-    driver->stop_connection();
-    generic_raw_uart_reset_radio_module();
+    instance->driver->stop_connection(&instance->raw_uart);
+    generic_raw_uart_reset_radio_module(instance);
   }
 
   up( &instance->sem );
@@ -351,6 +354,7 @@ static int generic_raw_uart_close(struct inode *inode, struct file *filep)
 
 static unsigned int generic_raw_uart_poll(struct file* filep, poll_table* wait)
 {
+  struct generic_raw_uart_instance *instance = container_of(filep->f_inode->i_cdev, struct generic_raw_uart_instance, cdev);
   struct per_connection_data *conn = filep->private_data;
   unsigned long lock_flags = 0;
   unsigned int mask = 0;
@@ -375,6 +379,7 @@ static unsigned int generic_raw_uart_poll(struct file* filep, poll_table* wait)
 
 static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
+  struct generic_raw_uart_instance *instance = container_of(filep->f_inode->i_cdev, struct generic_raw_uart_instance, cdev);
   struct per_connection_data *conn = filep->private_data;
   long ret = 0;
   int err = 0;
@@ -541,7 +546,7 @@ static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigne
   return ret;
 }
 
-static int generic_raw_uart_acquire_sender( struct per_connection_data *conn )
+static int generic_raw_uart_acquire_sender(struct generic_raw_uart_instance *instance, struct per_connection_data *conn )
 {
   int ret = 0;
   unsigned long lock_flags;
@@ -555,8 +560,8 @@ static int generic_raw_uart_acquire_sender( struct per_connection_data *conn )
     ret = 1;
     if( sender_idle )
     {
-      driver->init_tx();
-      generic_raw_uart_tx_queued_unlocked();
+      instance->driver->init_tx(&instance->raw_uart);
+      generic_raw_uart_tx_queued_unlocked(instance);
     }
     else
     {
@@ -567,7 +572,7 @@ static int generic_raw_uart_acquire_sender( struct per_connection_data *conn )
   return ret;
 }
 
-static int generic_raw_uart_send_completed( struct per_connection_data *conn )
+static int generic_raw_uart_send_completed(struct generic_raw_uart_instance *instance, struct per_connection_data *conn )
 {
   int ret = 0;
   unsigned long lock_flags;
@@ -579,8 +584,10 @@ static int generic_raw_uart_send_completed( struct per_connection_data *conn )
   return ret;
 }
 
-void generic_raw_uart_handle_rx_char(enum generic_raw_uart_rx_flags flags, unsigned char data)
+void generic_raw_uart_handle_rx_char(struct generic_raw_uart *raw_uart, enum generic_raw_uart_rx_flags flags, unsigned char data)
 {
+  struct generic_raw_uart_instance *instance = raw_uart->private;
+
   instance->count_rx++;
 
   if(flags & GENERIC_RAW_UART_RX_STATE_BREAK)
@@ -614,44 +621,49 @@ void generic_raw_uart_handle_rx_char(enum generic_raw_uart_rx_flags flags, unsig
     }
     else
     {
-      dev_err(generic_raw_uart_dev, "generic_raw_uart_handle_rx_char(): rx fifo full.");
+      dev_err(instance->dev, "generic_raw_uart_handle_rx_char(): rx fifo full.");
     }
   }
 }
 EXPORT_SYMBOL(generic_raw_uart_handle_rx_char);
 
-void generic_raw_uart_rx_completed(void) {
+void generic_raw_uart_rx_completed(struct generic_raw_uart *raw_uart) {
+  struct generic_raw_uart_instance *instance = raw_uart->private;
   wake_up_interruptible( &instance->readq );
 }
 EXPORT_SYMBOL(generic_raw_uart_rx_completed);
 
-void generic_raw_uart_tx_queued(void)
+void generic_raw_uart_tx_queued(struct generic_raw_uart *raw_uart)
 {
+  struct generic_raw_uart_instance *instance = raw_uart->private;
+
   spin_lock( &instance->lock_tx );
-  generic_raw_uart_tx_queued_unlocked();
+  generic_raw_uart_tx_queued_unlocked(instance);
   spin_unlock( &instance->lock_tx );
 }
 EXPORT_SYMBOL(generic_raw_uart_tx_queued);
 
-static inline void generic_raw_uart_tx_queued_unlocked(void)
+static inline void generic_raw_uart_tx_queued_unlocked(struct generic_raw_uart_instance *instance)
 {
   int tx_count = 0;
+  int bulksize = 0;
 
-  while( (tx_count < driver->tx_chunk_size) && (driver->isready_for_tx()) &&
+  while( (tx_count < instance->driver->tx_chunk_size) && (instance->driver->isready_for_tx(&instance->raw_uart)) &&
        (instance->tx_connection != NULL) && (instance->tx_connection->tx_buf_index < instance->tx_connection->tx_buf_length) )
   {
-    driver->tx_char(instance->tx_connection->txbuf[instance->tx_connection->tx_buf_index]);
-    instance->tx_connection->tx_buf_index++;
+    bulksize = min(instance->driver->tx_bulktransfer_size, (int)(instance->tx_connection->tx_buf_length - instance->tx_connection->tx_buf_index));
+    instance->driver->tx_chars(&instance->raw_uart, instance->tx_connection->txbuf, instance->tx_connection->tx_buf_index, bulksize);
+    instance->tx_connection->tx_buf_index += bulksize;
     smp_wmb();
-    tx_count++;
+    tx_count += bulksize;
     #ifdef PROC_DEBUG
-    instance->count_tx++;
+    instance->count_tx += bulksize;
     #endif /*PROC_DEBUG*/
   }
 
   if( (instance->tx_connection != NULL) && (instance->tx_connection->tx_buf_index >= instance->tx_connection->tx_buf_length) )
   {
-    driver->stop_tx( );
+    instance->driver->stop_tx(&instance->raw_uart);
     instance->tx_connection = NULL;
     smp_wmb();
     wake_up_interruptible( &instance->writeq );
@@ -661,6 +673,8 @@ static inline void generic_raw_uart_tx_queued_unlocked(void)
 #ifdef PROC_DEBUG
 static int generic_raw_uart_proc_show(struct seq_file *m, void *v)
 {
+  struct generic_raw_uart_instance *instance = m->private;
+
   seq_printf(m, "open_count=%d\n", instance->open_count );
   seq_printf(m, "count_tx=%d\n", instance->count_tx );
   seq_printf(m, "count_rx=%d\n", instance->count_rx );
@@ -671,38 +685,108 @@ static int generic_raw_uart_proc_show(struct seq_file *m, void *v)
   seq_printf(m, "rxbuf_size=%d\n", CIRC_CNT(instance->rxbuf.head, instance->rxbuf.tail, CIRCBUF_SIZE) );
   seq_printf(m, "rxbuf_head=%d\n", instance->rxbuf.head );
   seq_printf(m, "rxbuf_tail=%d\n", instance->rxbuf.tail );
+
   return 0;
 }
 
 static int generic_raw_uart_proc_open(struct inode *inode, struct file *file)
 {
-  return single_open( file, generic_raw_uart_proc_show, NULL );
+  struct generic_raw_uart_instance *instance = PDE_DATA(inode);
+  return single_open(file, generic_raw_uart_proc_show, instance);
 }
 #endif /*PROC_DEBUG*/
 
-int generic_raw_uart_get_gpio_pin_number(struct device *dev, const char *label)
+const char *generic_raw_uart_get_pin_label(enum generic_raw_uart_pin pin)
+{
+  switch(pin)
+  {
+    case GENERIC_RAW_UART_PIN_BLUE:
+      return "pivccu,blue_pin";
+    case GENERIC_RAW_UART_PIN_GREEN:
+      return "pivccu,green_pin";
+    case GENERIC_RAW_UART_PIN_RED:
+      return "pivccu,red_pin";
+    case GENERIC_RAW_UART_PIN_RESET:
+      return "pivccu,reset_pin";
+  }
+  return 0;
+}
+
+int generic_raw_uart_get_gpio_pin_number(struct generic_raw_uart_instance *instance, struct device *dev, enum generic_raw_uart_pin pin)
 {
   int res;
 
-  struct fwnode_handle *fwnode = dev_fwnode(dev);
-  struct gpio_desc *gpiod = fwnode_get_named_gpiod(fwnode, label, 0, GPIOD_ASIS, label);
+  if (instance->driver->get_gpio_pin_number == 0)
+  {
+    struct fwnode_handle *fwnode = dev_fwnode(dev);
+    const char *label = generic_raw_uart_get_pin_label(pin);
+    struct gpio_desc *gpiod = fwnode_get_named_gpiod(fwnode, label, 0, GPIOD_ASIS, label);
 
-  if (IS_ERR_OR_NULL(gpiod))
-    return 0;
+    if (IS_ERR_OR_NULL(gpiod))
+      return 0;
 
-  res = desc_to_gpio(gpiod);
+    res = desc_to_gpio(gpiod);
 
-  gpiod_put(gpiod);
+    gpiod_put(gpiod);
 
-  return res;
+    return res;
+  }
+  else
+  {
+    return instance->driver->get_gpio_pin_number(&instance->raw_uart, pin);
+  }
 }
 
-int generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *drv)
+static ssize_t red_gpio_pin_show(struct device *dev, struct device_attribute *attr, char *page)
+{
+  struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
+  return sprintf(page, "%d\n", instance->red_pin);
+}
+static DEVICE_ATTR_RO(red_gpio_pin);
+static ssize_t green_gpio_pin_show(struct device *dev, struct device_attribute *attr, char *page)
+{
+  struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
+  return sprintf(page, "%d\n", instance->green_pin);
+}
+static DEVICE_ATTR_RO(green_gpio_pin);
+static ssize_t blue_gpio_pin_show(struct device *dev, struct device_attribute *attr, char *page)
+{
+  struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
+  return sprintf(page, "%d\n", instance->blue_pin);
+}
+static DEVICE_ATTR_RO(blue_gpio_pin);
+
+
+static spinlock_t active_devices_lock;
+static bool active_devices[MAX_DEVICES] = { false };
+
+struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *drv, void *driver_data)
 {
   int err;
-  void *ptr_err;
+  int i;
 
-  driver = drv;
+  int dev_no = MAX_DEVICES;
+
+  struct generic_raw_uart_instance *instance;
+
+  unsigned long flags;
+  spin_lock_irqsave(&active_devices_lock, flags);
+  for (i = 0; i < MAX_DEVICES; i++)
+  {
+    if (!active_devices[i])
+    {
+      dev_no = i;
+      active_devices[i] = true;
+      break;
+    }
+  }
+  spin_unlock_irqrestore(&active_devices_lock, flags);
+
+  if (dev_no >= MAX_DEVICES)
+  {
+    err = -EFAULT;
+    goto failed_inst_alloc;
+  }
 
   instance = kzalloc(sizeof(struct generic_raw_uart_instance), GFP_KERNEL);
   if (!instance) {
@@ -710,50 +794,53 @@ int generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *drv)
     goto failed_inst_alloc;
   }
 
-  /* create char device */
-  err = alloc_chrdev_region(&generic_raw_uart_devid, 0, 1, DRIVER_NAME);
-  if (err != 0) {
-    dev_err(dev, "unable to allocate device number");
-    goto failed_alloc_chrdev;
-  }
-  cdev_init(&generic_raw_uart_cdev, &generic_raw_uart_fops);
-  err = cdev_add(&generic_raw_uart_cdev, generic_raw_uart_devid, 1);
+  instance->raw_uart.private = instance;
+  instance->raw_uart.driver_data = driver_data;
+  instance->raw_uart.dev_number = dev_no;
+  instance->driver = drv;
+
+  instance->devid = MKDEV(MAJOR(devid), MINOR(devid) + dev_no);
+
+  cdev_init(&instance->cdev, &generic_raw_uart_fops);
+  instance->cdev.owner = THIS_MODULE;
+
+  err = cdev_add(&instance->cdev, instance->devid, 1);
   if (err != 0) {
     dev_err(dev, "unable to register device");
     goto failed_cdev_add;
   }
 
-  /* create sysfs entries */
-  generic_raw_uart_class = class_create(THIS_MODULE, DRIVER_NAME);
-  ptr_err = generic_raw_uart_class;
-  if (IS_ERR(ptr_err))
-    goto failed_class_create;
+  if (dev_no == 0)
+    instance->dev = device_create(class, NULL, instance->devid, NULL, DRIVER_NAME);
+  else
+    instance->dev = device_create(class, NULL, instance->devid, NULL, DRIVER_NAME "%d", dev_no);
 
-  generic_raw_uart_dev = device_create(generic_raw_uart_class,
-                                       NULL,
-                                       generic_raw_uart_devid,
-                                       NULL,
-                                       DRIVER_NAME);
-  ptr_err = generic_raw_uart_dev;
-  if (IS_ERR(ptr_err))
-    goto failed_device_create;
-
-  instance->gpio_pin = generic_raw_uart_get_gpio_pin_number(dev, "pivccu,reset_pin");
-
-  if (instance->gpio_pin != 0)
+  if (IS_ERR(instance->dev))
   {
-    gpio_request(instance->gpio_pin, "pivccu:reset");
-    gpio_direction_output(instance->gpio_pin, true);
+    err = PTR_ERR(instance->dev); 
+    goto failed_device_create;
+  }
+
+  dev_set_drvdata(instance->dev, instance);
+
+  instance->reset_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_RESET);
+
+  if (instance->reset_pin != 0)
+  {
+    gpio_request(instance->reset_pin, "pivccu:reset");
   }
   else
   {
     dev_info(dev, "No valid reset pin configured in device tree");
-    instance->gpio_pin = 0;
   }
 
-  red_gpio_pin = generic_raw_uart_get_gpio_pin_number(dev, "pivccu,red_pin");
-  green_gpio_pin = generic_raw_uart_get_gpio_pin_number(dev, "pivccu,green_pin");
-  blue_gpio_pin = generic_raw_uart_get_gpio_pin_number(dev, "pivccu,blue_pin");
+  instance->red_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_RED);
+  instance->green_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_GREEN);
+  instance->blue_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_BLUE);
+
+  err = sysfs_create_file(&instance->dev->kobj, &dev_attr_red_gpio_pin.attr);
+  err = sysfs_create_file(&instance->dev->kobj, &dev_attr_green_gpio_pin.attr);
+  err = sysfs_create_file(&instance->dev->kobj, &dev_attr_blue_gpio_pin.attr);
 
   sema_init( &instance->sem, 1 );
   spin_lock_init( &instance->lock_tx );
@@ -763,43 +850,49 @@ int generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *drv)
   instance->rxbuf.buf = kmalloc( CIRCBUF_SIZE, GFP_KERNEL );
 
 #ifdef PROC_DEBUG
-  proc_create(DRIVER_NAME, 0444, NULL, &generic_raw_uart_proc_fops);
+  proc_create_data(dev_name(instance->dev), 0444, NULL, &generic_raw_uart_proc_fops, instance);
 #endif
 
-  generic_raw_uart_reset_radio_module();
+  generic_raw_uart_reset_radio_module(instance);
 
-  return 0;
+  return &instance->raw_uart;
 
 failed_device_create:
-  class_destroy(generic_raw_uart_class);
-failed_class_create:
-  cdev_del(&generic_raw_uart_cdev);
-  err = PTR_ERR(ptr_err);
+  cdev_del(&instance->cdev);
 failed_cdev_add:
-  unregister_chrdev_region(generic_raw_uart_devid, 1);
-failed_alloc_chrdev:
+  unregister_chrdev_region(instance->devid, 1);
   kfree(instance);
 failed_inst_alloc:
-  return err;
+  return ERR_PTR(err);
 }
 EXPORT_SYMBOL(generic_raw_uart_probe);
 
-int generic_raw_uart_remove(struct device *dev, struct raw_uart_driver *drv)
+int generic_raw_uart_remove(struct generic_raw_uart *raw_uart, struct device *dev, struct raw_uart_driver *drv)
 {
+  struct generic_raw_uart_instance *instance = raw_uart->private;
+  unsigned long flags;
+
 #ifdef PROC_DEBUG
-  remove_proc_entry(DRIVER_NAME, NULL);
+  remove_proc_entry(dev_name(instance->dev), NULL);
 #endif
 
-  if (instance->gpio_pin != 0)
+  sysfs_remove_file(&instance->dev->kobj, &dev_attr_red_gpio_pin.attr);
+  sysfs_remove_file(&instance->dev->kobj, &dev_attr_green_gpio_pin.attr);
+  sysfs_remove_file(&instance->dev->kobj, &dev_attr_blue_gpio_pin.attr);
+
+  if (instance->reset_pin != 0)
   {
-    gpio_free(instance->gpio_pin);
+    gpio_free(instance->reset_pin);
   }
 
+  device_destroy(class, instance->devid);
+  cdev_del(&instance->cdev);
+
+  spin_lock_irqsave(&active_devices_lock, flags);
+  active_devices[instance->raw_uart.dev_number] = false;
+  spin_unlock_irqrestore(&active_devices_lock, flags);
+
   kfree(instance);
-  device_destroy(generic_raw_uart_class, generic_raw_uart_devid);
-  class_destroy(generic_raw_uart_class);
-  cdev_del(&generic_raw_uart_cdev);
-  unregister_chrdev_region(generic_raw_uart_devid, 1);
 
   return 0;
 }
@@ -807,12 +900,23 @@ EXPORT_SYMBOL(generic_raw_uart_remove);
 
 static int __init generic_raw_uart_init(void)
 {
+  int err = alloc_chrdev_region(&devid, 0, MAX_DEVICES, DRIVER_NAME);
+  if (err != 0)
+    return err;
+
+  class = class_create(THIS_MODULE, DRIVER_NAME);
+  if (IS_ERR(class))
+    return PTR_ERR(class);
+
+  spin_lock_init(&active_devices_lock);
+
   return 0;
 }
 
 static void __exit generic_raw_uart_exit(void)
 {
-  return;
+  unregister_chrdev_region(devid, MAX_DEVICES);
+  class_destroy(class);
 }
 
 module_init(generic_raw_uart_init);
@@ -820,7 +924,7 @@ module_exit(generic_raw_uart_exit);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.4");
+MODULE_VERSION("1.5");
 MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
