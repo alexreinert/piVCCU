@@ -36,6 +36,12 @@
 #define FTDI_SIO_GET_MODEM_STATUS_REQUEST_TYPE 0xc0
 #define FTDI_SIO_GET_MODEM_STATUS_REQUEST 0x05
 
+#define FTDI_SIO_SET_EVENT_CHAR_REQUEST_TYPE 0x40
+#define FTDI_SIO_SET_EVENT_CHAR_REQUEST 0x06
+
+#define FTDI_SIO_SET_ERROR_CHAR_REQUEST_TYPE 0x40
+#define FTDI_SIO_SET_ERROR_CHAR_REQUEST 0x07
+
 #define FTDI_SIO_SET_BAUDRATE_REQUEST_TYPE 0x40
 #define FTDI_SIO_SET_BAUDRATE_REQUEST  0x03
 
@@ -243,12 +249,17 @@ static void hb_rf_usb_init_uart(struct hb_rf_usb_port_s *port)
 {
   // reset uart
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), FTDI_SIO_RESET_REQUEST, FTDI_SIO_RESET_REQUEST_TYPE, FTDI_SIO_RESET_SIO, 0, NULL, 0, WDR_TIMEOUT);
+  msleep(50);
  
   // set baudrate (115200)
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), FTDI_SIO_SET_BAUDRATE_REQUEST, FTDI_SIO_SET_BAUDRATE_REQUEST_TYPE, 26, 0, NULL, 0, WDR_SHORT_TIMEOUT);
 
   // set 8N1
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), FTDI_SIO_SET_DATA_REQUEST, FTDI_SIO_SET_DATA_REQUEST_TYPE, 8 | FTDI_SIO_SET_DATA_PARITY_NONE | FTDI_SIO_SET_DATA_STOP_BITS_1, 0, NULL, 0, WDR_SHORT_TIMEOUT);
+
+  // disable any character replacement
+  usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), FTDI_SIO_SET_EVENT_CHAR_REQUEST, FTDI_SIO_SET_EVENT_CHAR_REQUEST_TYPE, 0, 0, NULL, 0, WDR_SHORT_TIMEOUT);
+  usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), FTDI_SIO_SET_ERROR_CHAR_REQUEST, FTDI_SIO_SET_ERROR_CHAR_REQUEST_TYPE, 0, 0, NULL, 0, WDR_SHORT_TIMEOUT);
 
   // set read timeout
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), FTDI_SIO_SET_LATENCY_TIMER_REQUEST, FTDI_SIO_SET_LATENCY_TIMER_REQUEST_TYPE, 1, 0, NULL, 0, WDR_SHORT_TIMEOUT);
@@ -274,7 +285,7 @@ static void hb_rf_usb_process_read_urb(struct urb *urb)
   /* Error handling */
   if(status & FTDI_RS_BI)
   {
-    flags |= GENERIC_RAW_UART_RX_STATE_BREAK;
+    generic_raw_uart_handle_rx_char(port->raw_uart, GENERIC_RAW_UART_RX_STATE_BREAK, 0);
   }
   else
   {
@@ -292,9 +303,14 @@ static void hb_rf_usb_process_read_urb(struct urb *urb)
     }
   }
 
-  for (i = 2; i < urb->actual_length; i++)
+  if (urb->actual_length > 2)
   {
-    generic_raw_uart_handle_rx_char(port->raw_uart, flags, (unsigned char)data[i]);
+    generic_raw_uart_handle_rx_char(port->raw_uart, flags, (unsigned char)data[2]);
+  }
+
+  for (i = 3; i < urb->actual_length; i++)
+  {
+    generic_raw_uart_handle_rx_char(port->raw_uart, GENERIC_RAW_UART_RX_STATE_NONE, (unsigned char)data[i]);
   }
 
   generic_raw_uart_rx_completed(port->raw_uart);
@@ -489,7 +505,7 @@ module_init(hb_rf_usb_init);
 module_exit(hb_rf_usb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.0");
+MODULE_VERSION("1.1");
 MODULE_DESCRIPTION("HB-RF-USB raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

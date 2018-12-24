@@ -344,7 +344,6 @@ static int generic_raw_uart_close(struct inode *inode, struct file *filep)
   if( !instance->open_count )
   {
     instance->driver->stop_connection(&instance->raw_uart);
-    generic_raw_uart_reset_radio_module(instance);
   }
 
   up( &instance->sem );
@@ -737,6 +736,25 @@ int generic_raw_uart_get_gpio_pin_number(struct generic_raw_uart_instance *insta
   }
 }
 
+static ssize_t reset_radio_module_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+  struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
+
+  char* endp;
+
+  if (simple_strtol(strim(buf), &endp, 0) == 1)
+  {
+    dev_info(dev, "Reset radio module");
+    generic_raw_uart_reset_radio_module(instance);
+    return count;
+  }
+  else
+  {
+    return -EINVAL;
+  }
+}
+static DEVICE_ATTR_WO(reset_radio_module);
+
 static ssize_t red_gpio_pin_show(struct device *dev, struct device_attribute *attr, char *page)
 {
   struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
@@ -842,6 +860,8 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   err = sysfs_create_file(&instance->dev->kobj, &dev_attr_green_gpio_pin.attr);
   err = sysfs_create_file(&instance->dev->kobj, &dev_attr_blue_gpio_pin.attr);
 
+  err = sysfs_create_file(&instance->dev->kobj, &dev_attr_reset_radio_module.attr);
+
   sema_init( &instance->sem, 1 );
   spin_lock_init( &instance->lock_tx );
   init_waitqueue_head( &instance->readq );
@@ -879,6 +899,8 @@ int generic_raw_uart_remove(struct generic_raw_uart *raw_uart, struct device *de
   sysfs_remove_file(&instance->dev->kobj, &dev_attr_red_gpio_pin.attr);
   sysfs_remove_file(&instance->dev->kobj, &dev_attr_green_gpio_pin.attr);
   sysfs_remove_file(&instance->dev->kobj, &dev_attr_blue_gpio_pin.attr);
+
+  sysfs_remove_file(&instance->dev->kobj, &dev_attr_reset_radio_module.attr);
 
   if (instance->reset_pin != 0)
   {
@@ -924,7 +946,7 @@ module_exit(generic_raw_uart_exit);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.5");
+MODULE_VERSION("1.6");
 MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
