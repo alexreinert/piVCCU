@@ -27,7 +27,7 @@
    sudo apt install pivccu-modules-raspberrypi
    ```
 
-4. Enable UART GPIO pins (only on Raspberry Pi 3) (You can skip this step, if you do not use the HM-MOD-RPI-PCB)
+4. Enable UART GPIO pins (only on Raspberry Pi 3) (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
    * Option 1: Disabled bluetooth (prefered)
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
@@ -45,7 +45,7 @@
       EOT'
       ```
 
-5. Disable serial console in command line (You can skip this step, if you do not use the HM-MOD-RPI-PCB)
+5. Disable serial console in command line (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
    ```bash
    sudo sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
    sudo sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
