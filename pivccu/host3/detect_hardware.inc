@@ -24,6 +24,7 @@ case $PIVCCU_HMRF_MODE in
     modprobe -a fake_hmrf &> /dev/null
     if [ -e /sys/module/fake_hmrf ]; then
       UART_MAJOR=`cat /sys/devices/virtual/fake-hmrf/fake-hmrf/dev | cut -d: -f1`
+      UART_MINOR=`cat /sys/devices/virtual/fake-hmrf/fake-hmrf/dev | cut -d: -f2`
       echo -n "$PIVCCU_FAKE_SERIAL" > /sys/module/fake_hmrf/parameters/board_serial
       echo -n "$PIVCCU_FAKE_RADIO_MAC" > /sys/module/fake_hmrf/parameters/radio_mac
     fi

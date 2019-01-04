@@ -130,7 +130,11 @@ case "$1" in
         for dev in "${SELECTED[@]}"
         do
           dev=`echo "$dev" | awk '{print $1}'`
-          syspath="${DEVICES[$dev]}"
+	  syspath="${DEVICES[$dev]}"
+
+          if [ -z "$syspath" ]; then
+            continue
+          fi
 
           declare -A UDEV_PROPERTIES=()
           while IFS='=' read -r a b; do UDEV_PROPERTIES["$a"]="$b"; done < <(udevadm info -q property -p $syspath)
