@@ -8,4 +8,4 @@ Type=oneshot
 
 [Install]
 WantedBy=multi-user.target
-
+RequiredBy=pivccu.service
