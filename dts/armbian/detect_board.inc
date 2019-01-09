@@ -44,6 +44,12 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         FDT_FILE=rockchip/rk3328-rock64.dtb
         break
         ;;
+     pine64,rockpro64)
+        OVERLAY_MODE='patch'
+        INCLUDE_FILE='/var/lib/piVCCU/dts/rockpro64.dts.include'
+        FDT_FILE=rockchip/rk3399-rockpro64.dtb
+        break
+        ;;
       hardkernel,odroid-c2)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/odroidc2.dts.include'
