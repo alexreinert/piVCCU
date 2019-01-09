@@ -34,6 +34,8 @@ sed -i $CONFIG_FILE -e "s/<uart_major>/$UART_MAJOR/"
 sed -i $CONFIG_FILE -e "s/<hmip_major>/$HMIP_MAJOR/"
 sed -i $CONFIG_FILE -e "s/<hmip_minor>/$HMIP_MINOR/"
 
+command -v lxc-update-config > /dev/null && lxc-update-config -c $CONFIG_FILE
+
 echo -n $EQ3LOOP_MAJOR > /sys/module/plat_eq3ccu2/parameters/eq3charloop_major
 echo -n $UART_MAJOR > /sys/module/plat_eq3ccu2/parameters/uart_major
 echo -n $HMIP_MAJOR > /sys/module/plat_eq3ccu2/parameters/hmip_major

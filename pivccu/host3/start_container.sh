@@ -66,6 +66,8 @@ sed -i $CONFIG_FILE -e "s/<uart_minor>/$UART_MINOR/"
 sed -i $CONFIG_FILE -e "s/<hmip_major>/$HMIP_MAJOR/"
 sed -i $CONFIG_FILE -e "s/<hmip_minor>/$HMIP_MINOR/"
 
+command -v lxc-update-config > /dev/null && lxc-update-config -c $CONFIG_FILE
+
 cat > /tmp/pivccu-var/pivccu/conf << EOF
 HMRF_HARDWARE="$HMRF_HARDWARE"
 HMIP_HARDWARE="$HMIP_HARDWARE"
