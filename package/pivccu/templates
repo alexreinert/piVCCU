@@ -29,7 +29,8 @@ Description: WARNING: No Network bridge could be detected.
 
 Template: pivccu/rf_mode
 Type: select
-Description: Which module should be used for HmRF?
+Description: Which radio module should be used?
+Description-DE: Welches Funkmodul soll verwendet werden?
 Choices: HM-MOD-RPI-PCB, HmIP-RFUSB, HM-MOD-RPI-PCB+HmIP-RFUSB, Fake
 Choices-EN: HM-MOD-RPI-PCB or RPI-RF-MOD (Only on supported platforms), HmIP-RFUSB (HmIP only), HM-MOD-RPI-PCB or RPI-RF-MOD + HmIP-RFUSB (Only on supported platforms), Fake radio module emulation
 

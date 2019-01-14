@@ -12,7 +12,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 * Support not only on Raspberry
 * Support for 
   * HM-MOD-RPI-PCB (HmRF+HmIP),
-  * RPI-RF-MOD (HmRF+HmIP, Pushbutton and RTC are not supported inside CCU Container)
+  * RPI-RF-MOD (HmRF+HmIP, Pushbutton and RTC are not supported out-of-the-box)
   * HmIP-RFUSB (HmIP only)
   * HM-LGW-O-TW-W-EU (HmRF only)
   * [HB-RF-USB](https://github.com/alexreinert/PCB/tree/master/HB-RF-USB) (HmRF+HmIP, Experimental, piVCCU3 only)
@@ -209,7 +209,7 @@ To restore a backup file use the WebUI of the CCU.
       8. As the CCU3 firmware does a cherry picking of files beeing restored, you maybe need to restore some files by yourself (e.g. CUxD settings files).
       9. If you used YAHM without radio module, you should check your interface assignments of the LAN Gateways in the control panel
       
-### Using CUxD and USB devices
+### Using USB devices inside container (e.g. for CUxD)
 * piVCCU (CCU2 firmware)
    1. You can find available devices on the host using
       ```bash
@@ -225,7 +225,7 @@ To restore a backup file use the WebUI of the CCU.
       bash -c 'echo "pivccu-device add /dev/ttyUSB0" >> /etc/piVCCU/post-start.sh'
       ```
    4. The devices will now be available inside the container, just use them like it is described in the CUxD documentation
-* piVCCU3i (CCU3 firmware)
+* piVCCU3 (CCU3 firmware)
    You can configure the USB devices using the installer. You can change it later using
    ```bash
    sudo dpkg-reconfigure pivccu3
