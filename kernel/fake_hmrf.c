@@ -434,8 +434,11 @@ static int fake_hmrf_set_firmware_version(const char *val, const struct kernel_p
   int i;
   char *token;
   int parsed_token;
-  char str[strlen(val) + 1];
+  char str[32];
   char *parts = str;
+
+  if (strlen(val) > 31)
+    return -EINVAL;
 
   strcpy(str, val);
 
@@ -532,7 +535,7 @@ module_init(fake_hmrf_init);
 module_exit(fake_hmrf_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.2");
+MODULE_VERSION("1.3");
 MODULE_DESCRIPTION("Fake HM-MOD-RPI-PCB driver");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

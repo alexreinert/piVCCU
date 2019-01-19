@@ -13,5 +13,16 @@
     pivccu,green_pin = <&pivccu_gpio6 3 0>;
     pivccu,blue_pin = <&pivccu_gpio6 4 0>;
   };
+
+  i2c@ff140000 {
+    status = "okay";
+
+    rx8130@32 {
+      compatible = "epson,rx8130-legacy";
+      reg = <0x32>;
+      status = "okay";
+      enable-external-capacitor;
+    };
+  };
 };
 

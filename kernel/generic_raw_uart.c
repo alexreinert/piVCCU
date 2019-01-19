@@ -742,7 +742,7 @@ static ssize_t reset_radio_module_store(struct device *dev, struct device_attrib
 
   char* endp;
 
-  if (simple_strtol(strim(buf), &endp, 0) == 1)
+  if (simple_strtol(strim((char *)buf), &endp, 0) == 1)
   {
     dev_info(dev, "Reset radio module");
     generic_raw_uart_reset_radio_module(instance);
@@ -946,7 +946,7 @@ module_exit(generic_raw_uart_exit);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.6");
+MODULE_VERSION("1.7");
 MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

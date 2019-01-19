@@ -17,6 +17,17 @@
         compatible = "pivccu,meson";
         pivccu,reset_pin = <&pivccu_gpio 102 0>;
       };
+
+      i2c@8500 {
+        status = "okay";
+
+        rx8130@32 {
+          compatible = "epson,rx8130-legacy";
+          reg = <0x32>;
+          status = "okay";
+          enable-external-capacitor;
+        };
+      };
     };
   };
 };

@@ -1,0 +1,1 @@
+SUBSYSTEM=="rtc", DRIVERS=="rtc-rx8130", SYMLINK+="rtc", OPTIONS+="link_priority=-50", ACTION=="add", RUN+="/usr/bin/logger -t rtc-rx8130 Detected RX8130 RTC at $root/$name, updating system time", RUN+="/sbin/hwclock --rtc $root/$name --hctosys"

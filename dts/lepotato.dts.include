@@ -4,6 +4,21 @@
       pinctrl@14 {
         pivccu_gpio_ao: bank@14 {
         };
+        pivccu_i2c_ao: i2c_ao {
+        };
+      };
+
+      i2c@500 {
+        status = "okay";
+        pinctrl-0 = <&pivccu_i2c_ao>;
+        pinctrl-names = "default";
+
+        rx8130@32 {
+          compatible = "epson,rx8130-legacy";
+          reg = <0x32>;
+          status = "okay";
+          enable-external-capacitor;
+        };
       };
     };
 

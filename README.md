@@ -12,7 +12,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 * Support not only on Raspberry
 * Support for 
   * HM-MOD-RPI-PCB (HmRF+HmIP),
-  * RPI-RF-MOD (HmRF+HmIP, Pushbutton and RTC are not supported out-of-the-box)
+  * RPI-RF-MOD (HmRF+HmIP, Pushbutton is not supported)
   * HmIP-RFUSB (HmIP only)
   * HM-LGW-O-TW-W-EU (HmRF only)
   * [HB-RF-USB](https://github.com/alexreinert/PCB/tree/master/HB-RF-USB) (HmRF+HmIP, Experimental, piVCCU3 only)

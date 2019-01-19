@@ -37,9 +37,14 @@ done
 
 mkdir -p $TARGET_DIR/lib/systemd/system/
 cp -p $CURRENT_DIR/pivccu/dkms/pivccu-dkms.service $TARGET_DIR/lib/systemd/system/
+cp -p $CURRENT_DIR/pivccu/rtc/*.service $TARGET_DIR/lib/systemd/system/
+cp -p $CURRENT_DIR/pivccu/rtc/*.timer $TARGET_DIR/lib/systemd/system/
 
 mkdir -p $TARGET_DIR/var/lib/piVCCU/dkms
 cp -p $CURRENT_DIR/pivccu/dkms/*.sh $TARGET_DIR/var/lib/piVCCU/dkms
+
+mkdir -p $TARGET_DIR/lib/udev/rules.d
+cp -p $CURRENT_DIR/pivccu/rtc/*.rules $TARGET_DIR/lib/udev/rules.d
 
 mkdir -p $TARGET_DIR/DEBIAN
 cp -p $CURRENT_DIR/package/pivccu-modules-dkms/* $TARGET_DIR/DEBIAN

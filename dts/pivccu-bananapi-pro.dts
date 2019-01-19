@@ -3,6 +3,7 @@
 
 / {
   compatible = "allwinner,sun7i-a20";
+
   fragment@0 {
     target = <&uart4>;
     __overlay__ {
@@ -12,6 +13,22 @@
       pivccu,red_pin = <&pio 1 6 0>;
       pivccu,green_pin = <&pio 1 12 0>;
       pivccu,blue_pin = <&pio 1 8 0>;
+    };
+  };
+
+  fragment@1 {
+    target = <&i2c2>;
+    __overlay__ {
+      #address-cells = <1>;
+      #size-cells = <0>;
+      status = "okay";
+
+      rx8130@32 {
+        compatible = "epson,rx8130-legacy";
+        reg = <0x32>;
+        status = "okay";
+        enable-external-capacitor;
+      };
     };
   };
 };

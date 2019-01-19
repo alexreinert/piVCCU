@@ -1,0 +1,16 @@
+[Unit]
+ConditionCapability=CAP_SYS_TIME
+ConditionVirtualization=!container
+ConditionPathExists=/dev/rtc
+After=systemd-timesyncd.service
+ 
+[Service]
+Type=oneshot
+CapabilityBoundingSet=CAP_SYS_TIME
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+DeviceAllow=/dev/rtc rw
+DevicePolicy=closed
+ExecStart=/sbin/hwclock -f /dev/rtc --systohc
+

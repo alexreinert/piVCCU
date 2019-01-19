@@ -7,6 +7,7 @@
     pivccu,blue_pin = <&pivccu_gpio3 30 0>;
     pinctrl-0 = <&pivccu_uart2b_xfer>;
   };
+
   pinctrl {
     pivccu_gpio1: gpio1@ff730000 {
     };
@@ -17,6 +18,17 @@
     uart2b {
       pivccu_uart2b_xfer: uart2b-xfer {
       };
+    };
+  };
+
+  i2c@ff120000 {
+    status = "okay";
+
+    rx8130@32 {
+      compatible = "epson,rx8130-legacy";
+      reg = <0x32>;
+      status = "okay";
+      enable-external-capacitor;
     };
   };
 };

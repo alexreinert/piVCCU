@@ -3,6 +3,7 @@
 
 / {
   compatible = "brcm,bcm2708";
+
   fragment@0 {
     target = <&uart0>;
     __overlay__ {
@@ -13,4 +14,21 @@
       pivccu,blue_pin = <&gpio 21 0>;
     };
   };
+
+  fragment@1 {
+    target = <&i2c1>;
+    __overlay__ {
+      #address-cells = <1>;
+      #size-cells = <0>;
+      status = "okay";
+
+      rx8130@32 {
+        compatible = "epson,rx8130-legacy";
+        reg = <0x32>;
+        status = "okay";
+	enable-external-capacitor;
+      };
+    };
+  };
 };
+
