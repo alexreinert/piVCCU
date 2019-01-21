@@ -19,7 +19,7 @@
 
 3. Install the neccessary kernel modules
    ```bash
-   sudo apt install pivccu-modules-dkms
+   sudo apt install raspberrypi-kernel-headers pivccu-modules-dkms
    ```
 
 4. Install the neccessary device tree patches (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
