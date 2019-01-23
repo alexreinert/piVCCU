@@ -1086,6 +1086,35 @@ diff -ruN fw.3.41.7.orig/etc/inittab fw.3.41.7.patched/etc/inittab
  null::sysinit:/bin/mount -a
  null::sysinit:/bin/hostname -F /etc/hostname
  null::sysinit:/usr/bin/psplash -n &
+diff -ruN fw.3.41.7.orig/etc/network/if-up.d/eQ3StartNetwork fw.3.41.7.patched/etc/network/if-up.d/eQ3StartNetwork
+--- fw.3.41.7.orig/etc/network/if-up.d/eQ3StartNetwork	2018-10-19 15:20:59.000000000 +0200
++++ fw.3.41.7.patched/etc/network/if-up.d/eQ3StartNetwork	2019-01-23 09:55:06.683960306 +0100
+@@ -109,25 +109,6 @@
+ # restart syslogd to update hostname
+ /etc/init.d/S07logging restart 2>/dev/null >/dev/null
+ 
+-# check if we booting via nfs
+-if grep -q nfsroot /proc/cmdline ; then
+-   echo Running from nfs root. Skipping network configuration.
+-
+-   # has IP  
+-   touch /var/status/hasLink
+-   touch /var/status/hasIP
+-
+-   # check internet connection; use fix ip to google because no nameserver (nfs boot)
+-   /usr/bin/wget -q --spider http://216.58.213.238/
+-   if [[ $? -eq 0 ]]; then
+-     touch /var/status/hasInternet
+-   elif ping -q -W 5 -c 1 8.8.8.8 >/dev/null 2>/dev/null; then
+-     touch /var/status/hasInternet
+-   fi
+-
+-   exit 0
+-fi
+-
+ # make sure no other udhcpc is running
+ killall -q udhcpc
+ 
 diff -ruN fw.3.41.7.orig/www/config/cp_maintenance.cgi fw.3.41.7.patched/www/config/cp_maintenance.cgi
 --- fw.3.41.7.orig/www/config/cp_maintenance.cgi	2018-10-30 17:00:21.000000000 +0100
 +++ fw.3.41.7.patched/www/config/cp_maintenance.cgi	2018-11-01 16:23:18.857917116 +0100
