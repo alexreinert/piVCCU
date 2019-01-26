@@ -8,6 +8,7 @@
 
   serial@ff190000 {
     compatible = "pivccu,dw_apb";
+    status = "okay";
     pivccu,reset_pin = <&pivccu_gpio6 0 0>;
     pivccu,red_pin = <&pivccu_gpio7 7 0>;
     pivccu,green_pin = <&pivccu_gpio6 3 0>;
