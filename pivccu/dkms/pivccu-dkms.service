@@ -1,6 +1,7 @@
 [Unit]
 Description=piVCCU DKMS Modules
 Before=pivccu.service
+Before=debmatic.service
 
 [Service]
 ExecStart=/var/lib/piVCCU/dkms/ensure_modules.sh
@@ -9,3 +10,4 @@ Type=oneshot
 [Install]
 WantedBy=multi-user.target
 RequiredBy=pivccu.service
+WantedBy=debmatic.service
