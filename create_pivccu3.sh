@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CCU_VERSION=3.41.11
-CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=296"
+CCU_VERSION=3.43.15
+CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=300"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/Downloads/Software/CCU3-Firmware/CCU3-$CCU_VERSION/ccu3-$CCU_VERSION.tgz"
 
 PKG_BUILD=18
