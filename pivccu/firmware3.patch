@@ -585,6 +585,33 @@ diff -ruN --no-dereference fw.3.43.15.orig/etc/init.d/S06InitSystem fw.3.43.15.p
  }
  
  start() {
+diff -ruN --no-dereference fw.3.43.15.orig/etc/init.d/S07DisableHdmi fw.3.43.15.patched/etc/init.d/S07DisableHdmi
+--- fw.3.43.15.orig/etc/init.d/S07DisableHdmi	2019-02-12 17:05:21.000000000 +0100
++++ fw.3.43.15.patched/etc/init.d/S07DisableHdmi	1970-01-01 01:00:00.000000000 +0100
+@@ -1,23 +0,0 @@
+-#!/bin/sh
+-#
+-# Disable hdmi output
+-#
+-
+-case "$1" in
+- start)
+-	if [ ! -e /etc/config/hdmiEnabled ]; then
+-		echo "Disabling HDMI"
+-		/usr/bin/tvservice --off
+-		/usr/bin/vcgencmd display_power 0
+-	fi
+-	;;
+-  stop)
+-	;;
+-  restart|reload)
+-	;;
+-  *)
+-	echo "Usage: $0 {start|stop|restart}"
+-	exit 1
+-esac
+-
+-exit $?
 diff -ruN --no-dereference fw.3.43.15.orig/etc/init.d/S10udev fw.3.43.15.patched/etc/init.d/S10udev
 --- fw.3.43.15.orig/etc/init.d/S10udev	2019-02-15 12:29:55.000000000 +0100
 +++ fw.3.43.15.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
