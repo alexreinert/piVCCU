@@ -6,13 +6,15 @@ if [ ! $? -eq 0 ]; then
   if [ -e /usr/src/linux-headers-`uname -r` ]; then
     cd /usr/src/linux-headers-`uname -r`
 
-    if [ `grep -c "^source \"net/wireguard/Kconfig\"" net/Kconfig` -gt 0 ]; then
-      mkdir -p net/wireguard
-      touch net/wireguard/Kconfig
-      touch net/wireguard/Makefile
-    fi
+    if [ ! -x scripts/recordmcount ]; then
+      if [ `grep -c "^source \"net/wireguard/Kconfig\"" net/Kconfig` -gt 0 ]; then
+        mkdir -p net/wireguard
+        touch net/wireguard/Kconfig
+        touch net/wireguard/Makefile
+      fi
 
-    make scripts
+      make scripts
+    fi
   fi
 
   dkms install -m pivccu -v $PKG_VER -k `uname -r` || true
