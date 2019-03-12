@@ -99,3 +99,4 @@ dpkg-deb --build pivccu3-$PKG_VERSION
 
 cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-arm64.deb
 
+echo "Please clean-up the work dir temp folder $WORK_DIR, e.g. by doing rm -R $WORK_DIR"
