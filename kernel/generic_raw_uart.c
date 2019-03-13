@@ -719,7 +719,11 @@ int generic_raw_uart_get_gpio_pin_number(struct generic_raw_uart_instance *insta
   {
     struct fwnode_handle *fwnode = dev_fwnode(dev);
     const char *label = generic_raw_uart_get_pin_label(pin);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
     struct gpio_desc *gpiod = fwnode_get_named_gpiod(fwnode, label, 0, GPIOD_ASIS, label);
+#else
+    struct gpio_desc *gpiod = fwnode_get_named_gpiod(fwnode, label);
+#endif
 
     if (IS_ERR_OR_NULL(gpiod))
       return 0;
@@ -946,7 +950,7 @@ module_exit(generic_raw_uart_exit);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.7");
+MODULE_VERSION("1.8");
 MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
