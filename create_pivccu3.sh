@@ -1,10 +1,10 @@
 #!/bin/bash
 
-CCU_VERSION=3.43.15
-CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=300"
+CCU_VERSION=3.43.16
+CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=305"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/Downloads/Software/CCU3-Firmware/CCU3-$CCU_VERSION/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=19
+PKG_BUILD=20
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
