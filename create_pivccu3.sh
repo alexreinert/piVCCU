@@ -1,10 +1,10 @@
 #!/bin/bash
 
-CCU_VERSION=3.43.16
-CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=305"
+CCU_VERSION=3.45.5
+CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=306"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/Downloads/Software/CCU3-Firmware/CCU3-$CCU_VERSION/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=20
+PKG_BUILD=21
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -77,8 +77,8 @@ dpkg-deb --build pivccu3-$PKG_VERSION
 
 cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-armhf.deb
 
-wget -O openjdk-8-jre.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u181-b13-2~deb9u1_armhf.deb
-wget -O openjdk-8-jre-headless.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre-headless_8u181-b13-2~deb9u1_armhf.deb
+wget -O openjdk-8-jre.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u212-b01-1~deb9u1_armhf.deb
+wget -O openjdk-8-jre-headless.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre-headless_8u212-b01-1~deb9u1_armhf.deb
 
 dpkg-deb -x openjdk-8-jre.deb .
 dpkg-deb -x openjdk-8-jre-headless.deb .
