@@ -14,7 +14,7 @@ fi
 
 CURDIR=`pwd`
 
-BACKUPPATH="$1/pivccu3_`date '+%Y-%m-%d_%H-%M-%S'`.sbk"
+BACKUPPATH="$1/pivccu3_`dpkg -s pivccu3 | grep '^Version: ' | cut -d' ' -f2`_`date '+%Y-%m-%d_%H-%M-%S'`.sbk"
 BACKUPPATH=`realpath $BACKUPPATH`
 
 if [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --state --no-humanize` != "STOPPED" ]; then
