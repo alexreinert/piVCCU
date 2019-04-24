@@ -1,10 +1,10 @@
 #!/bin/bash
 
-CCU_VERSION=2.45.6
-CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=308"
+CCU_VERSION=2.45.7
+CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=310"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/Downloads/Software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tgz"
 
-PKG_BUILD=45
+PKG_BUILD=46
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
