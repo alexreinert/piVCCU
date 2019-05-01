@@ -55,6 +55,12 @@
 #define IOCTL_IOCSPRIORITY _IOW(IOCTL_MAGIC,  1, uint32_t) /* Set the priority for the current channel */
 #define IOCTL_IOCGPRIORITY _IOR(IOCTL_MAGIC,  2, uint32_t) /* Get the priority for the current channel */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
+  #define _access_ok(__type, __addr, __size) access_ok(__addr, __size)
+#else
+  #define _access_ok(__type, __addr, __size) access_ok(__type, __addr, __size)
+#endif
+
 static dev_t devid;
 static struct class *class;
 
@@ -403,11 +409,11 @@ static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigne
      */
     if( _IOC_DIR(cmd) & _IOC_READ )
     {
-      err = !access_ok( VERIFY_WRITE, (void __user *)arg, _IOC_SIZE(cmd) );
+      err = !_access_ok( VERIFY_WRITE, (void __user *)arg, _IOC_SIZE(cmd) );
     }
     else if( _IOC_DIR(cmd) & _IOC_WRITE )
     {
-      err =  !access_ok(VERIFY_READ, (void __user *)arg, _IOC_SIZE(cmd));
+      err =  !_access_ok(VERIFY_READ, (void __user *)arg, _IOC_SIZE(cmd));
     }
     if( err )
     {
@@ -440,7 +446,7 @@ static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigne
 
     /* Emulated TTY ioctl: Get termios struct */
   case TCGETS:
-    if( access_ok(VERIFY_READ, (void __user *)arg, sizeof(struct termios) ) )
+    if( _access_ok(VERIFY_READ, (void __user *)arg, sizeof(struct termios) ) )
     {
       if( down_interruptible(&instance->sem) )
       {
@@ -460,7 +466,7 @@ static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigne
 
     /* Emulated TTY ioctl: Set termios struct */
   case TCSETS:
-    if( access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(struct termios) ) )
+    if( _access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(struct termios) ) )
     {
       if( down_interruptible(&instance->sem) )
       {
@@ -480,7 +486,7 @@ static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigne
 
     /* Emulated TTY ioctl: Get receive queue size */
   case TIOCINQ:
-    if( access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(temp) ) )
+    if( _access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(temp) ) )
     {
       if( down_interruptible(&instance->sem) )
       {
@@ -501,7 +507,7 @@ static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigne
 
     /* Emulated TTY ioctl: Get send queue size */
   case TIOCOUTQ:
-    if( access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(temp) ) )
+    if( _access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(temp) ) )
     {
       temp = 0;
       ret = __put_user( temp, (int __user *)arg );
@@ -522,7 +528,7 @@ static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigne
 
     /* Emulated TTY ioctl: Get states of modem control lines */
   case TIOCMGET:
-    if( access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(temp) ) )
+    if( _access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(temp) ) )
     {
       temp = TIOCM_DSR | TIOCM_CD | TIOCM_CTS;
       ret = __put_user( temp, (int __user *)arg );
@@ -950,7 +956,7 @@ module_exit(generic_raw_uart_exit);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.9");
+MODULE_VERSION("1.10");
 MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

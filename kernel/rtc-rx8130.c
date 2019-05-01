@@ -781,8 +781,6 @@ static int rx8130_probe(struct i2c_client *client, const struct i2c_device_id *i
 	return 0;
 
 errout_reg:
-	devm_rtc_device_unregister(&client->dev, rx8130->rtc);
-
 errout_free:
 	kfree(rx8130);
 
@@ -812,7 +810,6 @@ static int rx8130_remove(struct i2c_client *client)
 		cancel_work_sync(&rx8130->work);
 	}
 
-	devm_rtc_device_unregister(&client->dev, rx8130->rtc);
 	kfree(rx8130);
 	return 0;
 }
@@ -833,5 +830,5 @@ module_i2c_driver(rx8130_driver);
 MODULE_AUTHOR("Val Krutov <vkrutov@eea.epson.com>");
 MODULE_DESCRIPTION("RX8130CE RTC driver");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.1");
+MODULE_VERSION("1.2");
 

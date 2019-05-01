@@ -1,5 +1,5 @@
 #!/bin/bash
-PKG_BUILD=27
+PKG_BUILD=28
 
 PKG_VERSION=1.0.$PKG_BUILD
 
@@ -11,7 +11,6 @@ cd $WORK_DIR
 TARGET_DIR=$WORK_DIR/pivccu-modules-dkms-$PKG_VERSION
 
 mkdir -p $TARGET_DIR/usr/src/pivccu-$PKG_VERSION
-wget -q -O $TARGET_DIR/usr/src/pivccu-$PKG_VERSION/eq3_char_loop.c https://raw.githubusercontent.com/alexreinert/occu/eq3_charloop_64bit/KernelDrivers/eq3_char_loop.c
 cp $CURRENT_DIR/kernel/* $TARGET_DIR/usr/src/pivccu-$PKG_VERSION
 
 DKMS_CONF_FILE=$TARGET_DIR/usr/src/pivccu-$PKG_VERSION/dkms.conf
