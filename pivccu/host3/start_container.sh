@@ -125,6 +125,13 @@ for dev in ${devices[@]}; do
 
     echo "rm -f ${UDEV_PROPERTIES[DEVNAME]}" >> /tmp/pivccu-var/pivccu/create-devs
     echo "mknod -m 666 ${UDEV_PROPERTIES[DEVNAME]} $DEVTYPE ${UDEV_PROPERTIES[MAJOR]} ${UDEV_PROPERTIES[MINOR]}" >> /tmp/pivccu-var/pivccu/create-devs
+
+    for alias in ${UDEV_PROPERTIES[DEVLINKS]}; do
+      aliasdir=`dirname $alias`
+      echo "mkdir -p $aliasdir" >> /tmp/pivccu-var/pivccu/create-devs
+      echo "rm -f $alias" >> /tmp/pivccu-var/pivccu/create-devs
+      echo "ln -s ${UDEV_PROPERTIES[DEVNAME]} $alias" >> /tmp/pivccu-var/pivccu/create-devs
+    done
   done
 
   (($FOUND)) && continue
