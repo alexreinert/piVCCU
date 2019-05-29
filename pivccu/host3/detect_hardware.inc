@@ -131,7 +131,11 @@ case $PIVCCU_HMIP_MODE in
 
       HMIP_INFO=`timeout 20 chroot /var/lib/piVCCU3/rootfs /opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=$HMIP_DEVNAME -jar /opt/HmIP/hmip-copro-update.jar -p $HMIP_DEVNAME -v 2>&1` || true
       SGTIN=`echo "$HMIP_INFO" | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p'`
-      FW_VERSION=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*Application version = \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p'`
+      FW_VERSION=`echo "$HMIP_INFO" | sed -n 's/.*Application version = \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p'`
+
+      if [[ "$SGTIN" =~ "3014f5ac94" ]]; then
+       HMIP_HARDWARE='HMIP-RFUSB-TK'
+      fi
 
       umount /var/lib/piVCCU3/rootfs/dev
       umount /var/lib/piVCCU3/rootfs/proc

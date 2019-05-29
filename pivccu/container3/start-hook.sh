@@ -62,8 +62,13 @@ case $HMRF_HARDWARE in
 esac
 
 case $HMIP_HARDWARE in
-  "HmIP-RFUSB")
+  "HMIP-RFUSB")
     HM_HMIP_DEV="HMIP-RFUSB"
+    HM_HMIP_DEVNODE="/dev/mmd_hmip"
+    HM_HMIP_VERSION="$FW_VERSION"
+    ;;
+  "HMIP-RFUSB-TK")
+    HM_HMIP_DEV="HMIP-RFUSB-TK"
     HM_HMIP_DEVNODE="/dev/mmd_hmip"
     HM_HMIP_VERSION="$FW_VERSION"
     ;;
