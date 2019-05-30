@@ -1,5 +1,5 @@
 #!/bin/bash
-PKG_BUILD=24
+PKG_BUILD=25
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)

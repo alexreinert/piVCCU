@@ -72,6 +72,12 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         INCLUDE_FILE='/var/lib/piVCCU/dts/nanopim4.dts.include'
         break
         ;;
+     radxa,rockpi4)
+        OVERLAY_MODE='patch'
+        INCLUDE_FILE='/var/lib/piVCCU/dts/rock-pi-4.dts.include'
+        FDT_FILE=rockchip/rk3399-rock-pi-4.dtb
+        break
+        ;;
     esac
   done
 fi
