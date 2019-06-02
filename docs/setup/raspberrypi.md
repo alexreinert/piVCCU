@@ -4,6 +4,8 @@
 * Raspbian Stretch
 
 ### Installation
+NOTICE: Please use ```apt``` and not ```apt-get``` to install the packages. It's no typo mistake nor a choice. This is the tested, working and supported way!
+
 0. Create full backup of your SD card
 1. Add the public key of the repository
    ```bash

@@ -8,7 +8,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 * As compatible as possible with original CCU2
 * Full Homematic and Homematic IP support on all supported platforms (if RF hardware supports it)
 * Support for backup/restore between piVCCU and original CCU2 without modification
-* Easy to install and update with apt
+* Easy to install and update with apt (NOTICE: Please use ```apt``` and not ```apt-get``` to install the packages. It's no typo mistake nor a choice. This is the tested, working and supported way!)
 * Support not only on Raspberry
 * Support for 
   * HM-MOD-RPI-PCB (HmRF+HmIP),
