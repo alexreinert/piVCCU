@@ -14,6 +14,12 @@ if [ ! $? -eq 0 ]; then
       fi
 
       make scripts
+
+      if [ ! -x scripts/recordmcount ]; then
+        make prepare0
+	cd /usr/src/linux-headers-`uname -r`/scripts
+	make recordmcount
+      fi
     fi
   fi
 
