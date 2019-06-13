@@ -6,7 +6,7 @@ CONFIGFILE=/etc/default/pivccu3
 set -e
 
 case "$1" in
-  configure|reconfigure)
+  configure|reconfigure|abort-upgrade)
     if [ ! -e /usr/sbin/pivccu-attach ]; then
       ln -s /var/lib/piVCCU3/pivccu-attach.sh /usr/sbin/pivccu-attach
     fi
@@ -161,7 +161,7 @@ case "$1" in
     fi
   ;;
 
-  abort-upgrade|abort-remove|abort-deconfigure)
+  abort-remove|abort-deconfigure)
   ;;
 
 esac

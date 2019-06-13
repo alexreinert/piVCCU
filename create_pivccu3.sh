@@ -4,7 +4,7 @@ CCU_VERSION=3.45.7
 CCU_DOWNLOAD_SPLASH_URL="http://www.eq-3.de/service/downloads.html?id=307"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/Downloads/Software/CCU3-Firmware/CCU3-$CCU_VERSION/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=25
+PKG_BUILD=26
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
