@@ -16,7 +16,7 @@ if [ ! $? -eq 0 ]; then
       make scripts
 
       if [ ! -x scripts/recordmcount ]; then
-        make prepare0
+        make EXTRAVERSION="-`uname -r | cut -d- -f2-`" prepare0
 	cd /usr/src/linux-headers-`uname -r`/scripts
 	make recordmcount
       fi
