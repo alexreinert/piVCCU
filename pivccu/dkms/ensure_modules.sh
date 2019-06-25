@@ -6,6 +6,13 @@ if [ ! $? -eq 0 ]; then
   if [ -e /usr/src/linux-headers-`uname -r` ]; then
     cd /usr/src/linux-headers-`uname -r`
 
+    if [ -e scripts/basic/fixdep ]; then
+      scripts/basic/fixdep
+      if [ $? -eq 126 ]; then
+        make scripts || true
+      fi
+    fi
+
     if [ ! -x scripts/recordmcount ]; then
       if [ `grep -c "^source \"net/wireguard/Kconfig\"" net/Kconfig` -gt 0 ]; then
         mkdir -p net/wireguard
