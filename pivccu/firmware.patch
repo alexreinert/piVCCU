@@ -1,6 +1,6 @@
-diff -ruN --no-dereference fw.2.45.6.orig/bin/dhcp.script fw.2.45.6.patched/bin/dhcp.script
---- fw.2.45.6.orig/bin/dhcp.script	2019-04-04 08:29:11.602033137 +0200
-+++ fw.2.45.6.patched/bin/dhcp.script	2019-04-04 08:32:09.479225417 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/bin/dhcp.script fw.2.47.10.patched/bin/dhcp.script
+--- fw.2.47.10.orig/bin/dhcp.script	2019-06-25 15:31:24.450404196 +0200
++++ fw.2.47.10.patched/bin/dhcp.script	2019-06-25 15:41:55.138661180 +0200
 @@ -6,29 +6,19 @@
  
  action=$1
@@ -39,9 +39,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/bin/dhcp.script fw.2.45.6.patched/bin/
  	route del default 2> /dev/null
  	[ -n "$router" ] && route add default gw $router
  	[ -n "$boot_file" ] && echo $boot_file > $CONFIGURL
-diff -ruN --no-dereference fw.2.45.6.orig/etc/fstab fw.2.45.6.patched/etc/fstab
---- fw.2.45.6.orig/etc/fstab	2019-04-04 08:29:12.150036813 +0200
-+++ fw.2.45.6.patched/etc/fstab	2019-04-04 08:32:09.483225443 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/etc/fstab fw.2.47.10.patched/etc/fstab
+--- fw.2.47.10.orig/etc/fstab	2019-06-25 15:31:24.482404412 +0200
++++ fw.2.47.10.patched/etc/fstab	2019-06-25 15:41:55.158661315 +0200
 @@ -1,13 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -56,9 +56,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/fstab fw.2.45.6.patched/etc/fstab
 -varfs           /var           tmpfs    defaults,size=196M 0      0
 -debugfs 	/sys/kernel/debug debugfs 		  0 	0
 -ubi1:user	/usr/local	ubifs	defaults,noatime,rw,sync	0 0
-diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S00eQ3SystemStart fw.2.45.6.patched/etc/init.d/S00eQ3SystemStart
---- fw.2.45.6.orig/etc/init.d/S00eQ3SystemStart	2019-04-04 08:29:12.146036786 +0200
-+++ fw.2.45.6.patched/etc/init.d/S00eQ3SystemStart	2019-04-04 08:32:09.483225443 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/etc/init.d/S00eQ3SystemStart fw.2.47.10.patched/etc/init.d/S00eQ3SystemStart
+--- fw.2.47.10.orig/etc/init.d/S00eQ3SystemStart	2019-06-25 15:31:24.482404412 +0200
++++ fw.2.47.10.patched/etc/init.d/S00eQ3SystemStart	2019-06-25 15:41:55.250661934 +0200
 @@ -7,17 +7,6 @@
  SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
  
@@ -114,9 +114,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S00eQ3SystemStart fw.2.45.6
  }
  
  restart() {
-diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S10udev fw.2.45.6.patched/etc/init.d/S10udev
---- fw.2.45.6.orig/etc/init.d/S10udev	2019-04-04 08:29:12.146036786 +0200
-+++ fw.2.45.6.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.47.10.orig/etc/init.d/S10udev fw.2.47.10.patched/etc/init.d/S10udev
+--- fw.2.47.10.orig/etc/init.d/S10udev	2019-06-25 15:31:24.482404412 +0200
++++ fw.2.47.10.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
 @@ -1,48 +0,0 @@
 -#!/bin/sh
 -#
@@ -166,9 +166,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S10udev fw.2.45.6.patched/e
 -
 -
 -exit 0
-diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S15watchdog fw.2.45.6.patched/etc/init.d/S15watchdog
---- fw.2.45.6.orig/etc/init.d/S15watchdog	2019-04-04 08:29:12.146036786 +0200
-+++ fw.2.45.6.patched/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.47.10.orig/etc/init.d/S15watchdog fw.2.47.10.patched/etc/init.d/S15watchdog
+--- fw.2.47.10.orig/etc/init.d/S15watchdog	2019-06-25 15:31:24.482404412 +0200
++++ fw.2.47.10.patched/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
 @@ -1,20 +0,0 @@
 -#!/bin/sh
 -#
@@ -190,9 +190,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S15watchdog fw.2.45.6.patch
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S20urandom fw.2.45.6.patched/etc/init.d/S20urandom
---- fw.2.45.6.orig/etc/init.d/S20urandom	2019-04-04 08:29:12.146036786 +0200
-+++ fw.2.45.6.patched/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.47.10.orig/etc/init.d/S20urandom fw.2.47.10.patched/etc/init.d/S20urandom
+--- fw.2.47.10.orig/etc/init.d/S20urandom	2019-06-25 15:31:24.482404412 +0200
++++ fw.2.47.10.patched/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
 @@ -1,54 +0,0 @@
 -#! /bin/sh
 -#
@@ -248,9 +248,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S20urandom fw.2.45.6.patche
 -		exit 1
 -		;;
 -esac
-diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S40UsbNetwork fw.2.45.6.patched/etc/init.d/S40UsbNetwork
---- fw.2.45.6.orig/etc/init.d/S40UsbNetwork	2019-04-04 08:29:12.146036786 +0200
-+++ fw.2.45.6.patched/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.47.10.orig/etc/init.d/S40UsbNetwork fw.2.47.10.patched/etc/init.d/S40UsbNetwork
+--- fw.2.47.10.orig/etc/init.d/S40UsbNetwork	2019-06-25 15:31:24.482404412 +0200
++++ fw.2.47.10.patched/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
 @@ -1,52 +0,0 @@
 -#!/bin/sh
 -#
@@ -304,9 +304,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S40UsbNetwork fw.2.45.6.pat
 -
 -exit $?
 -
-diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S50eq3configd fw.2.45.6.patched/etc/init.d/S50eq3configd
---- fw.2.45.6.orig/etc/init.d/S50eq3configd	2019-04-04 08:29:12.146036786 +0200
-+++ fw.2.45.6.patched/etc/init.d/S50eq3configd	2019-04-04 08:32:09.483225443 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/etc/init.d/S50eq3configd fw.2.47.10.patched/etc/init.d/S50eq3configd
+--- fw.2.47.10.orig/etc/init.d/S50eq3configd	2019-06-25 15:31:24.478404385 +0200
++++ fw.2.47.10.patched/etc/init.d/S50eq3configd	2019-06-25 15:41:55.266662042 +0200
 @@ -17,6 +17,7 @@
  }
  
@@ -315,9 +315,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S50eq3configd fw.2.45.6.pat
  	echo -n "Starting eq3configd: "
  	init
  	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
-diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S60multimacd fw.2.45.6.patched/etc/init.d/S60multimacd
---- fw.2.45.6.orig/etc/init.d/S60multimacd	2019-04-04 08:29:12.146036786 +0200
-+++ fw.2.45.6.patched/etc/init.d/S60multimacd	2019-04-04 08:32:09.483225443 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/etc/init.d/S60multimacd fw.2.47.10.patched/etc/init.d/S60multimacd
+--- fw.2.47.10.orig/etc/init.d/S60multimacd	2019-06-25 15:31:24.482404412 +0200
++++ fw.2.47.10.patched/etc/init.d/S60multimacd	2019-06-25 15:41:55.266662042 +0200
 @@ -7,39 +7,6 @@
  CFG_TEMPLATE_DIR=/etc/config_templates
  PIDFILE=/var/run/multimacd.pid
@@ -373,9 +373,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S60multimacd fw.2.45.6.patc
  	start-stop-daemon -S -q -b -m -p $PIDFILE --exec /bin/multimacd -- -f /etc/config/multimacd.conf -l $LOGLEVEL_RFD
  	waitStartupComplete
  }
-diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S99eQ3SystemStarted fw.2.45.6.patched/etc/init.d/S99eQ3SystemStarted
---- fw.2.45.6.orig/etc/init.d/S99eQ3SystemStarted	2019-04-04 08:29:12.146036786 +0200
-+++ fw.2.45.6.patched/etc/init.d/S99eQ3SystemStarted	2019-04-04 08:32:09.483225443 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/etc/init.d/S99eQ3SystemStarted fw.2.47.10.patched/etc/init.d/S99eQ3SystemStarted
+--- fw.2.47.10.orig/etc/init.d/S99eQ3SystemStarted	2019-06-25 15:31:24.482404412 +0200
++++ fw.2.47.10.patched/etc/init.d/S99eQ3SystemStarted	2019-06-25 15:41:55.266662042 +0200
 @@ -8,15 +8,6 @@
  
  init() {
@@ -392,9 +392,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/init.d/S99eQ3SystemStarted fw.2.45
  }
  
  start() {
-diff -ruN --no-dereference fw.2.45.6.orig/etc/inittab fw.2.45.6.patched/etc/inittab
---- fw.2.45.6.orig/etc/inittab	2019-04-04 08:29:12.154036840 +0200
-+++ fw.2.45.6.patched/etc/inittab	2019-04-04 08:32:09.539225817 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/etc/inittab fw.2.47.10.patched/etc/inittab
+--- fw.2.47.10.orig/etc/inittab	2019-06-25 15:31:24.486404439 +0200
++++ fw.2.47.10.patched/etc/inittab	2019-06-25 15:41:55.338662532 +0200
 @@ -14,25 +14,15 @@
  # process   == program to run
  
@@ -421,9 +421,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/inittab fw.2.45.6.patched/etc/init
  # Stuff to do before rebooting
  ::shutdown:/etc/init.d/rcK
  null::shutdown:/bin/umount -a -r
-diff -ruN --no-dereference fw.2.45.6.orig/etc/network/if-up.d/eQ3StartNetwork fw.2.45.6.patched/etc/network/if-up.d/eQ3StartNetwork
---- fw.2.45.6.orig/etc/network/if-up.d/eQ3StartNetwork	2019-04-04 08:29:12.146036786 +0200
-+++ fw.2.45.6.patched/etc/network/if-up.d/eQ3StartNetwork	2019-04-04 08:32:09.539225817 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/etc/network/if-up.d/eQ3StartNetwork fw.2.47.10.patched/etc/network/if-up.d/eQ3StartNetwork
+--- fw.2.47.10.orig/etc/network/if-up.d/eQ3StartNetwork	2019-06-25 15:31:24.478404385 +0200
++++ fw.2.47.10.patched/etc/network/if-up.d/eQ3StartNetwork	2019-06-25 15:41:55.338662532 +0200
 @@ -19,22 +19,6 @@
  route del -net 224.0.0.0 netmask 240.0.0.0 2> /dev/null
  route add -net 224.0.0.0 netmask 240.0.0.0 eth0
@@ -447,9 +447,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/etc/network/if-up.d/eQ3StartNetwork fw
  killall -q udhcpc
  
  if [ _$MODE = _DHCP ] ; then
-diff -ruN --no-dereference fw.2.45.6.orig/firmware/fwmap fw.2.45.6.patched/firmware/fwmap
---- fw.2.45.6.orig/firmware/fwmap	2019-04-04 08:29:13.838048122 +0200
-+++ fw.2.45.6.patched/firmware/fwmap	2019-04-04 08:32:09.539225817 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/firmware/fwmap fw.2.47.10.patched/firmware/fwmap
+--- fw.2.47.10.orig/firmware/fwmap	2019-06-25 15:31:29.854440618 +0200
++++ fw.2.47.10.patched/firmware/fwmap	2019-06-25 15:41:55.338662532 +0200
 @@ -17,7 +17,8 @@
  
  #Coprozessor
@@ -460,9 +460,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/firmware/fwmap fw.2.45.6.patched/firmw
  # CCU2                    coprocessor_update_hm_only.eq3                1.4.1          # HM only CoProzessor CCU2  
  CCU2-RFLGW				coprocessor_update_hm_only.eq3					1.4.1          # HM only CoProzessor CCU2 for HomeMatic RF Lan Gateway
  
-diff -ruN --no-dereference fw.2.45.6.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.2.45.6.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
---- fw.2.45.6.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2019-04-04 08:29:12.226037320 +0200
-+++ fw.2.45.6.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2019-04-04 08:32:09.539225817 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.2.47.10.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
+--- fw.2.47.10.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2019-06-25 15:31:24.762406299 +0200
++++ fw.2.47.10.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2019-06-25 15:41:55.410663015 +0200
 @@ -204,23 +204,6 @@
  						<td class="CLASS21112">${"$"}{dialogSettingsSDCardStatus}:</td>
  						<td>${SDCardStatus}</td>
@@ -487,9 +487,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/opt/HMServer/pages/StorageSettingsDial
  				</table>
  			</td>
  			<td class="CLASS21113" align="left">
-diff -ruN --no-dereference fw.2.45.6.orig/www/config/cp_maintenance.cgi fw.2.45.6.patched/www/config/cp_maintenance.cgi
---- fw.2.45.6.orig/www/config/cp_maintenance.cgi	2019-04-04 08:29:13.326044691 +0200
-+++ fw.2.45.6.patched/www/config/cp_maintenance.cgi	2019-04-04 08:32:09.539225817 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/www/config/cp_maintenance.cgi fw.2.47.10.patched/www/config/cp_maintenance.cgi
+--- fw.2.47.10.orig/www/config/cp_maintenance.cgi	2019-06-25 15:31:28.178429323 +0200
++++ fw.2.47.10.patched/www/config/cp_maintenance.cgi	2019-06-25 15:41:55.410663015 +0200
 @@ -376,109 +376,13 @@
                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                }
@@ -614,9 +614,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/www/config/cp_maintenance.cgi fw.2.45.
  
      # Hide all elements with class j_noForcedUpdate when an update is enforced
      puts "if (forceUpdate) {"
-diff -ruN --no-dereference fw.2.45.6.orig/www/config/cp_security.cgi fw.2.45.6.patched/www/config/cp_security.cgi
---- fw.2.45.6.orig/www/config/cp_security.cgi	2019-04-04 08:29:13.326044691 +0200
-+++ fw.2.45.6.patched/www/config/cp_security.cgi	2019-04-04 08:32:09.539225817 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/www/config/cp_security.cgi fw.2.47.10.patched/www/config/cp_security.cgi
+--- fw.2.47.10.orig/www/config/cp_security.cgi	2019-06-25 15:31:28.190429404 +0200
++++ fw.2.47.10.patched/www/config/cp_security.cgi	2019-06-25 15:41:55.410663015 +0200
 @@ -292,11 +292,11 @@
  
      if {[getProduct] < 3 } {
@@ -654,10 +654,10 @@ diff -ruN --no-dereference fw.2.45.6.orig/www/config/cp_security.cgi fw.2.45.6.p
      division {class="popupTitle"} {
        puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
      }
-diff -ruN --no-dereference fw.2.45.6.orig/www/config/cp_software.cgi fw.2.45.6.patched/www/config/cp_software.cgi
---- fw.2.45.6.orig/www/config/cp_software.cgi	2019-04-04 08:29:13.322044664 +0200
-+++ fw.2.45.6.patched/www/config/cp_software.cgi	2019-04-04 08:32:09.539225817 +0200
-@@ -515,7 +515,7 @@
+diff -ruN --no-dereference fw.2.47.10.orig/www/config/cp_software.cgi fw.2.47.10.patched/www/config/cp_software.cgi
+--- fw.2.47.10.orig/www/config/cp_software.cgi	2019-06-25 15:31:28.154429161 +0200
++++ fw.2.47.10.patched/www/config/cp_software.cgi	2019-06-25 15:41:55.410663015 +0200
+@@ -518,7 +518,7 @@
       exec /sbin/reboot
    } else {
      # CCU 2
@@ -666,9 +666,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/www/config/cp_software.cgi fw.2.45.6.p
    }
    
  }
-diff -ruN --no-dereference fw.2.45.6.orig/www/webui/js/lang/de/translate.lang.js fw.2.45.6.patched/www/webui/js/lang/de/translate.lang.js
---- fw.2.45.6.orig/www/webui/js/lang/de/translate.lang.js	2019-04-04 08:29:13.178043699 +0200
-+++ fw.2.45.6.patched/www/webui/js/lang/de/translate.lang.js	2019-04-04 08:32:09.539225817 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/www/webui/js/lang/de/translate.lang.js fw.2.47.10.patched/www/webui/js/lang/de/translate.lang.js
+--- fw.2.47.10.orig/www/webui/js/lang/de/translate.lang.js	2019-06-25 15:31:26.146415627 +0200
++++ fw.2.47.10.patched/www/webui/js/lang/de/translate.lang.js	2019-06-25 15:41:55.414663043 +0200
 @@ -457,7 +457,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
@@ -679,9 +679,9 @@ diff -ruN --no-dereference fw.2.45.6.orig/www/webui/js/lang/de/translate.lang.js
      "dialogSettingsCMLblAvailableSoftwareVersion" : "Verf%FCgbare Software-Version:",
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Software-Update durchf%FChren",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
-diff -ruN --no-dereference fw.2.45.6.orig/www/webui/js/lang/en/translate.lang.js fw.2.45.6.patched/www/webui/js/lang/en/translate.lang.js
---- fw.2.45.6.orig/www/webui/js/lang/en/translate.lang.js	2019-04-04 08:29:13.178043699 +0200
-+++ fw.2.45.6.patched/www/webui/js/lang/en/translate.lang.js	2019-04-04 08:32:09.539225817 +0200
+diff -ruN --no-dereference fw.2.47.10.orig/www/webui/js/lang/en/translate.lang.js fw.2.47.10.patched/www/webui/js/lang/en/translate.lang.js
+--- fw.2.47.10.orig/www/webui/js/lang/en/translate.lang.js	2019-06-25 15:31:26.146415627 +0200
++++ fw.2.47.10.patched/www/webui/js/lang/en/translate.lang.js	2019-06-25 15:41:55.414663043 +0200
 @@ -456,7 +456,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Shutdown",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",

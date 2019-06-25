@@ -1,6 +1,6 @@
-diff -ruN --no-dereference fw.3.45.5.orig/bin/dhcp.script fw.3.45.5.patched/bin/dhcp.script
---- fw.3.45.5.orig/bin/dhcp.script	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/bin/dhcp.script	2019-03-27 15:44:00.164377810 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/bin/dhcp.script fw.3.47.10.patched/bin/dhcp.script
+--- fw.3.47.10.orig/bin/dhcp.script	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/bin/dhcp.script	2019-06-25 13:21:48.553855823 +0200
 @@ -4,19 +4,8 @@
  CONFIGURL=/var/configurl
  
@@ -64,9 +64,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/bin/dhcp.script fw.3.45.5.patched/bin/
  
    # add default routes
    if [[ -n "${router}" ]]; then
-diff -ruN --no-dereference fw.3.45.5.orig/etc/fstab fw.3.45.5.patched/etc/fstab
---- fw.3.45.5.orig/etc/fstab	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/fstab	2019-03-27 15:39:16.450496702 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/fstab fw.3.47.10.patched/etc/fstab
+--- fw.3.47.10.orig/etc/fstab	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/fstab	2019-06-25 13:21:48.633856367 +0200
 @@ -1,15 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -83,9 +83,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/fstab fw.3.45.5.patched/etc/fstab
 -debugfs         /sys/kernel/debug debugfs noauto                                 0      0
 -LABEL=userfs    /usr/local     ext4     defaults,noatime,nodiratime,rw,data=journal,nofail         0      2
 -LABEL=bootfs    /mnt/boot_par  vfat     defaults,ro                              0      0
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S00watchdog fw.3.45.5.patched/etc/init.d/S00watchdog
---- fw.3.45.5.orig/etc/init.d/S00watchdog	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S00watchdog	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S00watchdog fw.3.47.10.patched/etc/init.d/S00watchdog
+--- fw.3.47.10.orig/etc/init.d/S00watchdog	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S00watchdog	1970-01-01 01:00:00.000000000 +0100
 @@ -1,20 +0,0 @@
 -#!/bin/sh
 -#
@@ -107,9 +107,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S00watchdog fw.3.45.5.patch
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S01InitHost fw.3.45.5.patched/etc/init.d/S01InitHost
---- fw.3.45.5.orig/etc/init.d/S01InitHost	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S01InitHost	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S01InitHost fw.3.47.10.patched/etc/init.d/S01InitHost
+--- fw.3.47.10.orig/etc/init.d/S01InitHost	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S01InitHost	1970-01-01 01:00:00.000000000 +0100
 @@ -1,135 +0,0 @@
 -#!/bin/sh
 -#
@@ -246,9 +246,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S01InitHost fw.3.45.5.patch
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S02InitRTC fw.3.45.5.patched/etc/init.d/S02InitRTC
---- fw.3.45.5.orig/etc/init.d/S02InitRTC	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S02InitRTC	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S02InitRTC fw.3.47.10.patched/etc/init.d/S02InitRTC
+--- fw.3.47.10.orig/etc/init.d/S02InitRTC	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S02InitRTC	1970-01-01 01:00:00.000000000 +0100
 @@ -1,163 +0,0 @@
 -#!/bin/sh
 -#
@@ -413,9 +413,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S02InitRTC fw.3.45.5.patche
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S03InitURandom fw.3.45.5.patched/etc/init.d/S03InitURandom
---- fw.3.45.5.orig/etc/init.d/S03InitURandom	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S03InitURandom	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S03InitURandom fw.3.47.10.patched/etc/init.d/S03InitURandom
+--- fw.3.47.10.orig/etc/init.d/S03InitURandom	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S03InitURandom	1970-01-01 01:00:00.000000000 +0100
 @@ -1,63 +0,0 @@
 -#!/bin/sh
 -#
@@ -480,9 +480,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S03InitURandom fw.3.45.5.pa
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S04CheckFactoryReset fw.3.45.5.patched/etc/init.d/S04CheckFactoryReset
---- fw.3.45.5.orig/etc/init.d/S04CheckFactoryReset	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S04CheckFactoryReset	2019-03-27 15:39:16.498497022 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S04CheckFactoryReset fw.3.47.10.patched/etc/init.d/S04CheckFactoryReset
+--- fw.3.47.10.orig/etc/init.d/S04CheckFactoryReset	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S04CheckFactoryReset	2019-06-25 13:21:48.649856476 +0200
 @@ -13,38 +13,7 @@
      return 1
    fi
@@ -523,9 +523,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S04CheckFactoryReset fw.3.4
  
    return 0
  }
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S04CheckResizeLocalFS fw.3.45.5.patched/etc/init.d/S04CheckResizeLocalFS
---- fw.3.45.5.orig/etc/init.d/S04CheckResizeLocalFS	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S04CheckResizeLocalFS	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S04CheckResizeLocalFS fw.3.47.10.patched/etc/init.d/S04CheckResizeLocalFS
+--- fw.3.47.10.orig/etc/init.d/S04CheckResizeLocalFS	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S04CheckResizeLocalFS	1970-01-01 01:00:00.000000000 +0100
 @@ -1,53 +0,0 @@
 -#!/bin/sh
 -#
@@ -580,9 +580,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S04CheckResizeLocalFS fw.3.
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S06InitSystem fw.3.45.5.patched/etc/init.d/S06InitSystem
---- fw.3.45.5.orig/etc/init.d/S06InitSystem	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S06InitSystem	2019-03-27 15:39:16.514497128 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S06InitSystem fw.3.47.10.patched/etc/init.d/S06InitSystem
+--- fw.3.47.10.orig/etc/init.d/S06InitSystem	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S06InitSystem	2019-06-25 13:21:48.653856503 +0200
 @@ -80,14 +80,6 @@
    if [[ ! -s /etc/config/shadow ]] ; then
      cp -a ${CFG_TEMPLATE_DIR}/shadow /etc/config/
@@ -598,9 +598,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S06InitSystem fw.3.45.5.pat
  }
  
  start() {
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S07DisableHdmi fw.3.45.5.patched/etc/init.d/S07DisableHdmi
---- fw.3.45.5.orig/etc/init.d/S07DisableHdmi	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S07DisableHdmi	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S07DisableHdmi fw.3.47.10.patched/etc/init.d/S07DisableHdmi
+--- fw.3.47.10.orig/etc/init.d/S07DisableHdmi	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S07DisableHdmi	1970-01-01 01:00:00.000000000 +0100
 @@ -1,23 +0,0 @@
 -#!/bin/sh
 -#
@@ -625,9 +625,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S07DisableHdmi fw.3.45.5.pa
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S10udev fw.3.45.5.patched/etc/init.d/S10udev
---- fw.3.45.5.orig/etc/init.d/S10udev	2019-03-26 13:42:41.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S10udev fw.3.47.10.patched/etc/init.d/S10udev
+--- fw.3.47.10.orig/etc/init.d/S10udev	2019-06-21 09:08:35.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
 @@ -1,46 +0,0 @@
 -#!/bin/sh
 -#
@@ -675,9 +675,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S10udev fw.3.45.5.patched/e
 -
 -
 -exit 0
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S11InitRFHardware fw.3.45.5.patched/etc/init.d/S11InitRFHardware
---- fw.3.45.5.orig/etc/init.d/S11InitRFHardware	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S11InitRFHardware	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S11InitRFHardware fw.3.47.10.patched/etc/init.d/S11InitRFHardware
+--- fw.3.47.10.orig/etc/init.d/S11InitRFHardware	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S11InitRFHardware	1970-01-01 01:00:00.000000000 +0100
 @@ -1,244 +0,0 @@
 -#!/bin/sh
 -#
@@ -923,9 +923,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S11InitRFHardware fw.3.45.5
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S13irqbalance fw.3.45.5.patched/etc/init.d/S13irqbalance
---- fw.3.45.5.orig/etc/init.d/S13irqbalance	2019-03-26 14:01:46.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S13irqbalance	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S13irqbalance fw.3.47.10.patched/etc/init.d/S13irqbalance
+--- fw.3.47.10.orig/etc/init.d/S13irqbalance	2019-06-21 09:22:14.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S13irqbalance	1970-01-01 01:00:00.000000000 +0100
 @@ -1,34 +0,0 @@
 -#!/bin/sh
 -#
@@ -961,9 +961,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S13irqbalance fw.3.45.5.pat
 -	echo "Usage: $0 {start|stop|restart}"
 -	exit 1
 -esac
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S21rngd fw.3.45.5.patched/etc/init.d/S21rngd
---- fw.3.45.5.orig/etc/init.d/S21rngd	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S21rngd	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S21rngd fw.3.47.10.patched/etc/init.d/S21rngd
+--- fw.3.47.10.orig/etc/init.d/S21rngd	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S21rngd	1970-01-01 01:00:00.000000000 +0100
 @@ -1,51 +0,0 @@
 -#!/bin/sh
 -
@@ -1016,9 +1016,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S21rngd fw.3.45.5.patched/e
 -		exit 1
 -		;;
 -esac
-diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S31bluetooth fw.3.45.5.patched/etc/init.d/S31bluetooth
---- fw.3.45.5.orig/etc/init.d/S31bluetooth	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/init.d/S31bluetooth	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/init.d/S31bluetooth fw.3.47.10.patched/etc/init.d/S31bluetooth
+--- fw.3.47.10.orig/etc/init.d/S31bluetooth	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/init.d/S31bluetooth	1970-01-01 01:00:00.000000000 +0100
 @@ -1,89 +0,0 @@
 -#!/bin/sh
 -#
@@ -1109,9 +1109,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/init.d/S31bluetooth fw.3.45.5.patc
 -esac
 -
 -exit 0
-diff -ruN --no-dereference fw.3.45.5.orig/etc/inittab fw.3.45.5.patched/etc/inittab
---- fw.3.45.5.orig/etc/inittab	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/inittab	2019-03-27 15:39:16.546497340 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/inittab fw.3.47.10.patched/etc/inittab
+--- fw.3.47.10.orig/etc/inittab	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/inittab	2019-06-25 13:21:48.657856530 +0200
 @@ -14,10 +14,10 @@
  # process   == program to run
  
@@ -1127,9 +1127,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/inittab fw.3.45.5.patched/etc/init
  tty2::sysinit:/bin/mount -a
  null::sysinit:/bin/hostname -F /etc/hostname
  null::sysinit:/usr/bin/psplash -n &
-diff -ruN --no-dereference fw.3.45.5.orig/etc/network/if-up.d/eQ3StartNetwork fw.3.45.5.patched/etc/network/if-up.d/eQ3StartNetwork
---- fw.3.45.5.orig/etc/network/if-up.d/eQ3StartNetwork	2019-03-11 09:40:18.000000000 +0100
-+++ fw.3.45.5.patched/etc/network/if-up.d/eQ3StartNetwork	2019-03-27 15:39:16.622497844 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/etc/network/if-up.d/eQ3StartNetwork fw.3.47.10.patched/etc/network/if-up.d/eQ3StartNetwork
+--- fw.3.47.10.orig/etc/network/if-up.d/eQ3StartNetwork	2019-04-23 09:40:08.000000000 +0200
++++ fw.3.47.10.patched/etc/network/if-up.d/eQ3StartNetwork	2019-06-25 13:21:48.677856666 +0200
 @@ -109,20 +109,6 @@
  # restart syslogd to update hostname
  /etc/init.d/S07logging restart 2>/dev/null >/dev/null
@@ -1151,9 +1151,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/etc/network/if-up.d/eQ3StartNetwork fw
  # make sure no other udhcpc is running
  killall -q udhcpc
  
-diff -ruN --no-dereference fw.3.45.5.orig/www/config/cp_maintenance.cgi fw.3.45.5.patched/www/config/cp_maintenance.cgi
---- fw.3.45.5.orig/www/config/cp_maintenance.cgi	2019-03-26 15:12:20.000000000 +0100
-+++ fw.3.45.5.patched/www/config/cp_maintenance.cgi	2019-03-27 15:39:16.622497844 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/www/config/cp_maintenance.cgi fw.3.47.10.patched/www/config/cp_maintenance.cgi
+--- fw.3.47.10.orig/www/config/cp_maintenance.cgi	2019-06-21 10:27:15.000000000 +0200
++++ fw.3.47.10.patched/www/config/cp_maintenance.cgi	2019-06-25 13:21:48.677856666 +0200
 @@ -376,109 +376,13 @@
                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                }
@@ -1278,9 +1278,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/www/config/cp_maintenance.cgi fw.3.45.
  
      # Hide all elements with class j_noForcedUpdate when an update is enforced
      puts "if (forceUpdate) {"
-diff -ruN --no-dereference fw.3.45.5.orig/www/config/cp_security.cgi fw.3.45.5.patched/www/config/cp_security.cgi
---- fw.3.45.5.orig/www/config/cp_security.cgi	2019-03-26 15:12:20.000000000 +0100
-+++ fw.3.45.5.patched/www/config/cp_security.cgi	2019-03-27 15:39:16.622497844 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/www/config/cp_security.cgi fw.3.47.10.patched/www/config/cp_security.cgi
+--- fw.3.47.10.orig/www/config/cp_security.cgi	2019-06-21 10:27:15.000000000 +0200
++++ fw.3.47.10.patched/www/config/cp_security.cgi	2019-06-25 13:21:48.677856666 +0200
 @@ -296,7 +296,7 @@
      } else {
        exec touch /usr/local/.doFactoryReset
@@ -1299,9 +1299,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/www/config/cp_security.cgi fw.3.45.5.p
      division {class="popupTitle"} {
        puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
      }
-diff -ruN --no-dereference fw.3.45.5.orig/www/webui/js/lang/de/translate.lang.js fw.3.45.5.patched/www/webui/js/lang/de/translate.lang.js
---- fw.3.45.5.orig/www/webui/js/lang/de/translate.lang.js	2019-03-26 15:12:20.000000000 +0100
-+++ fw.3.45.5.patched/www/webui/js/lang/de/translate.lang.js	2019-03-27 15:39:16.630497897 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/www/webui/js/lang/de/translate.lang.js fw.3.47.10.patched/www/webui/js/lang/de/translate.lang.js
+--- fw.3.47.10.orig/www/webui/js/lang/de/translate.lang.js	2019-06-21 10:27:15.000000000 +0200
++++ fw.3.47.10.patched/www/webui/js/lang/de/translate.lang.js	2019-06-25 13:21:48.677856666 +0200
 @@ -457,7 +457,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
@@ -1323,9 +1323,9 @@ diff -ruN --no-dereference fw.3.45.5.orig/www/webui/js/lang/de/translate.lang.js
      "dialogSettingsCMHintRestartSafeMode" : "Homematic Zentrale einmalig im abgesicherten Modus starten. Im abgesicherten Modus wird die installierte Zusatzsoftware nicht gestartet. Ver%E4nderte Einstellungen werden vorher gespeichert.",
      "dialogSettingsCMHintErrorLog" : "Stellen Sie die Anzahl der Logmeldungen ein, die von der Zentrale generiert werden sollen.<br>Sie k%F6nnen zus%E4tzlich einen Rechner angeben, dem die Zentrale ihre Logmeldungen per Syslog schickt. Auf diesem Rechner mu%DF entsprechende Software installiert sein, die die Meldungen entgegennimmt.<br>Zu Diagnosezwecken k%F6nnen die aktuellen Logmeldungen der Zentrale in einer Textdatei heruntergeladen werden.",
      "dialogSettingsCMLogLevel0" : "Alles loggen",
-diff -ruN --no-dereference fw.3.45.5.orig/www/webui/js/lang/en/translate.lang.js fw.3.45.5.patched/www/webui/js/lang/en/translate.lang.js
---- fw.3.45.5.orig/www/webui/js/lang/en/translate.lang.js	2019-03-26 15:12:20.000000000 +0100
-+++ fw.3.45.5.patched/www/webui/js/lang/en/translate.lang.js	2019-03-27 15:39:16.630497897 +0100
+diff -ruN --no-dereference fw.3.47.10.orig/www/webui/js/lang/en/translate.lang.js fw.3.47.10.patched/www/webui/js/lang/en/translate.lang.js
+--- fw.3.47.10.orig/www/webui/js/lang/en/translate.lang.js	2019-06-21 10:27:15.000000000 +0200
++++ fw.3.47.10.patched/www/webui/js/lang/en/translate.lang.js	2019-06-25 13:21:48.677856666 +0200
 @@ -456,7 +456,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Shutdown",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
