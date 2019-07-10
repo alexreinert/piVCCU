@@ -77,7 +77,7 @@ static int pl011_raw_uart_start_connection(struct generic_raw_uart *raw_uart)
   writel( 0x7ff, pl011_port->membase + UART011_ICR );
 
   /*Register interrupt handler*/
-  ret = request_irq(pl011_port->irq, pl011_raw_uart_irq_handle, 0, dev_name(pl011_port->dev), raw_uart);
+  ret = request_irq(pl011_port->irq, pl011_raw_uart_irq_handle, IRQF_SHARED, dev_name(pl011_port->dev), raw_uart);
   if ( ret )
   {
     dev_err(pl011_port->dev, "irq could not be registered");
@@ -102,7 +102,7 @@ static int pl011_raw_uart_start_connection(struct generic_raw_uart *raw_uart)
   writel( 0, pl011_port->membase + UART011_LCRH );
 
   /*Set RX FIFO threshold to lowest and TX FIFO threshold to mid*/
-  writel( UART011_IFLS_RX1_8 | UART011_IFLS_TX4_8, pl011_port->membase + UART011_IFLS );
+  writel( UART011_IFLS_RX1_8 | UART011_IFLS_TX2_8, pl011_port->membase + UART011_IFLS );
 
   /*enable RX and TX*/
   uart_cr |= UART011_CR_RXE | UART011_CR_TXE ;
@@ -324,7 +324,7 @@ module_raw_uart_driver(MODULE_NAME, pl011_raw_uart, pl011_raw_uart_of_match);
 
 MODULE_ALIAS("platform:pl011-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.4");
+MODULE_VERSION("1.5");
 MODULE_DESCRIPTION("PL011 raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

@@ -22,12 +22,12 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 
 ### Prequisites
 * Debian or Ubuntu based distribution
-* armhf or arm64 architecture (x64 is not supported right now)
+* armhf or arm64 architecture (x64 is not supported)
 * At least kernel 4.14
 
 ### Prequisites for HM-MOD-RPI-PCB and RPI-RF-MOD on GPIO header
 * Supported Single Board Computer
-  * Raspberry Pi 2B/3B/3B+ running Raspbian Stretch
+  * Raspberry Pi 2B/3B/3B+/4B running Raspbian Stretch or Buster
   * Asus Tinkerboard running Armbian with Mainline kernel
   * Asus Tinkerboard S running Armbian with Mainline kernel
   * Banana Pi M1 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
