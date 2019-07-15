@@ -32,6 +32,7 @@ tar czf $TMPDIR/usr_local.tar.gz usr/local
 
 /usr/sbin/chroot $TMPDIR/root crypttool -s -t 1 < $TMPDIR/usr_local.tar.gz > $TMPDIR/signature
 /usr/sbin/chroot $TMPDIR/root crypttool -g -t 1 > $TMPDIR/key_index
+
 cp $TMPDIR/root/boot/VERSION $TMPDIR/firmware_version
 
 cd $TMPDIR
