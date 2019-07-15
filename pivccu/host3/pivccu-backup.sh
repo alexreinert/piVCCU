@@ -30,8 +30,9 @@ mount --bind /var/lib/piVCCU3/userfs $TMPDIR/root/usr/local
 cd $TMPDIR/root
 tar czf $TMPDIR/usr_local.tar.gz usr/local
 
-chroot $TMPDIR/root crypttool -s -t 1 < $TMPDIR/usr_local.tar.gz > $TMPDIR/signature
-chroot $TMPDIR/root crypttool -g -t 1 > $TMPDIR/key_index
+/usr/sbin/chroot $TMPDIR/root crypttool -s -t 1 < $TMPDIR/usr_local.tar.gz > $TMPDIR/signature
+/usr/sbin/chroot $TMPDIR/root crypttool -g -t 1 > $TMPDIR/key_index
+
 cp $TMPDIR/root/boot/VERSION $TMPDIR/firmware_version
 
 cd $TMPDIR
