@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2018 by Alexander Reinert
+ * Copyright (c) 2019 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -954,9 +954,30 @@ static void __exit generic_raw_uart_exit(void)
 module_init(generic_raw_uart_init);
 module_exit(generic_raw_uart_exit);
 
+static int generic_raw_uart_set_dummy_rx8130_loader(const char *val, const struct kernel_param *kp)
+{
+    int load, ret;
+
+    ret = kstrtoint(val, 10, &load);
+
+    if (load != 1)
+    {
+        return -EINVAL;
+    }
+
+    return request_module("dummy_rx8130");
+}
+
+static const struct kernel_param_ops generic_raw_uart_set_dummy_rx8130_loader_param_ops = {
+        .set    = generic_raw_uart_set_dummy_rx8130_loader,
+};
+
+module_param_cb(load_dummy_rx8130_module, &generic_raw_uart_set_dummy_rx8130_loader_param_ops, NULL, S_IWUSR);
+MODULE_PARM_DESC(load_dummy_rx8130_module, "Loads the dummy_rx8130 module");
+
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.10");
+MODULE_VERSION("1.11");
 MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
