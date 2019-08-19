@@ -31,9 +31,9 @@ static int red_gpio_pin = 0;
 static int green_gpio_pin = 0;
 static int blue_gpio_pin = 0;
 
-static struct rpi_rf_mod_led_led *red;
-static struct rpi_rf_mod_led_led *green;
-static struct rpi_rf_mod_led_led *blue;
+static struct rpi_rf_mod_led_led *red = 0;
+static struct rpi_rf_mod_led_led *green = 0;
+static struct rpi_rf_mod_led_led *blue = 0;
 
 struct rpi_rf_mod_led_led {
   struct led_classdev cdev;
@@ -79,6 +79,9 @@ static struct rpi_rf_mod_led_led* rpi_rf_mod_led_createled(const char* name, boo
 
 static void rpi_rf_mod_led_set_gpio_pin(struct rpi_rf_mod_led_led* led, int gpio)
 {
+    if (led == 0)
+        return;
+
     if (led->gpio != 0)
     {
         gpio_free(led->gpio);
@@ -208,7 +211,7 @@ MODULE_PARM_DESC(blue_gpio_pin, "GPIO Pin of blue LED");
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("GPIO LED driver for RPI-RF-MOD");
-MODULE_VERSION("1.3");
+MODULE_VERSION("1.4");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("rpi_rf_mod_led");
 
