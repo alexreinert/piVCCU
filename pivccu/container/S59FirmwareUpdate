@@ -14,14 +14,14 @@ start() {
 
       "RPI-RF-MOD")
         echo "Checking if firmware Update is needed for RPI-RF-MOD" | logger -p user.info
-        /opt/jre-1.8.0_121-compact3/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/mxs_auart_raw.0 -jar /opt/HmIP/hmip-copro-update.jar -p /dev/mxs_auart_raw.0 -f /firmware/RPI-RF-MOD/dualcopro_update_blhmip-*.eq3 | logger -p user.info
+        /opt/jre/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/mxs_auart_raw.0 -jar /opt/HmIP/hmip-copro-update.jar -p /dev/mxs_auart_raw.0 -f /firmware/RPI-RF-MOD/dualcopro_update_blhmip-*.eq3 | logger -p user.info
         ;;
     esac
 
     case "$HMRF_HARDWARE" in
       "HMIP-RFUSB")
         echo "Checking if firmware Update is needed for HmIP-RFUSB" | logger -p user.info
-        /opt/jre-1.8.0_121-compact3/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/ttyS0 -jar /opt/HmIP/hmip-copro-update.jar -p /dev/ttyS0 -f /firmware/HMIP-RFUSB/hmip_coprocessor_update-*.eq3 | logger -p user.info
+        /opt/jre/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/ttyS0 -jar /opt/HmIP/hmip-copro-update.jar -p /dev/ttyS0 -f /firmware/HMIP-RFUSB/hmip_coprocessor_update-*.eq3 | logger -p user.info
         ;;
     esac
   fi
