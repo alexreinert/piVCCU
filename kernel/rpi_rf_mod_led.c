@@ -70,7 +70,7 @@ static struct rpi_rf_mod_led_led* rpi_rf_mod_led_createled(const char* name, boo
     led->cdev.brightness_get = rpi_rf_mod_led_get_led_brightness;
     led->cdev.default_trigger = initial ? "default-on" : "none";
     led->gpio = 0;
-    led->brightness = initial ? LED_ON : LED_OFF;
+    led->brightness = initial ? LED_FULL : LED_OFF;
 
     led_classdev_register(NULL, &led->cdev);
 
@@ -211,7 +211,7 @@ MODULE_PARM_DESC(blue_gpio_pin, "GPIO Pin of blue LED");
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("GPIO LED driver for RPI-RF-MOD");
-MODULE_VERSION("1.4");
+MODULE_VERSION("1.5");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("rpi_rf_mod_led");
 
