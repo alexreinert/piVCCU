@@ -7,7 +7,7 @@ if [ ! $? -eq 0 ]; then
     cd /usr/src/linux-headers-`uname -r`
 
     if [ -e scripts/basic/fixdep ]; then
-      scripts/basic/fixdep
+      scripts/basic/fixdep >/dev/null 2>&1
       if [ $? -eq 126 ]; then
         make scripts || true
       fi

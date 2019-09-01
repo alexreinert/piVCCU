@@ -50,7 +50,7 @@
 #define DW_UART_IER_PTIME   1 << 7 /* Programmable THRE Interrupt Mode Enable */
 
 #define DW_UART_IIR_IID       0x0f /* nask for interrupt id */
-#define DW_UART_IIR_CTO       0x12 /* character timeout */
+#define DW_UART_IIR_CTO       0x0c /* character timeout */
 
 static inline void dw_apb_raw_uart_writeb(int value, int offset);
 static inline unsigned int dw_apb_raw_uart_readb(int offset);
@@ -206,7 +206,7 @@ static void dw_apb_raw_uart_rx_chars(struct generic_raw_uart *raw_uart)
 
   status = dw_apb_raw_uart_readb(UART_LSR);
 
-  while (status & UART_LSR_DR)
+  while (status & (UART_LSR_DR | UART_LSR_BI))
   {
     /* Error handling */
     if(status & UART_LSR_BI)
@@ -243,13 +243,21 @@ static irqreturn_t dw_apb_raw_uart_irq_handle(int irq, void *context)
 {
   struct generic_raw_uart *raw_uart = context;
   int iid;
+  int status;
 
   iid = dw_apb_raw_uart_readb(UART_IIR) & DW_UART_IIR_IID;
 
   switch(iid)
   {
-    case UART_IIR_RDI:
     case DW_UART_IIR_CTO:
+      status = dw_apb_raw_uart_readb(UART_LSR);
+      if (!(status & (UART_LSR_DR | UART_LSR_BI)))
+      {
+        (void) dw_apb_raw_uart_readb(UART_RX);
+      }
+      // no break, fall through
+
+    case UART_IIR_RDI:
       dw_apb_raw_uart_rx_chars(raw_uart);
       break;
 
@@ -391,7 +399,7 @@ module_raw_uart_driver(MODULE_NAME, dw_apb_raw_uart, dw_apb_raw_uart_of_match);
 
 MODULE_ALIAS("platform:dw_apb-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.5");
+MODULE_VERSION("1.6");
 MODULE_DESCRIPTION("dw_apb raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
