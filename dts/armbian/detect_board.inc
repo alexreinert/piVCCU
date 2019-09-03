@@ -25,12 +25,12 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
       lemaker,bananapi)
         OVERLAY_MODE='overlay'
         OVERLAY_FILE='pivccu-bananapi-m1.dtbo'
-	break;
-	;;
+        break;
+        ;;
       lemaker,bananapro)
         OVERLAY_MODE='overlay'
         OVERLAY_FILE='pivccu-bananapi-pro.dtbo'
-	break;
+        break;
         ;;
       asus,rk3288-tinker|asus,rk3288-tinker-s)
         OVERLAY_MODE='patch'
@@ -44,7 +44,7 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         FDT_FILE=rockchip/rk3328-rock64.dtb
         break
         ;;
-     pine64,rockpro64)
+      pine64,rockpro64)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/rockpro64.dts.include'
         FDT_FILE=rockchip/rk3399-rockpro64.dtb
@@ -62,14 +62,20 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         FDT_FILE=amlogic/meson-gxl-s905x-libretech-cc.dtb
         break
         ;;
-     friendlyelec,nanopc-t4)
+      friendlyelec,nanopc-t4)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/nanopct4.dts.include'
         break
         ;; 
-     friendlyelec,nanopi-m4)
+      friendlyelec,nanopi-m4)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/nanopim4.dts.include'
+        break
+        ;;
+      radxa,rockpi4)
+        OVERLAY_MODE='patch'
+        INCLUDE_FILE='/var/lib/piVCCU/dts/rockpi4.dts.include'
+        FDT_FILE=rockchip/rk3399-rock-pi-4.dtb
         break
         ;;
     esac

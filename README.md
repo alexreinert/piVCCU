@@ -42,6 +42,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 
     :warning: WARNING: Do not connect RPI-RF-MOD to a power source. Do connect the NanoPC to a power source only.
   * NanoPi M4 running Armbian with Dev kernel (Experimental)
+  * Rock Pi 4 running Armbian with Dev kernel (Experimental)
   * Rock64 running Armbian with Dev kernel (Experimental) (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
   * RockPro64 running Armbian with Dev kernel (Experimental)
 

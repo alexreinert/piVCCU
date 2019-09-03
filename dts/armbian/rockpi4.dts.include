@@ -1,0 +1,36 @@
+/ {
+  serial@ff1a0000 {
+    compatible = "pivccu,dw_apb";
+    pivccu,reset_pin = <&pivccu_gpio4 3 0>;
+    pivccu,red_pin = <&pivccu_gpio4 4 0>;
+    pivccu,green_pin = <&pivccu_gpio4 6 0>;
+    pivccu,blue_pin = <&pivccu_gpio4 7 0>;
+    pinctrl-0 = <&pivccu_uart2c_xfer>;
+  };
+
+  pinctrl {
+    pivccu_gpio4: gpio4@ff790000 {
+    };
+    uart2c {
+      pivccu_uart2c_xfer: uart2c-xfer {
+      };
+    };
+  };
+
+  i2c@ff160000 {
+    status = "okay";
+
+    rx8130@32 {
+      compatible = "epson,rx8130-legacy";
+      reg = <0x32>;
+      status = "okay";
+      enable-external-capacitor;
+    };
+  };
+
+  chosen {
+    stdout-path = "";
+    bootargs = "";
+  };
+};
+
