@@ -2,6 +2,7 @@ Package: pivccu-devicetree-armbian
 Version: {PKG_VERSION}
 Architecture: all
 Maintainer: Alexander Reinert <alex@areinert.de>
+Pre-Depends: binutils
 Provides: pivccu-devicetree
 Section: misc
 Priority: extra
