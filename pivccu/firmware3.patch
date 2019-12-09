@@ -1,6 +1,6 @@
-diff -ruN --no-dereference fw.3.47.15.orig/bin/dhcp.script fw.3.47.15.patched/bin/dhcp.script
---- fw.3.47.15.orig/bin/dhcp.script	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/bin/dhcp.script	2019-07-23 11:01:23.380168098 +0200
+diff -ruN --no-dereference fw.3.49.17.orig/bin/dhcp.script fw.3.49.17.patched/bin/dhcp.script
+--- fw.3.49.17.orig/bin/dhcp.script	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/bin/dhcp.script	2019-12-09 14:32:40.359111717 +0100
 @@ -4,19 +4,8 @@
  CONFIGURL=/var/configurl
  
@@ -64,9 +64,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/bin/dhcp.script fw.3.47.15.patched/bi
  
    # add default routes
    if [[ -n "${router}" ]]; then
-diff -ruN --no-dereference fw.3.47.15.orig/etc/fstab fw.3.47.15.patched/etc/fstab
---- fw.3.47.15.orig/etc/fstab	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/fstab	2019-07-23 11:01:23.400168234 +0200
+diff -ruN --no-dereference fw.3.49.17.orig/etc/fstab fw.3.49.17.patched/etc/fstab
+--- fw.3.49.17.orig/etc/fstab	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/fstab	2019-12-09 14:32:40.395111907 +0100
 @@ -1,15 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -83,9 +83,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/fstab fw.3.47.15.patched/etc/fsta
 -debugfs         /sys/kernel/debug debugfs noauto                                 0      0
 -LABEL=userfs    /usr/local     ext4     defaults,noatime,nodiratime,rw,data=journal,nofail         0      2
 -LABEL=bootfs    /mnt/boot_par  vfat     defaults,ro                              0      0
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S00watchdog fw.3.47.15.patched/etc/init.d/S00watchdog
---- fw.3.47.15.orig/etc/init.d/S00watchdog	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S00watchdog	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S00watchdog fw.3.49.17.patched/etc/init.d/S00watchdog
+--- fw.3.49.17.orig/etc/init.d/S00watchdog	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/init.d/S00watchdog	1970-01-01 01:00:00.000000000 +0100
 @@ -1,20 +0,0 @@
 -#!/bin/sh
 -#
@@ -107,9 +107,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S00watchdog fw.3.47.15.pat
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S01InitHost fw.3.47.15.patched/etc/init.d/S01InitHost
---- fw.3.47.15.orig/etc/init.d/S01InitHost	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S01InitHost	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S01InitHost fw.3.49.17.patched/etc/init.d/S01InitHost
+--- fw.3.49.17.orig/etc/init.d/S01InitHost	2019-11-04 15:04:59.000000000 +0100
++++ fw.3.49.17.patched/etc/init.d/S01InitHost	1970-01-01 01:00:00.000000000 +0100
 @@ -1,135 +0,0 @@
 -#!/bin/sh
 -#
@@ -175,7 +175,7 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S01InitHost fw.3.47.15.pat
 -    # RaspberryPi
 -    rpi*)
 -      HM_HOST_GPIO_UART="/dev/raw-uart"
--      HM_HOST_GPIO_RESET="18"
+-      HM_HOST_GPIO_RESET="19"
 -      HM_LED_GREEN="/sys/class/leds/led0"
 -      HM_LED_RED="/sys/class/leds/led1"
 -      HM_LED_YELLOW=""
@@ -246,9 +246,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S01InitHost fw.3.47.15.pat
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S02InitRTC fw.3.47.15.patched/etc/init.d/S02InitRTC
---- fw.3.47.15.orig/etc/init.d/S02InitRTC	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S02InitRTC	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S02InitRTC fw.3.49.17.patched/etc/init.d/S02InitRTC
+--- fw.3.49.17.orig/etc/init.d/S02InitRTC	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/init.d/S02InitRTC	1970-01-01 01:00:00.000000000 +0100
 @@ -1,163 +0,0 @@
 -#!/bin/sh
 -#
@@ -413,9 +413,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S02InitRTC fw.3.47.15.patc
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S03InitURandom fw.3.47.15.patched/etc/init.d/S03InitURandom
---- fw.3.47.15.orig/etc/init.d/S03InitURandom	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S03InitURandom	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S03InitURandom fw.3.49.17.patched/etc/init.d/S03InitURandom
+--- fw.3.49.17.orig/etc/init.d/S03InitURandom	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/init.d/S03InitURandom	1970-01-01 01:00:00.000000000 +0100
 @@ -1,63 +0,0 @@
 -#!/bin/sh
 -#
@@ -480,9 +480,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S03InitURandom fw.3.47.15.
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S04CheckFactoryReset fw.3.47.15.patched/etc/init.d/S04CheckFactoryReset
---- fw.3.47.15.orig/etc/init.d/S04CheckFactoryReset	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S04CheckFactoryReset	2019-07-23 11:01:23.424168397 +0200
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S04CheckFactoryReset fw.3.49.17.patched/etc/init.d/S04CheckFactoryReset
+--- fw.3.49.17.orig/etc/init.d/S04CheckFactoryReset	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/init.d/S04CheckFactoryReset	2019-12-09 14:32:49.563160676 +0100
 @@ -13,38 +13,7 @@
      return 1
    fi
@@ -523,9 +523,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S04CheckFactoryReset fw.3.
  
    return 0
  }
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S04CheckResizeLocalFS fw.3.47.15.patched/etc/init.d/S04CheckResizeLocalFS
---- fw.3.47.15.orig/etc/init.d/S04CheckResizeLocalFS	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S04CheckResizeLocalFS	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S04CheckResizeLocalFS fw.3.49.17.patched/etc/init.d/S04CheckResizeLocalFS
+--- fw.3.49.17.orig/etc/init.d/S04CheckResizeLocalFS	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/init.d/S04CheckResizeLocalFS	1970-01-01 01:00:00.000000000 +0100
 @@ -1,53 +0,0 @@
 -#!/bin/sh
 -#
@@ -580,9 +580,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S04CheckResizeLocalFS fw.3
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S06InitSystem fw.3.47.15.patched/etc/init.d/S06InitSystem
---- fw.3.47.15.orig/etc/init.d/S06InitSystem	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S06InitSystem	2019-07-23 11:01:23.428168424 +0200
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S06InitSystem fw.3.49.17.patched/etc/init.d/S06InitSystem
+--- fw.3.49.17.orig/etc/init.d/S06InitSystem	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/init.d/S06InitSystem	2019-12-09 14:32:49.627161019 +0100
 @@ -80,14 +80,6 @@
    if [[ ! -s /etc/config/shadow ]] ; then
      cp -a ${CFG_TEMPLATE_DIR}/shadow /etc/config/
@@ -598,9 +598,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S06InitSystem fw.3.47.15.p
  }
  
  start() {
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S07DisableHdmi fw.3.47.15.patched/etc/init.d/S07DisableHdmi
---- fw.3.47.15.orig/etc/init.d/S07DisableHdmi	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S07DisableHdmi	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S07DisableHdmi fw.3.49.17.patched/etc/init.d/S07DisableHdmi
+--- fw.3.49.17.orig/etc/init.d/S07DisableHdmi	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/init.d/S07DisableHdmi	1970-01-01 01:00:00.000000000 +0100
 @@ -1,23 +0,0 @@
 -#!/bin/sh
 -#
@@ -625,9 +625,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S07DisableHdmi fw.3.47.15.
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S10udev fw.3.47.15.patched/etc/init.d/S10udev
---- fw.3.47.15.orig/etc/init.d/S10udev	2019-07-17 08:10:26.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S10udev fw.3.49.17.patched/etc/init.d/S10udev
+--- fw.3.49.17.orig/etc/init.d/S10udev	2019-12-02 16:56:58.000000000 +0100
++++ fw.3.49.17.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
 @@ -1,46 +0,0 @@
 -#!/bin/sh
 -#
@@ -675,9 +675,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S10udev fw.3.47.15.patched
 -
 -
 -exit 0
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S11InitRFHardware fw.3.47.15.patched/etc/init.d/S11InitRFHardware
---- fw.3.47.15.orig/etc/init.d/S11InitRFHardware	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S11InitRFHardware	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S11InitRFHardware fw.3.49.17.patched/etc/init.d/S11InitRFHardware
+--- fw.3.49.17.orig/etc/init.d/S11InitRFHardware	2019-11-04 15:04:59.000000000 +0100
++++ fw.3.49.17.patched/etc/init.d/S11InitRFHardware	1970-01-01 01:00:00.000000000 +0100
 @@ -1,244 +0,0 @@
 -#!/bin/sh
 -#
@@ -772,9 +772,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S11InitRFHardware fw.3.47.
 -    if [[ -n "${HM_HOST_GPIO_RESET}" ]]; then
 -      echo ${HM_HOST_GPIO_RESET} >/sys/class/gpio/export
 -      echo out >/sys/class/gpio/gpio${HM_HOST_GPIO_RESET}/direction
--      echo 0 >/sys/class/gpio/gpio${HM_HOST_GPIO_RESET}/value
--      sleep 0.1
 -      echo 1 >/sys/class/gpio/gpio${HM_HOST_GPIO_RESET}/value
+-      sleep 0.1
+-      echo 0 >/sys/class/gpio/gpio${HM_HOST_GPIO_RESET}/value
 -    fi
 -  fi
 -}
@@ -923,9 +923,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S11InitRFHardware fw.3.47.
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S13irqbalance fw.3.47.15.patched/etc/init.d/S13irqbalance
---- fw.3.47.15.orig/etc/init.d/S13irqbalance	2019-07-17 08:23:53.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S13irqbalance	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S13irqbalance fw.3.49.17.patched/etc/init.d/S13irqbalance
+--- fw.3.49.17.orig/etc/init.d/S13irqbalance	2019-12-02 17:09:56.000000000 +0100
++++ fw.3.49.17.patched/etc/init.d/S13irqbalance	1970-01-01 01:00:00.000000000 +0100
 @@ -1,34 +0,0 @@
 -#!/bin/sh
 -#
@@ -961,9 +961,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S13irqbalance fw.3.47.15.p
 -	echo "Usage: $0 {start|stop|restart}"
 -	exit 1
 -esac
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S21rngd fw.3.47.15.patched/etc/init.d/S21rngd
---- fw.3.47.15.orig/etc/init.d/S21rngd	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S21rngd	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S21rngd fw.3.49.17.patched/etc/init.d/S21rngd
+--- fw.3.49.17.orig/etc/init.d/S21rngd	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/init.d/S21rngd	1970-01-01 01:00:00.000000000 +0100
 @@ -1,51 +0,0 @@
 -#!/bin/sh
 -
@@ -1016,9 +1016,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S21rngd fw.3.47.15.patched
 -		exit 1
 -		;;
 -esac
-diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S31bluetooth fw.3.47.15.patched/etc/init.d/S31bluetooth
---- fw.3.47.15.orig/etc/init.d/S31bluetooth	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/init.d/S31bluetooth	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.3.49.17.orig/etc/init.d/S31bluetooth fw.3.49.17.patched/etc/init.d/S31bluetooth
+--- fw.3.49.17.orig/etc/init.d/S31bluetooth	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/init.d/S31bluetooth	1970-01-01 01:00:00.000000000 +0100
 @@ -1,89 +0,0 @@
 -#!/bin/sh
 -#
@@ -1109,9 +1109,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/init.d/S31bluetooth fw.3.47.15.pa
 -esac
 -
 -exit 0
-diff -ruN --no-dereference fw.3.47.15.orig/etc/inittab fw.3.47.15.patched/etc/inittab
---- fw.3.47.15.orig/etc/inittab	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/inittab	2019-07-23 11:01:23.440168506 +0200
+diff -ruN --no-dereference fw.3.49.17.orig/etc/inittab fw.3.49.17.patched/etc/inittab
+--- fw.3.49.17.orig/etc/inittab	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/inittab	2019-12-09 14:32:52.431175935 +0100
 @@ -14,10 +14,10 @@
  # process   == program to run
  
@@ -1127,9 +1127,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/inittab fw.3.47.15.patched/etc/in
  tty2::sysinit:/bin/mount -a
  null::sysinit:/bin/hostname -F /etc/hostname
  null::sysinit:/usr/bin/psplash -n &
-diff -ruN --no-dereference fw.3.47.15.orig/etc/network/if-up.d/eQ3StartNetwork fw.3.47.15.patched/etc/network/if-up.d/eQ3StartNetwork
---- fw.3.47.15.orig/etc/network/if-up.d/eQ3StartNetwork	2019-04-23 09:40:08.000000000 +0200
-+++ fw.3.47.15.patched/etc/network/if-up.d/eQ3StartNetwork	2019-07-23 11:01:23.440168506 +0200
+diff -ruN --no-dereference fw.3.49.17.orig/etc/network/if-up.d/eQ3StartNetwork fw.3.49.17.patched/etc/network/if-up.d/eQ3StartNetwork
+--- fw.3.49.17.orig/etc/network/if-up.d/eQ3StartNetwork	2019-09-03 16:57:35.000000000 +0200
++++ fw.3.49.17.patched/etc/network/if-up.d/eQ3StartNetwork	2019-12-09 14:32:52.459176085 +0100
 @@ -109,20 +109,6 @@
  # restart syslogd to update hostname
  /etc/init.d/S07logging restart 2>/dev/null >/dev/null
@@ -1151,10 +1151,10 @@ diff -ruN --no-dereference fw.3.47.15.orig/etc/network/if-up.d/eQ3StartNetwork f
  # make sure no other udhcpc is running
  killall -q udhcpc
  
-diff -ruN --no-dereference fw.3.47.15.orig/www/config/cp_maintenance.cgi fw.3.47.15.patched/www/config/cp_maintenance.cgi
---- fw.3.47.15.orig/www/config/cp_maintenance.cgi	2019-07-17 09:28:44.000000000 +0200
-+++ fw.3.47.15.patched/www/config/cp_maintenance.cgi	2019-07-23 11:01:23.472168723 +0200
-@@ -376,109 +376,13 @@
+diff -ruN --no-dereference fw.3.49.17.orig/www/config/cp_maintenance.cgi fw.3.49.17.patched/www/config/cp_maintenance.cgi
+--- fw.3.49.17.orig/www/config/cp_maintenance.cgi	2019-12-02 18:08:56.000000000 +0100
++++ fw.3.49.17.patched/www/config/cp_maintenance.cgi	2019-12-09 14:57:46.483273256 +0100
+@@ -382,109 +382,13 @@
                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                }
                table_data {
@@ -1167,7 +1167,7 @@ diff -ruN --no-dereference fw.3.47.15.orig/www/config/cp_maintenance.cgi fw.3.47
 -              }
 -              table_data {id="availableSWVersion"} {
 -                # This doesn´t work properly
--                # puts [iframe "$REMOTE_FIRMWARE_SCRIPT?cmd=check_version&version=$cur_version&serial=$serial&lang=de&product=HM-CCU3" marginheight=0 marginwidth=0 frameborder=0 width=100 height=20 {scrolling="no"} ]
+-                # puts [iframe "$REMOTE_FIRMWARE_SCRIPT?cmd=check_version&version=$cur_version&serial=$serial&lang=de&product=HM-CCU2" marginheight=0 marginwidth=0 frameborder=0 width=100 height=20 {scrolling="no"} ]
 -                # The available version will be set further down with "jQuery('#availableSWVersion').html(homematic.com.getLatestVersion());"
 -              }
 -            }
@@ -1187,7 +1187,7 @@ diff -ruN --no-dereference fw.3.47.15.orig/www/config/cp_maintenance.cgi fw.3.47
 -                  table {
 -                    table_row {
 -                      table_data {
--                        division {class="CLASS20908" style="display: none"} {id="btnFwDownload"} {} "onClick=\"window.location.href='$REMOTE_FIRMWARE_SCRIPT?cmd=download&version=$cur_version&serial=$serial&lang=de&product=HM-CCU3';\"" {}
+-                        division {class="CLASS20908" style="display: none"} {id="btnFwDownload"} {} "onClick=\"window.location.href='$REMOTE_FIRMWARE_SCRIPT?cmd=download&version=$cur_version&serial=$serial&lang=de&product=HM-CCU[getProduct]';\"" {}
 -                        division {class="CLASS20908"}  "onClick=\"showCCULicense();\"" {puts "\${dialogSettingsCMBtnPerformSoftwareUpdateDownload}"}
 -                      }
 -                    }
@@ -1222,7 +1222,7 @@ diff -ruN --no-dereference fw.3.47.15.orig/www/config/cp_maintenance.cgi fw.3.47
 -                  table {
 -                    table_row {
 -                      table_data {
--                        division {class="CLASS20919"} {onClick="document.firmware_form.submit();showUserHint();"} {
+-                        division {class="CLASS20919"} {onClick="stopHmIPServer();document.firmware_form.submit();showUserHint();"} {
 -                          puts "\${dialogSettingsCMBtnPerformSoftwareUpdateUpload}"
 -                        }
 -                      }
@@ -1239,7 +1239,7 @@ diff -ruN --no-dereference fw.3.47.15.orig/www/config/cp_maintenance.cgi fw.3.47
                }
              }
            }
-         }
+-        }
 -        table_data {align="left"} {class="CLASS20921"} {
 -          puts "\${dialogSettingsCMHintSoftwareUpdate1}"
 -          number_list {class="j_noForcedUpdate"} {
@@ -1262,12 +1262,13 @@ diff -ruN --no-dereference fw.3.47.15.orig/www/config/cp_maintenance.cgi fw.3.47
 -          division {class="j_forcedUpdate" style="padding:10px;"} {
 -            puts "<br/>\${dialogSettingsCMHintSoftwareUpdate2}"
 -          }
-+	table_data {align="left"} {class="CLASS20904"} {
++	}
++        table_data {align="left"} {class="CLASS20904"} {
 +          puts "\${dialogSettingspiVCCUDonateHint}"
          }
        }
        table_row {class="CLASS20902 j_noForcedUpdate j_fwUpdateOnly"} {
-@@ -843,10 +747,6 @@
+@@ -856,10 +760,6 @@
    cgi_javascript {
      puts "translatePage('#messagebox');"
      puts "jQuery('#messagebox').show();"
@@ -1278,9 +1279,9 @@ diff -ruN --no-dereference fw.3.47.15.orig/www/config/cp_maintenance.cgi fw.3.47
  
      # Hide all elements with class j_noForcedUpdate when an update is enforced
      puts "if (forceUpdate) {"
-diff -ruN --no-dereference fw.3.47.15.orig/www/config/cp_security.cgi fw.3.47.15.patched/www/config/cp_security.cgi
---- fw.3.47.15.orig/www/config/cp_security.cgi	2019-07-17 09:28:44.000000000 +0200
-+++ fw.3.47.15.patched/www/config/cp_security.cgi	2019-07-23 11:01:23.488168832 +0200
+diff -ruN --no-dereference fw.3.49.17.orig/www/config/cp_security.cgi fw.3.49.17.patched/www/config/cp_security.cgi
+--- fw.3.49.17.orig/www/config/cp_security.cgi	2019-12-02 18:08:56.000000000 +0100
++++ fw.3.49.17.patched/www/config/cp_security.cgi	2019-12-09 14:32:52.459176085 +0100
 @@ -296,7 +296,7 @@
      } else {
        exec touch /usr/local/.doFactoryReset
@@ -1299,10 +1300,10 @@ diff -ruN --no-dereference fw.3.47.15.orig/www/config/cp_security.cgi fw.3.47.15
      division {class="popupTitle"} {
        puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
      }
-diff -ruN --no-dereference fw.3.47.15.orig/www/webui/js/lang/de/translate.lang.js fw.3.47.15.patched/www/webui/js/lang/de/translate.lang.js
---- fw.3.47.15.orig/www/webui/js/lang/de/translate.lang.js	2019-07-17 09:28:44.000000000 +0200
-+++ fw.3.47.15.patched/www/webui/js/lang/de/translate.lang.js	2019-07-23 11:01:23.492168859 +0200
-@@ -457,7 +457,8 @@
+diff -ruN --no-dereference fw.3.49.17.orig/www/webui/js/lang/de/translate.lang.js fw.3.49.17.patched/www/webui/js/lang/de/translate.lang.js
+--- fw.3.49.17.orig/www/webui/js/lang/de/translate.lang.js	2019-12-02 18:08:56.000000000 +0100
++++ fw.3.49.17.patched/www/webui/js/lang/de/translate.lang.js	2019-12-09 14:32:52.459176085 +0100
+@@ -458,7 +458,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
      "dialogSettingsCMTDErrorProtocol" : "Fehler-<br/>protokoll",
@@ -1312,7 +1313,7 @@ diff -ruN --no-dereference fw.3.47.15.orig/www/webui/js/lang/de/translate.lang.j
      "dialogSettingsCMLblAvailableSoftwareVersion" : "Verf%FCgbare Software-Version:",
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Software-Update durchf%FChren",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
-@@ -483,8 +484,8 @@
+@@ -484,8 +485,8 @@
      "dialogSettingsCMHintSoftwareUpdate3" : "F%FChren Sie vor dem Update eine Datensicherung durch.",
      "dialogSettingsCMHintSoftwareUpdate4a" : "Der Ladezustand der Batterien betr%E4gt nur noch ",
      "dialogSettingsCMHintSoftwareUpdate4b" : "Um einem Datenverlust durch Ausfall der Stromversorgung vorzubeugen, empfehlen wir, die Batterien vor dem Update zu erneuern.",
@@ -1323,10 +1324,10 @@ diff -ruN --no-dereference fw.3.47.15.orig/www/webui/js/lang/de/translate.lang.j
      "dialogSettingsCMHintRestartSafeMode" : "Homematic Zentrale einmalig im abgesicherten Modus starten. Im abgesicherten Modus wird die installierte Zusatzsoftware nicht gestartet. Ver%E4nderte Einstellungen werden vorher gespeichert.",
      "dialogSettingsCMHintErrorLog" : "Stellen Sie die Anzahl der Logmeldungen ein, die von der Zentrale generiert werden sollen.<br>Sie k%F6nnen zus%E4tzlich einen Rechner angeben, dem die Zentrale ihre Logmeldungen per Syslog schickt. Auf diesem Rechner mu%DF entsprechende Software installiert sein, die die Meldungen entgegennimmt.<br>Zu Diagnosezwecken k%F6nnen die aktuellen Logmeldungen der Zentrale in einer Textdatei heruntergeladen werden.",
      "dialogSettingsCMLogLevel0" : "Alles loggen",
-diff -ruN --no-dereference fw.3.47.15.orig/www/webui/js/lang/en/translate.lang.js fw.3.47.15.patched/www/webui/js/lang/en/translate.lang.js
---- fw.3.47.15.orig/www/webui/js/lang/en/translate.lang.js	2019-07-17 09:28:44.000000000 +0200
-+++ fw.3.47.15.patched/www/webui/js/lang/en/translate.lang.js	2019-07-23 11:01:23.536169158 +0200
-@@ -456,7 +456,8 @@
+diff -ruN --no-dereference fw.3.49.17.orig/www/webui/js/lang/en/translate.lang.js fw.3.49.17.patched/www/webui/js/lang/en/translate.lang.js
+--- fw.3.49.17.orig/www/webui/js/lang/en/translate.lang.js	2019-12-02 18:08:56.000000000 +0100
++++ fw.3.49.17.patched/www/webui/js/lang/en/translate.lang.js	2019-12-09 14:32:52.459176085 +0100
+@@ -457,7 +457,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Shutdown",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
      "dialogSettingsCMTDErrorProtocol" : "Error<br/>log",
@@ -1336,7 +1337,7 @@ diff -ruN --no-dereference fw.3.47.15.orig/www/webui/js/lang/en/translate.lang.j
      "dialogSettingsCMLblAvailableSoftwareVersion" : "Available software version:",
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Perform software update",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Step 1: Download new software",
-@@ -482,8 +483,8 @@
+@@ -483,8 +484,8 @@
      "dialogSettingsCMHintSoftwareUpdate3" : "Please perform a data backup before starting the update.",
      "dialogSettingsCMHintSoftwareUpdate4a" : "The charging status the batteries is only at ",
      "dialogSettingsCMHintSoftwareUpdate4b" : "To prevent from data loss due to power failure, it is recommended to replace the batteries before starting the update.",
