@@ -1,64 +1,40 @@
-diff -ruN --no-dereference fw.2.47.15.orig/bin/dhcp.script fw.2.47.15.patched/bin/dhcp.script
---- fw.2.47.15.orig/bin/dhcp.script	2019-07-23 19:55:49.387068724 +0200
-+++ fw.2.47.15.patched/bin/dhcp.script	2019-07-23 19:59:57.700754828 +0200
-@@ -6,29 +6,19 @@
- 
- action=$1
+diff -ruN --no-dereference fw.2.49.17.orig/bin/dhcp.script fw.2.49.17.patched/bin/dhcp.script
+--- fw.2.49.17.orig/bin/dhcp.script	2019-12-10 16:41:17.960387881 +0100
++++ fw.2.49.17.patched/bin/dhcp.script	2019-12-11 08:46:48.450248196 +0100
+@@ -6,12 +6,6 @@
+ action=${1}
+ nfsroot=false
  
 -if grep -q nfsroot /proc/cmdline ; then
--    if [ _$interface = _eth0 ] ; then
--    	nfsroot=TRUE 
+-    if [[ ${interface} == "eth0" ]]; then
+-      nfsroot=true
 -    fi
 -fi
 -
  handle_deconfig() {
--	if [ _$nfsroot = _TRUE ] ; then
--   		exit 0
--	fi
- 	ifconfig $interface 0.0.0.0
- }
- 
- handle_renew() {
--	if [ _$nfsroot != _TRUE ] ; then
--		ifconfig $interface $ip netmask $subnet
--		eq3configcmd netconfigcmd -i $ip -n $subnet -g $router 
--                export j=1;
--                for i in $dns; do
--			eq3configcmd netconfigcmd -d$j $i
--                        export j=`expr $j + 1`
--                done
--	fi
-+	ifconfig $interface $ip netmask $subnet
-+	eq3configcmd netconfigcmd -i $ip -n $subnet -g $router 
-+        export j=1;
-+        for i in $dns; do
-+		eq3configcmd netconfigcmd -d$j $i
-+                export j=`expr $j + 1`
-+        done
-+
- 	route del default 2> /dev/null
- 	[ -n "$router" ] && route add default gw $router
- 	[ -n "$boot_file" ] && echo $boot_file > $CONFIGURL
-diff -ruN --no-dereference fw.2.47.15.orig/etc/fstab fw.2.47.15.patched/etc/fstab
---- fw.2.47.15.orig/etc/fstab	2019-07-23 19:55:49.423068969 +0200
-+++ fw.2.47.15.patched/etc/fstab	2019-07-23 19:59:57.888756106 +0200
-@@ -1,13 +1,3 @@
+   if [[ ${nfsroot} == true ]]; then
+       exit 0
+diff -ruN --no-dereference fw.2.49.17.orig/etc/fstab fw.2.49.17.patched/etc/fstab
+--- fw.2.49.17.orig/etc/fstab	2019-12-10 16:41:18.008388132 +0100
++++ fw.2.49.17.patched/etc/fstab	2019-12-11 08:48:24.310704819 +0100
+@@ -1,14 +1,3 @@
  # /etc/fstab: static file system information.
  #
  # <file system> <mount pt>     <type>   <options>         <dump> <pass>
--/dev/root       /              ext2     rw,noauto         0      1
+-/dev/root       /              ubifs    ro,noauto         0      1
 -proc            /proc          proc     defaults          0      0
 -devpts          /dev/pts       devpts   defaults,gid=5,mode=620   0      0
 -tmpfs           /dev/shm       tmpfs    mode=0777         0      0
--tmpfs           /tmp           tmpfs    defaults          0      0
--mediafs         /media         tmpfs    defaults          0      0
+-tmpfs           /tmp           tmpfs    defaults,noatime,mode=1777          0      0
+-tmpfs           /run           tmpfs    defaults,noatime,mode=0755,nosuid,nodev          0      0
 -sysfs           /sys           sysfs    defaults          0      0
--varfs           /var           tmpfs    defaults,size=196M 0      0
--debugfs 	/sys/kernel/debug debugfs 		  0 	0
--ubi1:user	/usr/local	ubifs	defaults,noatime,rw,sync	0 0
-diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S00eQ3SystemStart fw.2.47.15.patched/etc/init.d/S00eQ3SystemStart
---- fw.2.47.15.orig/etc/init.d/S00eQ3SystemStart	2019-07-23 19:55:49.419068941 +0200
-+++ fw.2.47.15.patched/etc/init.d/S00eQ3SystemStart	2019-07-23 19:59:57.900756187 +0200
+-tmpfs           /var           tmpfs    defaults,noatime,size=196M 0      0
+-tmpfs           /media         tmpfs    defaults,noatime          0      0
+-debugfs 	/sys/kernel/debug debugfs	noauto 		  0 	0
+-ubi1:user	/usr/local	ubifs	defaults,noatime,nodiratime,rw,sync	0 0
+diff -ruN --no-dereference fw.2.49.17.orig/etc/init.d/S00eQ3SystemStart fw.2.49.17.patched/etc/init.d/S00eQ3SystemStart
+--- fw.2.49.17.orig/etc/init.d/S00eQ3SystemStart	2019-12-10 16:41:18.004388111 +0100
++++ fw.2.49.17.patched/etc/init.d/S00eQ3SystemStart	2019-12-11 09:38:23.165217170 +0100
 @@ -7,17 +7,6 @@
  SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
  
@@ -77,16 +53,11 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S00eQ3SystemStart fw.2.47.
          chmod 775 /var
          mkdir /var/log
          chmod 775 /var/log
-@@ -84,27 +73,6 @@
- 	if [ ! -e /usr/local/etc/config/shadow ] ; then
+@@ -87,23 +76,6 @@
  		cp $CFG_TEMPLATE_DIR/shadow /usr/local/etc/config/shadow
  	fi
--
--	modprobe spidev
--        modprobe ic200_spi
--        modprobe spi_eq3_gpio
--        modprobe spi_bitbang
--        mknod spidev0.0 c 153 0
+ 
+-	modprobe spi_eq3_gpio
 -        modprobe gpio-keys
 -        modprobe fsl_usb2_udc.ko
 -	if grep -q "eQ3Mode=production" /proc/cmdline ; then
@@ -102,10 +73,11 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S00eQ3SystemStart fw.2.47.
 -	# HM/HmIP Dual Protocol
 -	modprobe mxs_raw_auart
 -	modprobe eq3_char_loop
- 	 
+-	 
  
          if [ ! -e /etc/config/TZ ] ; then
-@@ -135,7 +103,7 @@
+                 cp $CFG_TEMPLATE_DIR/TZ /etc/config
+@@ -133,7 +105,7 @@
  
  stop () {
  	start-stop-daemon -K -q -p /var/run/crond.pid
@@ -114,10 +86,10 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S00eQ3SystemStart fw.2.47.
  }
  
  restart() {
-diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S10udev fw.2.47.15.patched/etc/init.d/S10udev
---- fw.2.47.15.orig/etc/init.d/S10udev	2019-07-23 19:55:49.419068941 +0200
-+++ fw.2.47.15.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
-@@ -1,48 +0,0 @@
+diff -ruN --no-dereference fw.2.49.17.orig/etc/init.d/S10udev fw.2.49.17.patched/etc/init.d/S10udev
+--- fw.2.49.17.orig/etc/init.d/S10udev	2019-12-10 16:41:18.004388111 +0100
++++ fw.2.49.17.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
+@@ -1,46 +0,0 @@
 -#!/bin/sh
 -#
 -# udev	This is a minimal non-LSB version of a UDEV startup script.  It
@@ -136,10 +108,6 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S10udev fw.2.47.15.patched
 -#	/dev/zero, /dev/null -- that's needed to boot and run this script.
 -#
 -
--# Check for missing binaries
--UDEV_BIN=/lib/udev/udevd
--test -x $UDEV_BIN || exit 5
--
 -# Check for config file and read it
 -UDEV_CONFIG=/etc/udev/udev.conf
 -test -r $UDEV_CONFIG || exit 6
@@ -147,10 +115,12 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S10udev fw.2.47.15.patched
 -
 -case "$1" in
 -    start)
--        echo -n "Populating ${udev_root:-/dev} using udev: "
--        echo -e '\000\000\000\000' > /proc/sys/kernel/hotplug
--        $UDEV_BIN -d || (echo "FAIL" && exit 1)
--        udevadm trigger
+-        printf "Populating %s using udev: " "${udev_root:-/dev}"
+-        [ -e /proc/sys/kernel/hotplug ] && printf '\000\000\000\000' > /proc/sys/kernel/hotplug
+-        /sbin/udevd -d || { echo "FAIL"; exit 1; }
+-        udevadm trigger --type=subsystems --action=add
+-        udevadm trigger --type=devices --action=add
+-        udevadm settle --timeout=30 || echo "udevadm settle failed"
 -        echo "done"
 -        ;;
 -    stop)
@@ -166,9 +136,9 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S10udev fw.2.47.15.patched
 -
 -
 -exit 0
-diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S15watchdog fw.2.47.15.patched/etc/init.d/S15watchdog
---- fw.2.47.15.orig/etc/init.d/S15watchdog	2019-07-23 19:55:49.419068941 +0200
-+++ fw.2.47.15.patched/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.49.17.orig/etc/init.d/S15watchdog fw.2.49.17.patched/etc/init.d/S15watchdog
+--- fw.2.49.17.orig/etc/init.d/S15watchdog	2019-12-10 16:41:18.004388111 +0100
++++ fw.2.49.17.patched/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
 @@ -1,20 +0,0 @@
 -#!/bin/sh
 -#
@@ -185,15 +155,15 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S15watchdog fw.2.47.15.pat
 -  restart|reload)
 -	;;
 -  *)
--	echo $"Usage: $0 {start|stop|restart}"
+-	echo "Usage: $0 {start|stop|restart}"
 -	exit 1
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S20urandom fw.2.47.15.patched/etc/init.d/S20urandom
---- fw.2.47.15.orig/etc/init.d/S20urandom	2019-07-23 19:55:49.419068941 +0200
-+++ fw.2.47.15.patched/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
-@@ -1,54 +0,0 @@
+diff -ruN --no-dereference fw.2.49.17.orig/etc/init.d/S20urandom fw.2.49.17.patched/etc/init.d/S20urandom
+--- fw.2.49.17.orig/etc/init.d/S20urandom	2019-12-10 16:41:18.004388111 +0100
++++ fw.2.49.17.patched/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
+@@ -1,51 +0,0 @@
 -#! /bin/sh
 -#
 -# urandom	This script saves the random seed between reboots.
@@ -207,22 +177,19 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S20urandom fw.2.47.15.patc
 -
 -case "$1" in
 -	start|"")
--		if [ "$VERBOSE" != no ]
--		then
--			echo -n "Initializing random number generator... "
--		fi
--		# Load and then save 512 bytes,
--		# which is the size of the entropy pool
--		if [ -f /etc/random-seed ]
--		then
--			cat /etc/random-seed >/dev/urandom
--		fi
 -		# check for read only file system
 -		if ! touch /etc/random-seed 2>/dev/null
 -		then
 -			echo "read-only file system detected...done"
 -			exit
 -		fi
+-		if [ "$VERBOSE" != no ]
+-		then
+-			printf "Initializing random number generator... "
+-		fi
+-		# Load and then save 512 bytes,
+-		# which is the size of the entropy pool
+-		cat /etc/random-seed >/dev/urandom
 -		rm -f /etc/random-seed
 -		umask 077
 -		dd if=/dev/urandom of=/etc/random-seed count=1 \
@@ -232,12 +199,12 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S20urandom fw.2.47.15.patc
 -		;;
 -	stop)
 -		if ! touch /etc/random-seed 2>/dev/null
--                then
--                        exit
--                fi
+-		then
+-			exit
+-		fi
 -		# Carry a random seed from shut-down to start-up;
 -		# see documentation in linux/drivers/char/random.c
--		[ "$VERBOSE" != no ] && echo -n "Saving random seed... "
+-		[ "$VERBOSE" != no ] && printf "Saving random seed... "
 -		umask 077
 -		dd if=/dev/urandom of=/etc/random-seed count=1 \
 -			>/dev/null 2>&1 || echo "urandom stop: failed."
@@ -248,9 +215,9 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S20urandom fw.2.47.15.patc
 -		exit 1
 -		;;
 -esac
-diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S40UsbNetwork fw.2.47.15.patched/etc/init.d/S40UsbNetwork
---- fw.2.47.15.orig/etc/init.d/S40UsbNetwork	2019-07-23 19:55:49.419068941 +0200
-+++ fw.2.47.15.patched/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.49.17.orig/etc/init.d/S40UsbNetwork fw.2.49.17.patched/etc/init.d/S40UsbNetwork
+--- fw.2.49.17.orig/etc/init.d/S40UsbNetwork	2019-12-10 16:41:18.004388111 +0100
++++ fw.2.49.17.patched/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
 @@ -1,52 +0,0 @@
 -#!/bin/sh
 -#
@@ -304,9 +271,9 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S40UsbNetwork fw.2.47.15.p
 -
 -exit $?
 -
-diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S50eq3configd fw.2.47.15.patched/etc/init.d/S50eq3configd
---- fw.2.47.15.orig/etc/init.d/S50eq3configd	2019-07-23 19:55:49.419068941 +0200
-+++ fw.2.47.15.patched/etc/init.d/S50eq3configd	2019-07-23 19:59:57.928756377 +0200
+diff -ruN --no-dereference fw.2.49.17.orig/etc/init.d/S50eq3configd fw.2.49.17.patched/etc/init.d/S50eq3configd
+--- fw.2.49.17.orig/etc/init.d/S50eq3configd	2019-12-10 16:41:18.004388111 +0100
++++ fw.2.49.17.patched/etc/init.d/S50eq3configd	2019-12-10 16:43:14.992998819 +0100
 @@ -17,6 +17,7 @@
  }
  
@@ -315,9 +282,9 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S50eq3configd fw.2.47.15.p
  	echo -n "Starting eq3configd: "
  	init
  	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
-diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S60multimacd fw.2.47.15.patched/etc/init.d/S60multimacd
---- fw.2.47.15.orig/etc/init.d/S60multimacd	2019-07-23 19:55:49.419068941 +0200
-+++ fw.2.47.15.patched/etc/init.d/S60multimacd	2019-07-23 19:59:57.940756459 +0200
+diff -ruN --no-dereference fw.2.49.17.orig/etc/init.d/S60multimacd fw.2.49.17.patched/etc/init.d/S60multimacd
+--- fw.2.49.17.orig/etc/init.d/S60multimacd	2019-12-10 16:41:18.004388111 +0100
++++ fw.2.49.17.patched/etc/init.d/S60multimacd	2019-12-10 16:43:14.992998819 +0100
 @@ -7,39 +7,6 @@
  CFG_TEMPLATE_DIR=/etc/config_templates
  PIDFILE=/var/run/multimacd.pid
@@ -358,9 +325,9 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S60multimacd fw.2.47.15.pa
  init() {
  	export TZ=`cat /etc/config/TZ`
  	
-@@ -80,14 +47,6 @@
+@@ -76,14 +43,6 @@
  start() {
- 	echo "Starting multimacd: "
+ 	echo -n "Starting multimacd: "
  	init
 -	if [ ! -e $PIDFILE ] ; then
 -		check_bo
@@ -373,9 +340,9 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S60multimacd fw.2.47.15.pa
  	start-stop-daemon -S -q -b -m -p $PIDFILE --exec /bin/multimacd -- -f /etc/config/multimacd.conf -l $LOGLEVEL_RFD
  	waitStartupComplete
  }
-diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S99eQ3SystemStarted fw.2.47.15.patched/etc/init.d/S99eQ3SystemStarted
---- fw.2.47.15.orig/etc/init.d/S99eQ3SystemStarted	2019-07-23 19:55:49.419068941 +0200
-+++ fw.2.47.15.patched/etc/init.d/S99eQ3SystemStarted	2019-07-23 19:59:57.940756459 +0200
+diff -ruN --no-dereference fw.2.49.17.orig/etc/init.d/S99eQ3SystemStarted fw.2.49.17.patched/etc/init.d/S99eQ3SystemStarted
+--- fw.2.49.17.orig/etc/init.d/S99eQ3SystemStarted	2019-12-10 16:41:18.004388111 +0100
++++ fw.2.49.17.patched/etc/init.d/S99eQ3SystemStarted	2019-12-10 16:43:14.992998819 +0100
 @@ -8,15 +8,6 @@
  
  init() {
@@ -392,10 +359,10 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/init.d/S99eQ3SystemStarted fw.2.4
  }
  
  start() {
-diff -ruN --no-dereference fw.2.47.15.orig/etc/inittab fw.2.47.15.patched/etc/inittab
---- fw.2.47.15.orig/etc/inittab	2019-07-23 19:55:49.423068969 +0200
-+++ fw.2.47.15.patched/etc/inittab	2019-07-23 19:59:57.940756459 +0200
-@@ -14,25 +14,15 @@
+diff -ruN --no-dereference fw.2.49.17.orig/etc/inittab fw.2.49.17.patched/etc/inittab
+--- fw.2.49.17.orig/etc/inittab	2019-12-10 16:41:18.008388132 +0100
++++ fw.2.49.17.patched/etc/inittab	2019-12-11 09:35:03.160224845 +0100
+@@ -14,10 +14,7 @@
  # process   == program to run
  
  # Startup the system
@@ -403,17 +370,17 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/inittab fw.2.47.15.patched/etc/in
  #null::sysinit:/bin/mount -o remount,rw / # REMOUNT_ROOTFS_RW
 -null::sysinit:/bin/mkdir -p /dev/pts
 -null::sysinit:/bin/mkdir -p /dev/shm
+ #null::sysinit:/sbin/fsck -A -R -p # UBIFS has no fsck
  null::sysinit:/bin/mount -a
  null::sysinit:/bin/hostname -F /etc/hostname
- # now run any rc scripts
+@@ -25,14 +22,10 @@
  ::sysinit:/etc/init.d/rcS
  
--# Put a getty on the serial port
--ttyAMA0::respawn:/sbin/getty -L ttyAMA0 115200 vt100 # GENERIC_SERIAL
--ttyGS0::respawn:/sbin/getty -L ttyGS0 115200 vt100 # USB SERIAL
--
+ # Put a getty on the serial port
+-ttyAMA0::respawn:/sbin/getty -L  ttyAMA0 115200 vt100 # GENERIC_SERIAL
+ 
  # Stuff to do for the 3-finger salute
- ::ctrlaltdel:/sbin/reboot
+ #::ctrlaltdel:/sbin/reboot
  
 -# Stuff to do for SIGQUIT 
 -::restart:/bin/update_firmware_run
@@ -421,35 +388,33 @@ diff -ruN --no-dereference fw.2.47.15.orig/etc/inittab fw.2.47.15.patched/etc/in
  # Stuff to do before rebooting
  ::shutdown:/etc/init.d/rcK
  null::shutdown:/bin/umount -a -r
-diff -ruN --no-dereference fw.2.47.15.orig/etc/network/if-up.d/eQ3StartNetwork fw.2.47.15.patched/etc/network/if-up.d/eQ3StartNetwork
---- fw.2.47.15.orig/etc/network/if-up.d/eQ3StartNetwork	2019-07-23 19:55:49.419068941 +0200
-+++ fw.2.47.15.patched/etc/network/if-up.d/eQ3StartNetwork	2019-07-23 19:59:57.944756486 +0200
-@@ -19,22 +19,6 @@
- route del -net 224.0.0.0 netmask 240.0.0.0 2> /dev/null
- route add -net 224.0.0.0 netmask 240.0.0.0 eth0
+diff -ruN --no-dereference fw.2.49.17.orig/etc/network/if-up.d/eQ3StartNetwork fw.2.49.17.patched/etc/network/if-up.d/eQ3StartNetwork
+--- fw.2.49.17.orig/etc/network/if-up.d/eQ3StartNetwork	2019-12-10 16:41:18.004388111 +0100
++++ fw.2.49.17.patched/etc/network/if-up.d/eQ3StartNetwork	2019-12-11 09:40:52.641959200 +0100
+@@ -72,20 +72,6 @@
+ # restart syslogd to update hostname
+ /etc/init.d/S07logging restart 2>/dev/null >/dev/null
  
+-# check if we booting via nfs
 -if grep -q nfsroot /proc/cmdline ; then
--   killall -q setclock
--   daemonize /bin/setclock
 -   echo Running from nfs root. Skipping network configuration.
 -
 -   # has IP  
 -   touch /var/status/hasLink
 -   touch /var/status/hasIP
 -
--   # check internet connection; use fix ip because no nameserver (nfs boot) 
--   if ping -W 5 -c 1 87.230.102.12 >/dev/null; then
--	touch /var/status/hasInternet 
--   fi
+-   # check internet connection; use fix ip to google because no nameserver (nfs boot)
+-   /bin/checkInternet
+-
 -   exit 0
 -fi
 -
+ # make sure no other udhcpc is running
  killall -q udhcpc
  
- if [ _$MODE = _DHCP ] ; then
-diff -ruN --no-dereference fw.2.47.15.orig/firmware/fwmap fw.2.47.15.patched/firmware/fwmap
---- fw.2.47.15.orig/firmware/fwmap	2019-07-23 19:55:54.959106582 +0200
-+++ fw.2.47.15.patched/firmware/fwmap	2019-07-23 19:59:57.944756486 +0200
+diff -ruN --no-dereference fw.2.49.17.orig/firmware/fwmap fw.2.49.17.patched/firmware/fwmap
+--- fw.2.49.17.orig/firmware/fwmap	2019-12-10 16:41:20.584401579 +0100
++++ fw.2.49.17.patched/firmware/fwmap	2019-12-10 16:43:14.992998819 +0100
 @@ -17,7 +17,8 @@
  
  #Coprozessor
@@ -460,9 +425,9 @@ diff -ruN --no-dereference fw.2.47.15.orig/firmware/fwmap fw.2.47.15.patched/fir
  # CCU2                    coprocessor_update_hm_only.eq3                1.4.1          # HM only CoProzessor CCU2  
  CCU2-RFLGW				coprocessor_update_hm_only.eq3					1.4.1          # HM only CoProzessor CCU2 for HomeMatic RF Lan Gateway
  
-diff -ruN --no-dereference fw.2.47.15.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.2.47.15.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
---- fw.2.47.15.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2019-07-23 19:55:50.075073398 +0200
-+++ fw.2.47.15.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2019-07-23 19:59:57.960756595 +0200
+diff -ruN --no-dereference fw.2.49.17.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.2.49.17.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
+--- fw.2.49.17.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2019-12-10 16:41:18.140388821 +0100
++++ fw.2.49.17.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2019-12-10 16:43:14.992998819 +0100
 @@ -204,23 +204,6 @@
  						<td class="CLASS21112">${"$"}{dialogSettingsSDCardStatus}:</td>
  						<td>${SDCardStatus}</td>
@@ -487,10 +452,10 @@ diff -ruN --no-dereference fw.2.47.15.orig/opt/HMServer/pages/StorageSettingsDia
  				</table>
  			</td>
  			<td class="CLASS21113" align="left">
-diff -ruN --no-dereference fw.2.47.15.orig/www/config/cp_maintenance.cgi fw.2.47.15.patched/www/config/cp_maintenance.cgi
---- fw.2.47.15.orig/www/config/cp_maintenance.cgi	2019-07-23 19:55:54.275101935 +0200
-+++ fw.2.47.15.patched/www/config/cp_maintenance.cgi	2019-07-23 19:59:57.964756622 +0200
-@@ -376,109 +376,13 @@
+diff -ruN --no-dereference fw.2.49.17.orig/www/config/cp_maintenance.cgi fw.2.49.17.patched/www/config/cp_maintenance.cgi
+--- fw.2.49.17.orig/www/config/cp_maintenance.cgi	2019-12-10 16:41:19.480395816 +0100
++++ fw.2.49.17.patched/www/config/cp_maintenance.cgi	2019-12-11 09:46:21.495594487 +0100
+@@ -382,109 +382,13 @@
                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                }
                table_data {
@@ -523,7 +488,7 @@ diff -ruN --no-dereference fw.2.47.15.orig/www/config/cp_maintenance.cgi fw.2.47
 -                  table {
 -                    table_row {
 -                      table_data {
--                        division {class="CLASS20908" style="display: none"} {id="btnFwDownload"} {} "onClick=\"window.location.href='$REMOTE_FIRMWARE_SCRIPT?cmd=download&version=$cur_version&serial=$serial&lang=de&product=HM-CCU2';\"" {}
+-                        division {class="CLASS20908" style="display: none"} {id="btnFwDownload"} {} "onClick=\"window.location.href='$REMOTE_FIRMWARE_SCRIPT?cmd=download&version=$cur_version&serial=$serial&lang=de&product=HM-CCU[getProduct]';\"" {}
 -                        division {class="CLASS20908"}  "onClick=\"showCCULicense();\"" {puts "\${dialogSettingsCMBtnPerformSoftwareUpdateDownload}"}
 -                      }
 -                    }
@@ -558,7 +523,7 @@ diff -ruN --no-dereference fw.2.47.15.orig/www/config/cp_maintenance.cgi fw.2.47
 -                  table {
 -                    table_row {
 -                      table_data {
--                        division {class="CLASS20919"} {onClick="document.firmware_form.submit();showUserHint();"} {
+-                        division {class="CLASS20919"} {onClick="stopHmIPServer();document.firmware_form.submit();showUserHint();"} {
 -                          puts "\${dialogSettingsCMBtnPerformSoftwareUpdateUpload}"
 -                        }
 -                      }
@@ -603,7 +568,7 @@ diff -ruN --no-dereference fw.2.47.15.orig/www/config/cp_maintenance.cgi fw.2.47
          }
        }
        table_row {class="CLASS20902 j_noForcedUpdate j_fwUpdateOnly"} {
-@@ -843,10 +747,6 @@
+@@ -856,10 +760,6 @@
    cgi_javascript {
      puts "translatePage('#messagebox');"
      puts "jQuery('#messagebox').show();"
@@ -614,9 +579,9 @@ diff -ruN --no-dereference fw.2.47.15.orig/www/config/cp_maintenance.cgi fw.2.47
  
      # Hide all elements with class j_noForcedUpdate when an update is enforced
      puts "if (forceUpdate) {"
-diff -ruN --no-dereference fw.2.47.15.orig/www/config/cp_security.cgi fw.2.47.15.patched/www/config/cp_security.cgi
---- fw.2.47.15.orig/www/config/cp_security.cgi	2019-07-23 19:55:54.279101962 +0200
-+++ fw.2.47.15.patched/www/config/cp_security.cgi	2019-07-23 19:59:57.964756622 +0200
+diff -ruN --no-dereference fw.2.49.17.orig/www/config/cp_security.cgi fw.2.49.17.patched/www/config/cp_security.cgi
+--- fw.2.49.17.orig/www/config/cp_security.cgi	2019-12-10 16:41:19.492395879 +0100
++++ fw.2.49.17.patched/www/config/cp_security.cgi	2019-12-10 16:43:14.992998819 +0100
 @@ -292,11 +292,11 @@
  
      if {[getProduct] < 3 } {
@@ -654,9 +619,9 @@ diff -ruN --no-dereference fw.2.47.15.orig/www/config/cp_security.cgi fw.2.47.15
      division {class="popupTitle"} {
        puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
      }
-diff -ruN --no-dereference fw.2.47.15.orig/www/config/cp_software.cgi fw.2.47.15.patched/www/config/cp_software.cgi
---- fw.2.47.15.orig/www/config/cp_software.cgi	2019-07-23 19:55:54.271101907 +0200
-+++ fw.2.47.15.patched/www/config/cp_software.cgi	2019-07-23 19:59:57.964756622 +0200
+diff -ruN --no-dereference fw.2.49.17.orig/www/config/cp_software.cgi fw.2.49.17.patched/www/config/cp_software.cgi
+--- fw.2.49.17.orig/www/config/cp_software.cgi	2019-12-10 16:41:19.456395691 +0100
++++ fw.2.49.17.patched/www/config/cp_software.cgi	2019-12-10 16:43:14.996998840 +0100
 @@ -518,7 +518,7 @@
       exec /sbin/reboot
    } else {
@@ -666,10 +631,10 @@ diff -ruN --no-dereference fw.2.47.15.orig/www/config/cp_software.cgi fw.2.47.15
    }
    
  }
-diff -ruN --no-dereference fw.2.47.15.orig/www/webui/js/lang/de/translate.lang.js fw.2.47.15.patched/www/webui/js/lang/de/translate.lang.js
---- fw.2.47.15.orig/www/webui/js/lang/de/translate.lang.js	2019-07-23 19:55:52.719091362 +0200
-+++ fw.2.47.15.patched/www/webui/js/lang/de/translate.lang.js	2019-07-23 19:59:57.964756622 +0200
-@@ -457,7 +457,8 @@
+diff -ruN --no-dereference fw.2.49.17.orig/www/webui/js/lang/de/translate.lang.js fw.2.49.17.patched/www/webui/js/lang/de/translate.lang.js
+--- fw.2.49.17.orig/www/webui/js/lang/de/translate.lang.js	2019-12-10 16:41:18.912392851 +0100
++++ fw.2.49.17.patched/www/webui/js/lang/de/translate.lang.js	2019-12-10 16:43:14.996998840 +0100
+@@ -458,7 +458,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
      "dialogSettingsCMTDErrorProtocol" : "Fehler-<br/>protokoll",
@@ -679,10 +644,10 @@ diff -ruN --no-dereference fw.2.47.15.orig/www/webui/js/lang/de/translate.lang.j
      "dialogSettingsCMLblAvailableSoftwareVersion" : "Verf%FCgbare Software-Version:",
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Software-Update durchf%FChren",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
-diff -ruN --no-dereference fw.2.47.15.orig/www/webui/js/lang/en/translate.lang.js fw.2.47.15.patched/www/webui/js/lang/en/translate.lang.js
---- fw.2.47.15.orig/www/webui/js/lang/en/translate.lang.js	2019-07-23 19:55:52.723091389 +0200
-+++ fw.2.47.15.patched/www/webui/js/lang/en/translate.lang.js	2019-07-23 19:59:57.964756622 +0200
-@@ -456,7 +456,8 @@
+diff -ruN --no-dereference fw.2.49.17.orig/www/webui/js/lang/en/translate.lang.js fw.2.49.17.patched/www/webui/js/lang/en/translate.lang.js
+--- fw.2.49.17.orig/www/webui/js/lang/en/translate.lang.js	2019-12-10 16:41:18.924392913 +0100
++++ fw.2.49.17.patched/www/webui/js/lang/en/translate.lang.js	2019-12-10 16:43:14.996998840 +0100
+@@ -457,7 +457,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Shutdown",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
      "dialogSettingsCMTDErrorProtocol" : "Error<br/>log",
