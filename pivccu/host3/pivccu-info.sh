@@ -23,13 +23,13 @@ else
 fi
 echo "Raw UART dev:   $RAW_UART_STATE"
 
-if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi 3" /proc/device-tree/model` == 1 ]; then
+if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi" /proc/device-tree/model` == 1 ] && [ `grep -c "Raspberry Pi 2" /proc/device-tree/model` == 0 ]; then
   if cmp -s /proc/device-tree/aliases/uart0 /proc/device-tree/aliases/serial0; then
     UART_STATE="Assigned to GPIO pins"
   else
     UART_STATE="Not assigned to GPIO pins"
   fi
-  echo "Rasp.Pi3 UART:  $UART_STATE"
+  echo "Rasp.Pi UART:   $UART_STATE"
 fi
 
 if [ -e /sys/devices/virtual/raw-uart ] && [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --state --no-humanize` == "STOPPED" ]; then
