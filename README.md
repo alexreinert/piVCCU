@@ -15,7 +15,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
   * RPI-RF-MOD (HmRF+HmIP, Pushbutton is not supported)
   * HmIP-RFUSB (HmIP only)
   * HM-LGW-O-TW-W-EU (HmRF only)
-  * [HB-RF-USB](https://github.com/alexreinert/PCB/tree/master/HB-RF-USB) (HmRF+HmIP, Experimental, piVCCU3 only)
+  * [HB-RF-USB](https://github.com/alexreinert/PCB/tree/master/HB-RF-USB) (HmRF+HmIP, piVCCU3 only)
 
 ### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU)
 Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU). Or you can send me a gift from my [Amazon wishlist](https://www.amazon.de/gp/registry/wishlist/3NNUQIQO20AAP/ref=nav_wishlist_lists_1).
@@ -59,7 +59,7 @@ Login to Armbian based images using user 'root' and password '1234'.
 ### Manual installation
 * [Raspberry Pi](docs/setup/raspberrypi.md)
 * [Armbian](docs/setup/armbian.md)
-* [Other OS](docs/setup/otheros.md) (Experimental)
+* [Other OS](docs/setup/otheros.md)
 
 ### Updating piVCCU to latest version
 Use the normal apt based update mechanism:

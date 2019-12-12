@@ -19,14 +19,19 @@
    ```
    Instead of `stable` you can also use the `testing` tree, but be aware testing sometimes means not that stable.
 
-3. Install the matching kernel headers, this highly depends on your distribution
+3. Install the neccessary packages for building kernel modules
+   ```bash
+   sudo apt install build-essential bison flex libssl-dev
+   ```
 
-4. Install the neccessary kernel modules
+4. Install the matching kernel headers, this highly depends on your distribution
+
+5. Install the neccessary kernel modules
    ```bash
    sudo apt install pivccu-modules-dkms
    ```
 
-5. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
+6. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
    * Verify, that *eth0* is the name of your primary network interface:
       ```bash
       sudo ip link show | cut -d' ' -f2 | cut -d: -f1 | grep -e '^e.*'
@@ -70,12 +75,12 @@
       ```
    * To use Wireless LAN, please take a look [here](wlan.md)
 
-6. Reboot the system
+7. Reboot the system
    ```bash
    sudo reboot
    ```
 
-7. Install CCU container
+8. Install CCU container
    * To use CCC2 firmware
       ```bash
       sudo apt install pivccu
@@ -85,7 +90,7 @@
       sudo apt install pivccu3
       ```
 
-8. Start using your new virtualized CCU, you can get the IP of the container using
+9. Start using your new virtualized CCU, you can get the IP of the container using
    ```bash
    sudo pivccu-info
    ```

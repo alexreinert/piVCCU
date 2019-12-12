@@ -19,6 +19,7 @@
 
 3. Install the neccessary kernel modules
    ```bash
+   sudo apt install build-essential bison flex libssl-dev
    sudo apt install raspberrypi-kernel-headers pivccu-modules-dkms
    ```
 
