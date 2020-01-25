@@ -50,7 +50,7 @@ case $PIVCCU_HMRF_MODE in
 
       RADIO_MAC=`chroot /var/lib/piVCCU/rootfs /bin/eq3configcmd read-default-rf-address -f /dev/raw-uart -h 2>&1 | grep "^0x"` || true
 
-      if [ -z "$RADIO_MAC" ] || [ "$RADIO_MAC" == "0x00ffff" ]; then
+      if [ -z "$RADIO_MAC" ] || [ "$RADIO_MAC" == "0x00ffff" ] || [ "$RADIO_MAC" == "0xa9ffff" ]; then
         RF_RPI_MOD_INFO=`timeout 20 chroot /var/lib/piVCCU/rootfs /opt/jre/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/raw-uart -jar /opt/HmIP/hmip-copro-update.jar -p /dev/raw-uart -v -a 2>&1` || true
         RADIO_MAC=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*Radio address = \([0-9A-Fa-f]\{6\}\).*/0x\1/p'`
         SGTIN=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p'`
