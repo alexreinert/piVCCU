@@ -32,6 +32,15 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         OVERLAY_FILE='pivccu-bananapi-pro.dtbo'
         break;
         ;;
+      cubietech,cubietruck)
+	OVERLAY_MODE='overlay'
+	OVERLAY_FILE='pivccu-cubietruck.dtbo'
+	echo "TINKER ALERT: cubietruck has no RPI-Style headers"
+	echo "Overlay is using UART 7 (PI20,PI21), PB15 as reset and I2C1 (PB18,PB19) for RPI-RF-MOD (no LED support)"
+	echo "Connect as follows to CN8 (2x15) header: RX (P8) to 15, TX (P10) to 17, Reset (P12) to 11 and 3.3V/Gnd appropriately"
+	echo "Connect SDA (P3) to 25 and SCK (P5) to 23 for RPI-RF-MOD"
+	break;
+	;;
       asus,rk3288-tinker|asus,rk3288-tinker-s)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/tinkerboard.dts.include'
