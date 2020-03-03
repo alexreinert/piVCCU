@@ -7,6 +7,8 @@ set -e
 
 case "$1" in
   configure|reconfigure|abort-upgrade)
+    udevadm control --reload-rules && udevadm trigger
+
     if [ ! -e /usr/sbin/pivccu-attach ]; then
       ln -s /var/lib/piVCCU3/pivccu-attach.sh /usr/sbin/pivccu-attach
     fi
