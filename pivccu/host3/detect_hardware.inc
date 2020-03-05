@@ -44,6 +44,29 @@ case $PIVCCU_HMRF_MODE in
     ;;
 
   "HM-MOD-RPI-PCB"|"RPI-RF-MOD"|"")
+    for syspath in $(find /sys/bus/usb/devices/); do
+      if [ -e $syspath/idVendor ] && [ "`cat $syspath/idVendor`" == "0403" ] && [ "`cat $syspath/idProduct`" == "6f70" ]; then
+        if [ $(lsmod | grep hb_rf_usb | wc -l) -eq 0 ]; then
+          modprobe -q hb_rf_usb
+
+          for try in {0..30}; do
+            lsmod | grep -q hb_rf_usb
+            if [ $? -eq 0 ]; then
+              break
+            fi
+            sleep 1
+          done
+        fi
+
+        for try in {0..30}; do
+          if [ $(find $syspath/ -name gpiochip* | wc -l) -ne 0 ]; then
+            break
+          fi
+          sleep 1
+        done
+      fi
+    done
+
     mount --bind /dev /var/lib/piVCCU3/rootfs/dev
     mount --bind /proc /var/lib/piVCCU3/rootfs/proc
 
@@ -102,11 +125,27 @@ case $PIVCCU_HMIP_MODE in
     ;;
 
   "HmIP-RFUSB")
-    modprobe -a cp210x &> /dev/null
+    if [ ! -e /sys/bus/usb-serial/drivers/cp210x ]; then
+      modprobe -a cp210x &> /dev/null
+
+      for try in {0..30}; do
+        if [ -e /sys/bus/usb-serial/drivers/cp210x ]; then
+          break
+        fi
+        sleep 1
+      done
+    fi
 
     if [ `grep -c "1b1f c020" /sys/bus/usb-serial/drivers/cp210x/new_id` -eq 0 ]; then
       echo "1b1f c020" > /sys/bus/usb-serial/drivers/cp210x/new_id
     fi
+
+    for try in {0..30}; do
+      if [ $(find $syspath/ -name ttyUSB* | wc -l) -ne 0 ]; then
+        break
+      fi
+      sleep 1
+    done
 
     for syspath in $(find /sys/bus/usb/devices/usb*/ -name ttyUSB*); do
       if [ -e $syspath/dev ]; then
