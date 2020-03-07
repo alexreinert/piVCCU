@@ -5,7 +5,8 @@ After=network.target
 [Service]
 ExecStart=/var/lib/piVCCU/start_container.sh
 ExecStop=/var/lib/piVCCU/stop_container.sh
-Type=forking
+Type=notify
+TimeoutSec=900
 PIDFile=/var/run/pivccu.pid
 
 [Install]

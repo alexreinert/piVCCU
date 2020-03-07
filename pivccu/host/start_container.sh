@@ -56,3 +56,7 @@ if [ -x /etc/piVCCU/post-start.sh ]; then
   /etc/piVCCU/post-start.sh
 fi
 
+# wait for 192.168.253.2:2010 ...
+while ! nc -z 192.168.253.2 2010 ; do sleep 1 ; done
+systemd-notify READY=1
+
