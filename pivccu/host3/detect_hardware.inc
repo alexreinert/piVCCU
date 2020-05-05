@@ -65,6 +65,27 @@ case $PIVCCU_HMRF_MODE in
           sleep 1
         done
       fi
+
+      if [ -e $syspath/idVendor ] && [ "`cat $syspath/idVendor`" == "10c4" ] && [ "`cat $syspath/idProduct`" == "8c07" ]; then
+        if [ $(lsmod | grep hb_rf_usb-2 | wc -l) -eq 0 ]; then
+          modprobe -q hb_rf_usb-2
+
+          for try in {0..30}; do
+            lsmod | grep -q hb_rf_usb
+            if [ $? -eq 0 ]; then
+              break
+            fi
+            sleep 1
+          done
+        fi
+
+        for try in {0..30}; do
+          if [ $(find $syspath/ -name gpiochip* | wc -l) -ne 0 ]; then
+            break
+          fi
+          sleep 1
+        done
+      fi
     done
 
     mount --bind /dev /var/lib/piVCCU3/rootfs/dev
@@ -85,7 +106,7 @@ case $PIVCCU_HMRF_MODE in
         UART_MINOR=`cat /sys/class/raw-uart/$UART_DEV/dev | cut -d: -f2`
 
         RADIO_MAC=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd read-default-rf-address -f /dev/$UART_DEV -h 2>&1 | grep "^0x"` || true
-        if [ -z "$RADIO_MAC" ] || [ "$RADIO_MAC" == "0x00ffff" ] || [ "$RADIO_MAC" == "0xa9ffff" ]; then
+        if [ -z "$RADIO_MAC" ] || [[ "$RADIO_MAC" =~ ^0x..ffff$ ]]; then
           RF_RPI_MOD_INFO=`timeout 20 chroot /var/lib/piVCCU3/rootfs /opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/$UART_DEV -jar /opt/HmIP/hmip-copro-update.jar -p /dev/$UART_DEV -v 2>&1` || true
           RADIO_MAC=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*Radio address = \([0-9A-Fa-f]\{6\}\).*/0x\1/p'`
           SGTIN=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p'`

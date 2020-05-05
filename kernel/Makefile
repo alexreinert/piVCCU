@@ -10,6 +10,7 @@ obj-m += dummy_rx8130.o
 obj-m += led_trigger_timer.o
 obj-m += hb_rf_usb.o
 obj-m += rtc-rx8130.o
+obj-m += hb_rf_usb-2.o
 
 ifeq ($(KERNELRELEASE),)
   KERNELRELEASE := $(shell uname -r)

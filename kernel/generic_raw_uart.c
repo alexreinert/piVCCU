@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2019 by Alexander Reinert
+ * Copyright (c) 2020 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -253,15 +253,20 @@ exit:
 
 static void generic_raw_uart_reset_radio_module(struct generic_raw_uart_instance *instance)
 {
-  if (instance->reset_pin != 0)
+  if (instance->driver->reset_radio_module == 0)
   {
-    gpio_direction_output(instance->reset_pin, false);
-    gpio_set_value(instance->reset_pin, 0);
-    msleep(50);
-    gpio_set_value(instance->reset_pin, 1);
-    msleep(50);
-    gpio_direction_input(instance->reset_pin);
-    msleep(50);
+    if (instance->reset_pin != 0)
+    {
+      gpio_direction_output(instance->reset_pin, false);
+      gpio_set_value(instance->reset_pin, 0);
+      msleep(50);
+      gpio_set_value(instance->reset_pin, 1);
+      msleep(50);
+      gpio_direction_input(instance->reset_pin);
+      msleep(50);
+    }
+  } else {
+    instance->driver->reset_radio_module(&instance->raw_uart);
   }
 }
 
@@ -857,9 +862,9 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   {
     gpio_request(instance->reset_pin, "pivccu:reset");
   }
-  else
+  else if (instance->driver->reset_radio_module == 0)
   {
-    dev_info(dev, "No valid reset pin configured in device tree");
+    dev_info(dev, "No valid reset pin configured");
   }
 
   instance->red_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_RED);
@@ -883,7 +888,9 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   proc_create_data(dev_name(instance->dev), 0444, NULL, &generic_raw_uart_proc_fops, instance);
 #endif
 
-  generic_raw_uart_reset_radio_module(instance);
+  if (instance->driver->reset_radio_module == 0) {
+    generic_raw_uart_reset_radio_module(instance);
+  }
 
   return &instance->raw_uart;
 
@@ -977,7 +984,7 @@ MODULE_PARM_DESC(load_dummy_rx8130_module, "Loads the dummy_rx8130 module");
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.11");
+MODULE_VERSION("1.12");
 MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
