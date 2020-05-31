@@ -95,6 +95,32 @@ static struct usb_device_id usbid [] = {
 
 MODULE_DEVICE_TABLE(usb, usbid);
 
+static void hb_rf_usb_set_gpio_on_device_completion(struct urb *urb)
+{
+  kfree(urb->setup_packet);
+  usb_free_urb(urb);
+}
+
+static void hb_rf_usb_set_gpio_on_device(struct hb_rf_usb_port_s *port)
+{
+  struct usb_ctrlrequest *dr;
+  struct urb *urb;
+
+  dr = kmalloc(sizeof(struct usb_ctrlrequest), GFP_ATOMIC);
+
+  dr->bRequestType = FTDI_SIO_SET_BITMODE_REQUEST_TYPE;
+  dr->bRequest = FTDI_SIO_SET_BITMODE_REQUEST;
+  dr->wValue = cpu_to_le16((FTDI_SIO_BITMODE_CBUS << 8) | (port->gpio_direction << 4) | port->gpio_value);
+  dr->wIndex = 0;
+  dr->wLength = 0;
+
+  urb = usb_alloc_urb(0, GFP_ATOMIC);
+
+  usb_fill_control_urb(urb, port->udev, usb_sndctrlpipe(port->udev, 0), (void*)dr, NULL, 0, hb_rf_usb_set_gpio_on_device_completion, NULL);
+
+  usb_submit_urb(urb, GFP_ATOMIC);
+}
+
 static int hb_rf_usb_set_bitmode(struct hb_rf_usb_port_s *port, u8 mode)
 {
   int result;
@@ -151,7 +177,7 @@ static void hb_rf_usb_gpio_set(struct gpio_chip *gc, unsigned int gpio, int valu
   else
     port->gpio_value &= ~BIT(gpio);
 
-  hb_rf_usb_set_bitmode(port, FTDI_SIO_BITMODE_CBUS);
+  hb_rf_usb_set_gpio_on_device(port);
 
   spin_unlock_irqrestore(&port->gpio_lock, lock_flags);
 }
@@ -177,7 +203,7 @@ static void hb_rf_usb_gpio_set_multiple(struct gpio_chip *gc, unsigned long *mas
   port->gpio_value &= ~(*mask);
   port->gpio_value |= *bits & *mask;
 
-  hb_rf_usb_set_bitmode(port, FTDI_SIO_BITMODE_CBUS);
+  hb_rf_usb_set_gpio_on_device(port);
 
   spin_unlock_irqrestore(&port->gpio_lock, lock_flags);
 }
@@ -368,7 +394,7 @@ static void hb_rf_usb_reset_radio_module(struct generic_raw_uart *raw_uart)
   spin_lock_irqsave(&port->gpio_lock, lock_flags);
   port->gpio_direction = 0x0f;
   port->gpio_value &= 0x07;
-  hb_rf_usb_set_bitmode(port, FTDI_SIO_BITMODE_CBUS);
+  hb_rf_usb_set_gpio_on_device(port);
   spin_unlock_irqrestore(&port->gpio_lock, lock_flags);
   msleep(50);
 
@@ -376,7 +402,7 @@ static void hb_rf_usb_reset_radio_module(struct generic_raw_uart *raw_uart)
   spin_lock_irqsave(&port->gpio_lock, lock_flags);
   port->gpio_direction = 0x0f;
   port->gpio_value |= 0x08;
-  hb_rf_usb_set_bitmode(port, FTDI_SIO_BITMODE_CBUS);
+  hb_rf_usb_set_gpio_on_device(port);
   spin_unlock_irqrestore(&port->gpio_lock, lock_flags);
   msleep(50);
 
@@ -384,7 +410,7 @@ static void hb_rf_usb_reset_radio_module(struct generic_raw_uart *raw_uart)
   spin_lock_irqsave(&port->gpio_lock, lock_flags);
   port->gpio_direction = 0x07;
   port->gpio_value &= 0x07;
-  hb_rf_usb_set_bitmode(port, FTDI_SIO_BITMODE_CBUS);
+  hb_rf_usb_set_gpio_on_device(port);
   spin_unlock_irqrestore(&port->gpio_lock, lock_flags);
   msleep(50);
 }
@@ -435,7 +461,7 @@ static int hb_rf_usb_probe(struct usb_interface *interface, const struct usb_dev
 
   port->gpio_direction = 0x0f;
   port->gpio_value = 0x06;
-  hb_rf_usb_set_bitmode(port, FTDI_SIO_BITMODE_CBUS);
+  hb_rf_usb_set_gpio_on_device(port);
 
   gpiochip_add_data(&port->gc, 0);
 
@@ -498,7 +524,7 @@ module_init(hb_rf_usb_init);
 module_exit(hb_rf_usb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.2");
+MODULE_VERSION("1.3");
 MODULE_DESCRIPTION("HB-RF-USB raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

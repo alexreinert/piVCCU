@@ -81,18 +81,30 @@ static struct usb_device_id usbid [] = {
 
 MODULE_DEVICE_TABLE(usb, usbid);
 
-static int hb_rf_usb_2_set_gpio_on_device(struct hb_rf_usb_2_port_s *port, u8 mask, u8 value)
+static void hb_rf_usb_2_set_gpio_on_device_completion(struct urb *urb)
 {
-  int result;
-  u16 val = value << 8 | mask;
+  kfree(urb->setup_packet);
+  usb_free_urb(urb);
+}
 
-  result = usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), CP2102N_VENDOR_SPECIFIC, REQTYPE_HOST_TO_DEVICE, CP2102N_WRITE_LATCH, val, NULL, 0, USB_CTRL_SET_TIMEOUT);
+static void hb_rf_usb_2_set_gpio_on_device(struct hb_rf_usb_2_port_s *port, u8 mask, u8 value)
+{
+  struct usb_ctrlrequest *dr;
+  struct urb *urb;
 
-  if (result < 0) {
-    dev_err(&port->udev->dev, "gpio request failed for value 0x%04x: %d\n", val, result);
-  }
+  dr = kmalloc(sizeof(struct usb_ctrlrequest), GFP_ATOMIC);
 
-  return result;
+  dr->bRequestType = REQTYPE_HOST_TO_DEVICE;
+  dr->bRequest = CP2102N_VENDOR_SPECIFIC;
+  dr->wValue = cpu_to_le16(CP2102N_WRITE_LATCH);
+  dr->wIndex = cpu_to_le16(value << 8 | mask);
+  dr->wLength = 0;
+
+  urb = usb_alloc_urb(0, GFP_ATOMIC);
+
+  usb_fill_control_urb(urb, port->udev, usb_sndctrlpipe(port->udev, 0), (void*)dr, NULL, 0, hb_rf_usb_2_set_gpio_on_device_completion, NULL);
+
+  usb_submit_urb(urb, GFP_ATOMIC);
 }
 
 static int hb_rf_usb_2_gpio_request(struct gpio_chip *gc, unsigned int offset)
@@ -475,7 +487,7 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.0");
+MODULE_VERSION("1.1");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
