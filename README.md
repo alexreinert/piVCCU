@@ -10,7 +10,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
 * Support for backup/restore between piVCCU and original CCU2 without modification
 * Easy to install and update with apt
 * Support not only on Raspberry
-* Support for 
+* Support for
   * HM-MOD-RPI-PCB (HmRF+HmIP),
   * RPI-RF-MOD (HmRF+HmIP, Pushbutton is not supported)
   * HmIP-RFUSB (HmIP only)
@@ -67,6 +67,25 @@ Use the normal apt based update mechanism:
 ```bash
 sudo apt update && sudo apt upgrade
 ```
+
+#### Kernel updates
+
+If piVCCU is updated at the same time as the kernel or if the system hasn't been restarted after updating the kernel and prior to updating piVCCU, an error message similar to the following might come up:
+
+```
+DKMS: add completed.
+Error! echo
+Your kernel headers for kernel 4.19.97-v7+ cannot be found at
+/lib/modules/4.19.97-v7+/build or /lib/modules/4.19.97-v7+/source.
+```
+
+A possible solution is to reboot your system and run
+
+```
+sudo apt reinstall pivccu-modules-dkms
+```
+
+This will recompile the piVCCU kernel module for the current kernel.
 
 ### Supported Radio modes
 * HM-MOD-RPI-PCB and RPI-RF-MOD
@@ -125,7 +144,7 @@ To restore a backup file use the WebUI of the CCU.
 * Original CCU3
   You can only migrate to piVCCU3.
   Just restore a normal system backup using the CCU web interface.
-   
+
 * RaspberryMatic
    1. Restore a normal system backup using the CCU web interface
    2. Reinstall all addons using the CCU web interface
@@ -213,7 +232,7 @@ To restore a backup file use the WebUI of the CCU.
          ```
       8. As the CCU3 firmware does a cherry picking of files beeing restored, you maybe need to restore some files by yourself (e.g. CUxD settings files).
       9. If you used YAHM without radio module, you should check your interface assignments of the LAN Gateways in the control panel
-      
+
 ### Using USB devices inside container (e.g. for CUxD)
 * piVCCU (CCU2 firmware)
    1. You can find available devices on the host using
