@@ -44,6 +44,32 @@ case $PIVCCU_HMRF_MODE in
     ;;
 
   "HM-MOD-RPI-PCB"|"RPI-RF-MOD"|"")
+    if [ -e /etc/default/hb_rf_eth ]; then
+      . /etc/default/hb_rf_eth
+    fi
+    if [ ! -z "$HB_RF_ETH_ADDRESS" ]; then
+        if [ ! -e /sys/module/hb_rf_eth/parameters/connect ]; then
+          modprobe -q hb_rf_eth
+
+          for try in {0..30}; do
+            if [ -e /sys/module/hb_rf_eth/parameters/connect ]; then
+              break
+            fi
+            sleep 1
+          done
+        fi
+
+        for try in {0..30}; do
+          ping -c1 $HB_RF_ETH_ADDRESS > /dev/null
+          if [ $? -eq 0 ]; then
+            break
+          fi
+          sleep 1
+        done
+
+        echo "$HB_RF_ETH_ADDRESS" > /sys/module/hb_rf_eth/parameters/connect
+    fi
+
     for syspath in $(find /sys/bus/usb/devices/); do
       if [ -e $syspath/idVendor ] && [ "`cat $syspath/idVendor`" == "0403" ] && [ "`cat $syspath/idProduct`" == "6f70" ]; then
         if [ $(lsmod | grep hb_rf_usb | wc -l) -eq 0 ]; then

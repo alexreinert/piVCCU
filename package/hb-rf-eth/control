@@ -1,0 +1,12 @@
+Package: hb-rf-eth
+Version: {PKG_VERSION}
+Architecture: all
+Maintainer: Alexander Reinert <alex@areinert.de>
+Depends: pivccu-modules-dkms (>= 1.0.39)
+Pre-Depends: perl, avahi-utils, debconf (>= 0.5) | debconf-2.0
+Section: misc
+Priority: extra
+Homepage: https://github.com/alexreinert/piVCCU
+Description: HB-RF-ETH meta package
+  This package contains scripts to configure the HB-RF-ETH kernel module
+

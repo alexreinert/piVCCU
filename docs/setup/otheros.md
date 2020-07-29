@@ -31,7 +31,12 @@
    sudo apt install pivccu-modules-dkms
    ```
 
-6. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
+6. If you are using a HB-RF-ETH, install the neccessary support package
+   ```bash
+   sudo apt install hb-rf-eth
+   ```
+
+7. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
    * Verify, that *eth0* is the name of your primary network interface:
       ```bash
       sudo ip link show | cut -d' ' -f2 | cut -d: -f1 | grep -e '^e.*'
@@ -75,12 +80,12 @@
       ```
    * To use Wireless LAN, please take a look [here](wlan.md)
 
-7. Reboot the system
+8. Reboot the system
    ```bash
    sudo reboot
    ```
 
-8. Install CCU container
+9. Install CCU container
    * To use CCC2 firmware
       ```bash
       sudo apt install pivccu
@@ -90,7 +95,7 @@
       sudo apt install pivccu3
       ```
 
-9. Start using your new virtualized CCU, you can get the IP of the container using
+10. Start using your new virtualized CCU, you can get the IP of the container using
    ```bash
    sudo pivccu-info
    ```

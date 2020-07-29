@@ -24,17 +24,22 @@
    sudo apt install `dpkg --get-selections | grep 'linux-image-' | grep '\sinstall' | sed -e 's/linux-image-\([a-z0-9-]\+\).*/linux-headers-\1/'`
    ```
 
-4. Install the neccessary device tree patches (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
+4. If you are using a HB-RF-ETH, install the neccessary support package
+   ```bash
+   sudo apt install hb-rf-eth
+   ```
+
+5. Install the neccessary device tree patches (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB(-2) and HB-RF-ETH this step is not neccessary)
    ```bash
    sudo apt install pivccu-devicetree-armbian
    ```
 
-5. Install the neccessary kernel modules
+6. Install the neccessary kernel modules
    ```bash
    sudo apt install pivccu-modules-dkms
    ```
 
-6. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
+7. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
    * Verify, that *eth0* is the name of your primary network interface:
       ```bash
       sudo nmcli connection show --active
@@ -53,12 +58,12 @@
       Replace <address>, <prefix>, <gateway>, <dns1>, <dns2> with your settings.
       <prefix> ist the subnet prefix (e.g. 24 for netmask 255.255.255.0)
 
-7. Reboot the system
+8. Reboot the system
    ```bash
    sudo reboot
    ```
 
-8. Install CCU container
+9. Install CCU container
    * To use CCC2 firmware
       ```bash
       sudo apt install pivccu
@@ -68,7 +73,7 @@
       sudo apt install pivccu3
       ```
 
-9. Start using your new virtualized CCU, you can get the IP of the container using
+10. Start using your new virtualized CCU, you can get the IP of the container using
    ```bash
    sudo pivccu-info
    ```

@@ -1,0 +1,58 @@
+#!/bin/bash
+
+. /usr/share/debconf/confmodule
+
+set -e
+
+case "$1" in
+  configure|reconfigure|abort-upgrade)
+    IP=""
+
+    CHOICES=""
+    declare -A DEVICES=()
+
+    DEVICESRAW=`avahi-browse -p -t -r -k _raw-uart._udp | grep -e "^=" | awk '{split($0,a,";"); print a[4],a[8]}'`
+    IFS=$'\n'; for line in $DEVICESRAW; do
+      DEVNAME=`echo "$line" | awk '{print $1}'`
+      DEVIP=`echo "$line" | awk '{print $2}'`
+
+      if [ ! -z "$CHOICES" ]; then
+        CHOICES="$CHOICES, $DEVNAME ($DEVIP)"
+      else
+        CHOICES="$DEVNAME ($DEVIP)"
+      fi
+      DEVICES["$DEVNAME"]="$DEVIP"
+    done
+
+    COUNT="${#DEVICES[@]}"
+    if [ $COUNT -eq 1 ]; then
+      IP=${DEVICES[${!DEVICES[@]}]}
+    elif [ $COUNT -ge 2 ]; then
+      db_fset hb_rf_eth/modules seen false
+      db_subst hb_rf_eth/modules choices $CHOICES
+      db_input high hb_rf_eth/modules || true
+      db_go
+      db_get hb_rf_eth/modules
+
+      DEVNAME=`echo "$RET" | awk '{print $1}'`
+      if [ ! -z "$DEVNAME" ]; then
+        IP=${DEVICES["$DEVNAME"]}
+      fi
+    fi
+
+    if [ -z "$IP" ]; then
+      db_fset hb_rf_eth/warn_no_module_found seen false
+      db_input critical hb_rf_eth/warn_no_module_found || true
+      db_go
+    else
+      echo "HB_RF_ETH_ADDRESS=\"$IP\"" > /etc/default/hb_rf_eth
+    fi
+
+    db_stop
+  ;;
+
+  abort-remove|abort-deconfigure)
+  ;;
+
+esac
+

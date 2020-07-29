@@ -55,6 +55,8 @@ struct raw_uart_driver
   int (*get_gpio_pin_number)(struct generic_raw_uart *raw_uart, enum generic_raw_uart_pin);
   void (*reset_radio_module)(struct generic_raw_uart *raw_uart);
 
+  bool (*is_connected)(struct generic_raw_uart *raw_uart);
+
   int tx_chunk_size;
   int tx_bulktransfer_size;
 };

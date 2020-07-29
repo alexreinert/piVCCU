@@ -1,0 +1,10 @@
+Template: hb_rf_eth/warn_no_module_found
+Type: error
+Description: ERROR: No HB-RF-ETH module could be detected in your network.
+Description-DE: ERROR: Es konnte kein HB-RF-ETH Modul im Netzwerk gefunden werden.
+
+Template: hb_rf_eth/modules
+Type: select
+Description: Which HB-RF-ETH module should be used?
+Description-DE: Welches HB-RF-ETH Modul soll verwendet werden?
+Choices: ${choices}

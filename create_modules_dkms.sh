@@ -1,5 +1,5 @@
 #!/bin/bash
-PKG_BUILD=38
+PKG_BUILD=39
 
 PKG_VERSION=1.0.$PKG_BUILD
 
@@ -35,7 +35,7 @@ for file in $TARGET_DIR/usr/src/pivccu-$PKG_VERSION/*.c; do
 done
 
 mkdir -p $TARGET_DIR/lib/systemd/system/
-cp -p $CURRENT_DIR/pivccu/dkms/pivccu-dkms.service $TARGET_DIR/lib/systemd/system/
+cp -p $CURRENT_DIR/pivccu/dkms/*.service $TARGET_DIR/lib/systemd/system/
 cp -p $CURRENT_DIR/pivccu/rtc/*.service $TARGET_DIR/lib/systemd/system/
 cp -p $CURRENT_DIR/pivccu/rtc/*.timer $TARGET_DIR/lib/systemd/system/
 

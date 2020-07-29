@@ -143,10 +143,26 @@ static const struct file_operations generic_raw_uart_proc_fops =
 };
 #endif /*PROC_DEBUG*/
 
+static bool generic_raw_uart_is_connected(struct generic_raw_uart_instance *instance)
+{
+  if (instance->driver->is_connected == 0)
+  {
+    return true;
+  }
+
+  return instance->driver->is_connected(&instance->raw_uart);
+}
+
 static ssize_t generic_raw_uart_read(struct file *filep, char __user *buf, size_t count, loff_t *offset)
 {
   struct generic_raw_uart_instance *instance = container_of(filep->f_inode->i_cdev, struct generic_raw_uart_instance, cdev);
   int ret = 0;
+
+  if (!generic_raw_uart_is_connected(instance))
+  {
+    ret = -EIO;
+    goto exit;
+  }
 
   if( down_interruptible( &instance->sem ))
   {
@@ -203,6 +219,12 @@ static ssize_t generic_raw_uart_write(struct file *filep, const char __user *buf
   struct generic_raw_uart_instance *instance = container_of(filep->f_inode->i_cdev, struct generic_raw_uart_instance, cdev);
   struct per_connection_data *conn = filep->private_data;
   int ret = 0;
+
+  if (!generic_raw_uart_is_connected(instance))
+  {
+    ret = -EIO;
+    goto exit;
+  }
 
   if( down_interruptible(&conn->sem) )
   {
@@ -279,6 +301,11 @@ static int generic_raw_uart_open(struct inode *inode, struct file *filep)
   if( instance == NULL )
   {
     return -ENODEV;
+  }
+
+  if (!generic_raw_uart_is_connected(instance))
+  {
+    return -EIO;
   }
 
   /*Get semaphore*/
@@ -984,7 +1011,7 @@ MODULE_PARM_DESC(load_dummy_rx8130_module, "Loads the dummy_rx8130 module");
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.12");
-MODULE_DESCRIPTION("generic raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
+MODULE_VERSION("1.13");
+MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

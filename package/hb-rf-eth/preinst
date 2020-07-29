@@ -1,0 +1,12 @@
+#!/bin/bash
+
+. /usr/share/debconf/confmodule
+
+case "$1" in
+  install|upgrade)
+    ;;
+
+  abort-upgrade)
+    ;;
+esac
+

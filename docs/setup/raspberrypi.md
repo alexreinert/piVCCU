@@ -23,12 +23,17 @@
    sudo apt install raspberrypi-kernel-headers pivccu-modules-dkms
    ```
 
-4. Install the neccessary device tree patches (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
+4. If you are using a HB-RF-ETH, install the neccessary support package
+   ```bash
+   sudo apt install hb-rf-eth
+   ```
+
+5. Install the neccessary device tree patches (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB(-2) and HB-RF-ETH this step is not neccessary)
    ```bash
    sudo apt install pivccu-modules-raspberrypi
    ```
 
-4. Enable UART GPIO pins (not required on Raspberry Pi 2) (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
+6. Enable UART GPIO pins (not required on Raspberry Pi 2) (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
    * Option 1: Disabled bluetooth (prefered)
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
@@ -47,13 +52,13 @@
       EOT'
       ```
 
-5. Disable serial console in command line (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
+7. Disable serial console in command line (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
    ```bash
    sudo sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
    sudo sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
    ```
 
-6. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
+8. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
    * Verify, that *eth0* is the name of your primary network interface:
       ```bash
       sudo ip link show | cut -d' ' -f2 | cut -d: -f1 | grep -e '^e.*'
@@ -99,12 +104,12 @@
       ```
    * To use Wireless LAN, please take a look [here](wlan.md)
 
-7. Reboot the system
+9. Reboot the system
    ```bash
    sudo reboot
    ```
 
-8. Install CCU container
+10. Install CCU container
    * To use CCC2 firmware
       ```bash
       sudo apt install pivccu
@@ -114,7 +119,7 @@
       sudo apt install pivccu3
       ```
 
-9. Start using your new virtualized CCU, you can get the IP of the container using
+11. Start using your new virtualized CCU, you can get the IP of the container using
    ```bash
    sudo pivccu-info
    ```
