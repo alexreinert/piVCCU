@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2018 by Alexander Reinert
+ * Copyright (c) 2020 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -20,7 +20,8 @@
 
 #define BAUD 115200
 
-enum generic_raw_uart_rx_flags {
+enum generic_raw_uart_rx_flags
+{
   GENERIC_RAW_UART_RX_STATE_NONE = 0,
   GENERIC_RAW_UART_RX_STATE_BREAK = 1,
   GENERIC_RAW_UART_RX_STATE_PARITY = 2,
@@ -28,7 +29,8 @@ enum generic_raw_uart_rx_flags {
   GENERIC_RAW_UART_RX_STATE_OVERRUN = 8,
 };
 
-enum generic_raw_uart_pin {
+enum generic_raw_uart_pin
+{
   GENERIC_RAW_UART_PIN_BLUE = 0,
   GENERIC_RAW_UART_PIN_GREEN = 1,
   GENERIC_RAW_UART_PIN_RED = 2,
@@ -67,47 +69,46 @@ extern void generic_raw_uart_tx_queued(struct generic_raw_uart *raw_uart);
 extern void generic_raw_uart_handle_rx_char(struct generic_raw_uart *raw_uart, enum generic_raw_uart_rx_flags, unsigned char);
 extern void generic_raw_uart_rx_completed(struct generic_raw_uart *raw_uart);
 
-#define module_raw_uart_driver(__module_name, __raw_uart_driver, __of_match) \
-static struct generic_raw_uart *__raw_uart_driver##_raw_uart; \
-static int __##__raw_uart_driver##_probe(struct platform_device *pdev) \
-{ \
-  struct device *dev = &pdev->dev; \
- \
-  __raw_uart_driver##_raw_uart = generic_raw_uart_probe(dev, &__raw_uart_driver, NULL); \
-  if (IS_ERR_OR_NULL(__raw_uart_driver##_raw_uart)) \
-  { \
-    dev_err(dev, "failed to initialize generic_raw_uart module"); \
-    return PTR_ERR(__raw_uart_driver##_raw_uart); \
-  } \
- \
-  return __raw_uart_driver##_probe(__raw_uart_driver##_raw_uart, pdev); \
-} \
- \
-static int __##__raw_uart_driver##_remove(struct platform_device *pdev) \
-{ \
-  int err; \
-  struct device *dev = &pdev->dev; \
- \
-  err = generic_raw_uart_remove(__raw_uart_driver##_raw_uart, dev, &__raw_uart_driver); \
-  if (err) \
-  { \
-    dev_err(dev, "failed to remove generic_raw_uart module"); \
-    return err; \
-  } \
- \
-  return __raw_uart_driver##_remove(pdev); \
-} \
- \
-static struct platform_driver __raw_uart_driver_platform_driver = { \
- .probe = __##__raw_uart_driver##_probe, \
- .remove = __##__raw_uart_driver##_remove, \
- .driver = { \
-    .owner = THIS_MODULE, \
-    .name = __module_name, \
-    .of_match_table = __of_match, \
-  }, \
-}; \
- \
-module_platform_driver(__raw_uart_driver_platform_driver); \
-MODULE_DEVICE_TABLE(of, __of_match);
-
+#define module_raw_uart_driver(__module_name, __raw_uart_driver, __of_match)              \
+  static struct generic_raw_uart *__raw_uart_driver##_raw_uart;                           \
+  static int __##__raw_uart_driver##_probe(struct platform_device *pdev)                  \
+  {                                                                                       \
+    struct device *dev = &pdev->dev;                                                      \
+                                                                                          \
+    __raw_uart_driver##_raw_uart = generic_raw_uart_probe(dev, &__raw_uart_driver, NULL); \
+    if (IS_ERR_OR_NULL(__raw_uart_driver##_raw_uart))                                     \
+    {                                                                                     \
+      dev_err(dev, "failed to initialize generic_raw_uart module");                       \
+      return PTR_ERR(__raw_uart_driver##_raw_uart);                                       \
+    }                                                                                     \
+                                                                                          \
+    return __raw_uart_driver##_probe(__raw_uart_driver##_raw_uart, pdev);                 \
+  }                                                                                       \
+                                                                                          \
+  static int __##__raw_uart_driver##_remove(struct platform_device *pdev)                 \
+  {                                                                                       \
+    int err;                                                                              \
+    struct device *dev = &pdev->dev;                                                      \
+                                                                                          \
+    err = generic_raw_uart_remove(__raw_uart_driver##_raw_uart, dev, &__raw_uart_driver); \
+    if (err)                                                                              \
+    {                                                                                     \
+      dev_err(dev, "failed to remove generic_raw_uart module");                           \
+      return err;                                                                         \
+    }                                                                                     \
+                                                                                          \
+    return __raw_uart_driver##_remove(pdev);                                              \
+  }                                                                                       \
+                                                                                          \
+  static struct platform_driver __raw_uart_driver_platform_driver = {                     \
+      .probe = __##__raw_uart_driver##_probe,                                             \
+      .remove = __##__raw_uart_driver##_remove,                                           \
+      .driver = {                                                                         \
+          .owner = THIS_MODULE,                                                           \
+          .name = __module_name,                                                          \
+          .of_match_table = __of_match,                                                   \
+      },                                                                                  \
+  };                                                                                      \
+                                                                                          \
+  module_platform_driver(__raw_uart_driver_platform_driver);                              \
+  MODULE_DEVICE_TABLE(of, __of_match);

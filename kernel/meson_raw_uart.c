@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2018 by Alexander Reinert
+ * Copyright (c) 2020 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -38,34 +38,34 @@
 #define MODULE_NAME "meson_raw_uart"
 #define TX_CHUNK_SIZE 11
 
-#define MESON_WFIFO    0x00
-#define MESON_RFIFO    0x04
-#define MESON_CONTROL  0x08
-#define MESON_STATUS   0x0c
-#define MESON_MISC     0x10
-#define MESON_REG5     0x14
+#define MESON_WFIFO 0x00
+#define MESON_RFIFO 0x04
+#define MESON_CONTROL 0x08
+#define MESON_STATUS 0x0c
+#define MESON_MISC 0x10
+#define MESON_REG5 0x14
 
-#define MESON_TX_FULL  BIT(21)
+#define MESON_TX_FULL BIT(21)
 #define MESON_RX_EMPTY BIT(20)
 
-#define MESON_RX_EN    BIT(13)
-#define MESON_TX_EN    BIT(12)
+#define MESON_RX_EN BIT(13)
+#define MESON_TX_EN BIT(12)
 
-#define MESON_TX_INT_EN   BIT(28)
-#define MESON_RX_INT_EN   BIT(27)
+#define MESON_TX_INT_EN BIT(28)
+#define MESON_RX_INT_EN BIT(27)
 
 #define MESON_TX_INT_TRESH 8 << 8 /* interrupt on less than 8 chars in tx fifo */
 #define MESON_RX_INT_TRESH 1      /* interrupt on each char */
 
 #define MESON_CLEAR_ERROR BIT(24)
-#define MESON_PARITY_ERR  BIT(16)
-#define MESON_FRAME_ERR   BIT(17)
+#define MESON_PARITY_ERR BIT(16)
+#define MESON_FRAME_ERR BIT(17)
 #define MESON_OVERRUN_ERR BIT(24)
 
-#define MESON_BUSY_MASK   BIT(25) | BIT(26)
+#define MESON_BUSY_MASK BIT(25) | BIT(26)
 
-#define MESON_RX_RST      BIT(23)
-#define MESON_TX_RST      BIT(22)
+#define MESON_RX_RST BIT(23)
+#define MESON_TX_RST BIT(22)
 
 static int meson_raw_uart_start_connection(struct generic_raw_uart *raw_uart);
 static void meson_raw_uart_stop_connection(struct generic_raw_uart *raw_uart);
@@ -134,7 +134,7 @@ static int meson_raw_uart_start_connection(struct generic_raw_uart *raw_uart)
   writel(val, meson_port->membase + MESON_REG5);
 
   /*Register interrupt handler*/
-  ret = request_irq(meson_port->irq, meson_raw_uart_irq_handle, 0, dev_name(meson_port->dev), (void*)raw_uart);
+  ret = request_irq(meson_port->irq, meson_raw_uart_irq_handle, 0, dev_name(meson_port->dev), (void *)raw_uart);
   if (ret)
   {
     dev_err(meson_port->dev, "irq could not be registered");
@@ -146,8 +146,8 @@ static int meson_raw_uart_start_connection(struct generic_raw_uart *raw_uart)
 
 static void meson_raw_uart_stop_connection(struct generic_raw_uart *raw_uart)
 {
-  writel(0, meson_port->membase + MESON_CONTROL);  /*Disable UART*/
-  writel(0, meson_port->membase + MESON_MISC);  /*Disable interrupts*/
+  writel(0, meson_port->membase + MESON_CONTROL); /*Disable UART*/
+  writel(0, meson_port->membase + MESON_MISC);    /*Disable interrupts*/
 
   free_irq(meson_port->irq, raw_uart);
 }
@@ -189,11 +189,11 @@ static void meson_raw_uart_rx_chars(struct generic_raw_uart *raw_uart)
   unsigned long data;
   enum generic_raw_uart_rx_flags flags = GENERIC_RAW_UART_RX_STATE_NONE;
 
-  while(1)
+  while (1)
   {
-    status = readl( meson_port->membase + MESON_STATUS);
+    status = readl(meson_port->membase + MESON_STATUS);
 
-    if(status & MESON_RX_EMPTY)
+    if (status & MESON_RX_EMPTY)
     {
       break;
     }
@@ -201,20 +201,21 @@ static void meson_raw_uart_rx_chars(struct generic_raw_uart *raw_uart)
     data = readl(meson_port->membase + MESON_RFIFO);
 
     /* Error handling */
-    if(status & MESON_PARITY_ERR)
+    if (status & MESON_PARITY_ERR)
     {
       flags |= GENERIC_RAW_UART_RX_STATE_PARITY;
     }
-    if(status & MESON_FRAME_ERR)
+    if (status & MESON_FRAME_ERR)
     {
       flags |= GENERIC_RAW_UART_RX_STATE_FRAME;
     }
-    if(status & MESON_OVERRUN_ERR)
+    if (status & MESON_OVERRUN_ERR)
     {
       flags |= GENERIC_RAW_UART_RX_STATE_OVERRUN;
     }
 
-    if (flags != GENERIC_RAW_UART_RX_STATE_NONE) {
+    if (flags != GENERIC_RAW_UART_RX_STATE_NONE)
+    {
       control = readl(meson_port->membase + MESON_CONTROL);
 
       control |= MESON_CLEAR_ERROR;
@@ -234,14 +235,14 @@ static irqreturn_t meson_raw_uart_irq_handle(int irq, void *context)
 {
   struct generic_raw_uart *raw_uart = context;
 
-  if(!(readl(meson_port->membase + MESON_STATUS) & MESON_RX_EMPTY))
+  if (!(readl(meson_port->membase + MESON_STATUS) & MESON_RX_EMPTY))
   {
     meson_raw_uart_rx_chars(raw_uart);
   }
 
-  if(readl(meson_port->membase + MESON_CONTROL) & MESON_TX_INT_EN)
+  if (readl(meson_port->membase + MESON_CONTROL) & MESON_TX_INT_EN)
   {
-    if(!(readl(meson_port->membase + MESON_STATUS) & MESON_TX_FULL))
+    if (!(readl(meson_port->membase + MESON_STATUS) & MESON_TX_FULL))
     {
       generic_raw_uart_tx_queued(raw_uart);
     }
@@ -251,14 +252,14 @@ static irqreturn_t meson_raw_uart_irq_handle(int irq, void *context)
 }
 
 static struct raw_uart_driver meson_raw_uart = {
-  .start_connection = meson_raw_uart_start_connection,
-  .stop_connection = meson_raw_uart_stop_connection,
-  .init_tx = meson_raw_uart_init_tx,
-  .isready_for_tx = meson_raw_uart_isready_for_tx,
-  .tx_chars = meson_raw_uart_tx_chars,
-  .stop_tx = meson_raw_uart_stop_tx,
-  .tx_chunk_size = TX_CHUNK_SIZE,
-  .tx_bulktransfer_size = 1,
+    .start_connection = meson_raw_uart_start_connection,
+    .stop_connection = meson_raw_uart_stop_connection,
+    .init_tx = meson_raw_uart_init_tx,
+    .isready_for_tx = meson_raw_uart_isready_for_tx,
+    .tx_chars = meson_raw_uart_tx_chars,
+    .stop_tx = meson_raw_uart_stop_tx,
+    .tx_chunk_size = TX_CHUNK_SIZE,
+    .tx_bulktransfer_size = 1,
 };
 
 static inline struct clk *meson_raw_uart_probe_clk(struct device *dev, const char *id)
@@ -274,7 +275,7 @@ static inline struct clk *meson_raw_uart_probe_clk(struct device *dev, const cha
   if (ret)
     return ERR_PTR(ret);
 
-  ret = devm_add_action(dev, (void(*)(void *))clk_disable_unprepare, clk);
+  ret = devm_add_action(dev, (void (*)(void *))clk_disable_unprepare, clk);
   if (ret)
     clk_disable_unprepare(clk);
 
@@ -289,17 +290,21 @@ static int meson_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platfo
 
   /* alloc private resources */
   meson_port = kzalloc(sizeof(struct meson_port_s), GFP_KERNEL);
-  if (!meson_port) {
+  if (!meson_port)
+  {
     err = -ENOMEM;
     goto failed_inst_alloc;
   }
 
   /* Get mapbase and membase */
   ioresource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-  if (ioresource) {
+  if (ioresource)
+  {
     meson_port->mapbase = ioresource->start;
     meson_port->membase = ioremap(ioresource->start, resource_size(ioresource));
-  } else {
+  }
+  else
+  {
     dev_err(dev, "failed to get IO resource\n");
     err = -ENOENT;
     goto failed_get_resource;
@@ -307,7 +312,8 @@ static int meson_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platfo
 
   /* get irq */
   meson_port->irq = platform_get_irq(pdev, 0);
-  if (meson_port->irq <= 0) {
+  if (meson_port->irq <= 0)
+  {
     dev_err(dev, "failed to get irq\n");
     err = -ENOENT;
     goto failed_get_resource;
@@ -340,7 +346,8 @@ static int meson_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platfo
 
   /* get reset device */
   meson_port->rst = devm_reset_control_get(dev, NULL);
-  if (!IS_ERR(meson_port->rst)) {
+  if (!IS_ERR(meson_port->rst))
+  {
     reset_control_deassert(meson_port->rst);
   }
 
@@ -366,15 +373,14 @@ static int meson_raw_uart_remove(struct platform_device *pdev)
 }
 
 static struct of_device_id meson_raw_uart_of_match[] = {
-  { .compatible = "pivccu,meson" },
-  { /* sentinel */ },
+    {.compatible = "pivccu,meson"},
+    {/* sentinel */},
 };
 
 module_raw_uart_driver(MODULE_NAME, meson_raw_uart, meson_raw_uart_of_match);
 
 MODULE_ALIAS("platform:meson-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.2");
+MODULE_VERSION("1.3");
 MODULE_DESCRIPTION("MESON raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
-

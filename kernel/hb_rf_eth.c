@@ -43,7 +43,8 @@ static u8 gpio_value = 0;
 
 static struct socket *sock = NULL;
 static struct msghdr header = {0};
-static struct sockaddr_in remote = {0};;
+static struct sockaddr_in remote = {0};
+;
 static atomic_t msg_cnt = ATOMIC_INIT(0);
 static struct task_struct *k_recv_thread = NULL;
 
@@ -79,30 +80,35 @@ static uint16_t hb_rf_eth_calc_crc(unsigned char *buf, size_t len)
   return crc;
 }
 
-static void hb_rf_eth_send_msg(char* buffer, size_t len)
+static void hb_rf_eth_send_msg(char *buffer, size_t len)
 {
   struct kvec vec = {0};
   mm_segment_t oldmm;
 
-  *((uint8_t*)(buffer+1)) = (uint8_t)(atomic_inc_return(&msg_cnt));
-  *((uint16_t*)(buffer+len-2)) = (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len-2)));
+  *((uint8_t *)(buffer + 1)) = (uint8_t)(atomic_inc_return(&msg_cnt));
+  *((uint16_t *)(buffer + len - 2)) = (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len - 2)));
 
-  if (sock) {
+  if (sock)
+  {
     vec.iov_len = len;
     vec.iov_base = buffer;
 
-    oldmm = get_fs(); set_fs(KERNEL_DS);
+    oldmm = get_fs();
+    set_fs(KERNEL_DS);
     len = kernel_sendmsg(sock, &header, &vec, 1, len);
     set_fs(oldmm);
 
-    if( len < 0 )
+    if (len < 0)
       dev_err(dev, "Error %d on sending packet\n", (int)len);
-  } else {
+  }
+  else
+  {
     dev_err(dev, "Error sending packet, not connected\n");
   }
 }
 
-static int hb_rf_eth_recv_packet(char *buffer, size_t buffer_size) {
+static int hb_rf_eth_recv_packet(char *buffer, size_t buffer_size)
+{
   struct kvec vec = {0};
   mm_segment_t oldmm;
   struct msghdr msg = {0};
@@ -111,20 +117,26 @@ static int hb_rf_eth_recv_packet(char *buffer, size_t buffer_size) {
   vec.iov_len = buffer_size;
   vec.iov_base = buffer;
 
-  oldmm = get_fs(); set_fs(KERNEL_DS);
+  oldmm = get_fs();
+  set_fs(KERNEL_DS);
   len = kernel_recvmsg(sock, &msg, &vec, 1, buffer_size, 0);
   set_fs(oldmm);
 
-  if (len > 0) {
-    if (len < 4) {
+  if (len > 0)
+  {
+    if (len < 4)
+    {
       dev_err(dev, "Received to small UDP packet\n");
       return -EPROTO;
     }
-    if (*((uint16_t*)(buffer+len-2)) != (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len-2)))) {
+    if (*((uint16_t *)(buffer + len - 2)) != (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len - 2))))
+    {
       dev_err(dev, "Received UDP packet with invalid checksum\n");
       return -EPROTO;
     }
-  } else if (len != 0 && len != -EAGAIN) {
+  }
+  else if (len != 0 && len != -EAGAIN)
+  {
     dev_err(dev, "Error %d on receiving packet\n", len);
   }
 
@@ -141,27 +153,32 @@ static int hb_rf_eth_recv_threadproc(void *data)
 
   lastReceivedKeepAlive = jiffies;
 
-  while (!kthread_should_stop()) {
+  while (!kthread_should_stop())
+  {
     len = hb_rf_eth_recv_packet(buffer, BUFFER_SIZE);
-    if (len >= 4) {
-      switch(buffer[0]) {
-        case 2:
-          lastReceivedKeepAlive = jiffies;
-          break;
-        case 7:
-          lastReceivedKeepAlive = jiffies;
-          for (i = 2; i < len - 2; i++) {
-            generic_raw_uart_handle_rx_char(raw_uart, GENERIC_RAW_UART_RX_STATE_NONE, (unsigned char)buffer[i]);
-          }
-          generic_raw_uart_rx_completed(raw_uart);
-          break;
-        default:
-          print_hex_dump(KERN_INFO, "Received unknown UDP packet: ", DUMP_PREFIX_NONE, 16, 1, buffer, len, false);
-          break;
+    if (len >= 4)
+    {
+      switch (buffer[0])
+      {
+      case 2:
+        lastReceivedKeepAlive = jiffies;
+        break;
+      case 7:
+        lastReceivedKeepAlive = jiffies;
+        for (i = 2; i < len - 2; i++)
+        {
+          generic_raw_uart_handle_rx_char(raw_uart, GENERIC_RAW_UART_RX_STATE_NONE, (unsigned char)buffer[i]);
+        }
+        generic_raw_uart_rx_completed(raw_uart);
+        break;
+      default:
+        print_hex_dump(KERN_INFO, "Received unknown UDP packet: ", DUMP_PREFIX_NONE, 16, 1, buffer, len, false);
+        break;
       }
     }
 
-    if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000))) {
+    if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000)))
+    {
       dev_err(dev, "Did not receive any packet in the last 5 seconds, terminating connection.\n");
       sock_release(sock);
       sock = NULL;
@@ -169,7 +186,8 @@ static int hb_rf_eth_recv_threadproc(void *data)
       break;
     }
 
-    if (time_after(jiffies, nextKeepAliveSentOut)) {
+    if (time_after(jiffies, nextKeepAliveSentOut))
+    {
       nextKeepAliveSentOut = jiffies + msecs_to_jiffies(1000);
       buffer[0] = 2;
       hb_rf_eth_send_msg(buffer, 4);
@@ -183,7 +201,7 @@ static int hb_rf_eth_recv_threadproc(void *data)
 
 static void hb_rf_eth_send_reset(void)
 {
-  char buffer[4] = { 4, 0, 0, 0 };
+  char buffer[4] = {4, 0, 0, 0};
   hb_rf_eth_send_msg(buffer, sizeof(buffer));
   msleep(100);
 }
@@ -192,13 +210,14 @@ static int hb_rf_eth_connect(char *ip)
 {
   int err;
   mm_segment_t fs;
-  struct timeval tv = {0,100000};
-  char buffer[5] = { 0, 0, HB_RF_ETH_PROTOCOL_VERSION, 0, 0 };
+  struct timeval tv = {0, 100000};
+  char buffer[5] = {0, 0, HB_RF_ETH_PROTOCOL_VERSION, 0, 0};
   unsigned long timeout;
   char *recv_buffer;
   int len;
 
-  if (ip[0] == 0) {
+  if (ip[0] == 0)
+  {
     dev_err(dev, "Failed to load module, no remote ip was given.\n");
     return -EINVAL;
   }
@@ -211,7 +230,8 @@ static int hb_rf_eth_connect(char *ip)
 
   err = sock_create_kern(&init_net, AF_INET, SOCK_DGRAM, IPPROTO_UDP, &sock);
 
-  if(err < 0) {
+  if (err < 0)
+  {
     dev_err(dev, "Error %d while creating socket\n", err);
     sock = NULL;
     return err;
@@ -219,7 +239,7 @@ static int hb_rf_eth_connect(char *ip)
 
   fs = get_fs();
   set_fs(KERNEL_DS);
-  kernel_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO , (char * )&tv, sizeof(tv));
+  kernel_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
   set_fs(fs);
 
   header.msg_name = &remote;
@@ -228,31 +248,36 @@ static int hb_rf_eth_connect(char *ip)
   header.msg_controllen = 0;
   header.msg_flags = 0;
 
-  err = sock->ops->connect(sock, (struct sockaddr*)&remote, sizeof(remote), 0);
-  if(err < 0) {
+  err = sock->ops->connect(sock, (struct sockaddr *)&remote, sizeof(remote), 0);
+  if (err < 0)
+  {
     dev_err(dev, "Error %d while connecting to %pI4\n", err, &remote.sin_addr);
     sock_release(sock);
     sock = NULL;
     return err;
-  } else {
+  }
+  else
+  {
     hb_rf_eth_send_msg(buffer, sizeof(buffer));
 
     err = -ETIMEDOUT;
     recv_buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
     timeout = jiffies + msecs_to_jiffies(50);
-    while (time_before(jiffies, timeout)) {
+    while (time_before(jiffies, timeout))
+    {
       len = hb_rf_eth_recv_packet(recv_buffer, BUFFER_SIZE);
-      if (len == 6) {
-        if (recv_buffer[0] == 0
-            && recv_buffer[2] == HB_RF_ETH_PROTOCOL_VERSION
-            && recv_buffer[3] == buffer[1]) {
+      if (len == 6)
+      {
+        if (recv_buffer[0] == 0 && recv_buffer[2] == HB_RF_ETH_PROTOCOL_VERSION && recv_buffer[3] == buffer[1])
+        {
           err = 0;
           break;
-	}
+        }
       }
     }
 
-    if (err) {
+    if (err)
+    {
       dev_err(dev, "Timeout occured while connecting to %pI4\n", &remote.sin_addr);
       sock_release(sock);
       sock = NULL;
@@ -260,7 +285,8 @@ static int hb_rf_eth_connect(char *ip)
     }
 
     k_recv_thread = kthread_run(hb_rf_eth_recv_threadproc, NULL, "k_hb_rf_eth_receiver");
-    if (IS_ERR(k_recv_thread)) {
+    if (IS_ERR(k_recv_thread))
+    {
       err = PTR_ERR(k_recv_thread);
       dev_err(dev, "Error creating receiver thread\n");
       k_recv_thread = NULL;
@@ -278,7 +304,7 @@ static int hb_rf_eth_connect(char *ip)
 
 static int hb_rf_eth_disconnect(void)
 {
-  char buffer[4] = { 1, 0, 0, 0 };
+  char buffer[4] = {1, 0, 0, 0};
 
   if (k_recv_thread)
   {
@@ -286,16 +312,17 @@ static int hb_rf_eth_disconnect(void)
     k_recv_thread = NULL;
   }
 
-  if (sock) {
+  if (sock)
+  {
     hb_rf_eth_send_msg(buffer, sizeof(buffer));
-    sock_release( sock );
+    sock_release(sock);
     sock = NULL;
   }
 }
 
 static void hb_rf_eth_send_gpio(void)
 {
-  char buffer[5] = { 3, 0, gpio_value, 0, 0 };
+  char buffer[5] = {3, 0, gpio_value, 0, 0};
   hb_rf_eth_send_msg(buffer, sizeof(buffer));
 }
 
@@ -343,7 +370,7 @@ static void hb_rf_eth_gpio_set(struct gpio_chip *gc, unsigned int gpio, int valu
   spin_unlock_irqrestore(&gpio_lock, lock_flags);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
 static int hb_rf_eth_gpio_get_multiple(struct gpio_chip *gc, unsigned long *mask, unsigned long *bits)
 {
   *bits = gpio_value & *mask;
@@ -368,16 +395,16 @@ static void hb_rf_eth_gpio_set_multiple(struct gpio_chip *gc, unsigned long *mas
 
 static int hb_rf_eth_get_gpio_pin_number(struct generic_raw_uart *raw_uart, enum generic_raw_uart_pin pin)
 {
-  switch(pin)
+  switch (pin)
   {
-    case GENERIC_RAW_UART_PIN_RED:
-      return gc.base;
-    case GENERIC_RAW_UART_PIN_GREEN:
-      return gc.base + 1;
-    case GENERIC_RAW_UART_PIN_BLUE:
-      return gc.base + 2;
-    case GENERIC_RAW_UART_PIN_RESET:
-      return 0;
+  case GENERIC_RAW_UART_PIN_RED:
+    return gc.base;
+  case GENERIC_RAW_UART_PIN_GREEN:
+    return gc.base + 1;
+  case GENERIC_RAW_UART_PIN_BLUE:
+    return gc.base + 2;
+  case GENERIC_RAW_UART_PIN_RESET:
+    return 0;
   }
   return 0;
 }
@@ -389,7 +416,7 @@ static void hb_rf_eth_reset_radio_module(struct generic_raw_uart *raw_uart)
 
 static int hb_rf_eth_start_connection(struct generic_raw_uart *raw_uart)
 {
-  char buffer[4] = { 5, 0, 0, 0 };
+  char buffer[4] = {5, 0, 0, 0};
   hb_rf_eth_send_msg(buffer, sizeof(buffer));
   msleep(20);
   return 0;
@@ -397,7 +424,7 @@ static int hb_rf_eth_start_connection(struct generic_raw_uart *raw_uart)
 
 static void hb_rf_eth_stop_connection(struct generic_raw_uart *raw_uart)
 {
-  char buffer[4] = { 6, 0, 0, 0 };
+  char buffer[4] = {6, 0, 0, 0};
   hb_rf_eth_send_msg(buffer, sizeof(buffer));
   msleep(20);
 }
@@ -417,7 +444,7 @@ static void hb_rf_eth_tx_chars(struct generic_raw_uart *raw_uart, unsigned char 
 {
   tx_char_buffer[0] = 7;
   memcpy(&tx_char_buffer[2], &chr[index], len);
-  hb_rf_eth_send_msg(tx_char_buffer, len+4);
+  hb_rf_eth_send_msg(tx_char_buffer, len + 4);
 }
 
 static void hb_rf_eth_init_tx(struct generic_raw_uart *raw_uart)
@@ -431,17 +458,17 @@ static bool hb_rf_eth_is_connected(struct generic_raw_uart *raw_uart)
 }
 
 static struct raw_uart_driver hb_rf_eth = {
-  .get_gpio_pin_number = hb_rf_eth_get_gpio_pin_number,
-  .reset_radio_module = hb_rf_eth_reset_radio_module,
-  .start_connection = hb_rf_eth_start_connection,
-  .stop_connection = hb_rf_eth_stop_connection,
-  .init_tx = hb_rf_eth_init_tx,
-  .isready_for_tx = hb_rf_eth_isready_for_tx,
-  .tx_chars = hb_rf_eth_tx_chars,
-  .stop_tx = hb_rf_eth_stop_tx,
-  .tx_chunk_size = TX_CHUNK_SIZE,
-  .tx_bulktransfer_size = TX_CHUNK_SIZE,
-  .is_connected = hb_rf_eth_is_connected,
+    .get_gpio_pin_number = hb_rf_eth_get_gpio_pin_number,
+    .reset_radio_module = hb_rf_eth_reset_radio_module,
+    .start_connection = hb_rf_eth_start_connection,
+    .stop_connection = hb_rf_eth_stop_connection,
+    .init_tx = hb_rf_eth_init_tx,
+    .isready_for_tx = hb_rf_eth_isready_for_tx,
+    .tx_chars = hb_rf_eth_tx_chars,
+    .stop_tx = hb_rf_eth_stop_tx,
+    .tx_chunk_size = TX_CHUNK_SIZE,
+    .tx_bulktransfer_size = TX_CHUNK_SIZE,
+    .is_connected = hb_rf_eth_is_connected,
 };
 
 static int __init hb_rf_eth_init(void)
@@ -451,13 +478,15 @@ static int __init hb_rf_eth_init(void)
   spin_lock_init(&gpio_lock);
 
   class = class_create(THIS_MODULE, "hb-rf-eth");
-  if (IS_ERR(class)) {
+  if (IS_ERR(class))
+  {
     err = PTR_ERR(class);
     goto failed_class_create;
   }
 
   dev = device_create(class, NULL, 0, NULL, "hb-rf-eth");
-  if (IS_ERR(dev)) {
+  if (IS_ERR(dev))
+  {
     err = PTR_ERR(dev);
     goto failed_dev_create;
   }
@@ -472,7 +501,7 @@ static int __init hb_rf_eth_init(void)
   gc.direction_output = hb_rf_eth_gpio_direction_output;
   gc.get = hb_rf_eth_gpio_get;
   gc.set = hb_rf_eth_gpio_set;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
   gc.get_multiple = hb_rf_eth_gpio_get_multiple;
 #endif
   gc.set_multiple = hb_rf_eth_gpio_set_multiple;
@@ -486,7 +515,8 @@ static int __init hb_rf_eth_init(void)
     goto failed_gc_create;
 
   raw_uart = generic_raw_uart_probe(dev, &hb_rf_eth, NULL);
-  if (IS_ERR(raw_uart)) {
+  if (IS_ERR(raw_uart))
+  {
     err = PTR_ERR(dev);
     goto failed_raw_uart_probe;
   }
@@ -529,7 +559,7 @@ static int hb_rf_eth_connect_set(const char *val, const struct kernel_param *kp)
 }
 
 static const struct kernel_param_ops hb_rf_eth_connect_param_ops = {
-  .set = hb_rf_eth_connect_set,
+    .set = hb_rf_eth_connect_set,
 };
 
 module_param_cb(connect, &hb_rf_eth_connect_param_ops, NULL, S_IWUSR);
@@ -542,4 +572,3 @@ MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
 MODULE_VERSION("1.0");
 MODULE_LICENSE("GPL");
-

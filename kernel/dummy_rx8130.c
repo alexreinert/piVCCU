@@ -19,4 +19,3 @@ MODULE_DESCRIPTION("Dummy Module to trick the hss_led");
 MODULE_VERSION("1.0");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("dummy_rx8130");
-

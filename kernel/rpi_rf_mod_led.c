@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2019 by Alexander Reinert
+ * Copyright (c) 2020 by Alexander Reinert
  * Author: Alexander Reinert
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,8 @@ static struct rpi_rf_mod_led_led *red = 0;
 static struct rpi_rf_mod_led_led *green = 0;
 static struct rpi_rf_mod_led_led *blue = 0;
 
-struct rpi_rf_mod_led_led {
+struct rpi_rf_mod_led_led
+{
   struct led_classdev cdev;
   int gpio;
   enum led_brightness brightness;
@@ -59,49 +60,49 @@ static enum led_brightness rpi_rf_mod_led_get_led_brightness(struct led_classdev
   return led->brightness;
 }
 
-static struct rpi_rf_mod_led_led* rpi_rf_mod_led_createled(const char* name, bool initial)
+static struct rpi_rf_mod_led_led *rpi_rf_mod_led_createled(const char *name, bool initial)
 {
-    struct rpi_rf_mod_led_led* led;
+  struct rpi_rf_mod_led_led *led;
 
-    led = kzalloc(sizeof(struct rpi_rf_mod_led_led), GFP_KERNEL);
+  led = kzalloc(sizeof(struct rpi_rf_mod_led_led), GFP_KERNEL);
 
-    led->cdev.name = name;
-    led->cdev.brightness_set = rpi_rf_mod_led_set_led_brightness;
-    led->cdev.brightness_get = rpi_rf_mod_led_get_led_brightness;
-    led->cdev.default_trigger = initial ? "default-on" : "none";
-    led->gpio = 0;
-    led->brightness = initial ? LED_FULL : LED_OFF;
+  led->cdev.name = name;
+  led->cdev.brightness_set = rpi_rf_mod_led_set_led_brightness;
+  led->cdev.brightness_get = rpi_rf_mod_led_get_led_brightness;
+  led->cdev.default_trigger = initial ? "default-on" : "none";
+  led->gpio = 0;
+  led->brightness = initial ? LED_FULL : LED_OFF;
 
-    led_classdev_register(NULL, &led->cdev);
+  led_classdev_register(NULL, &led->cdev);
 
-    return led;
+  return led;
 }
 
-static void rpi_rf_mod_led_set_gpio_pin(struct rpi_rf_mod_led_led* led, int gpio)
+static void rpi_rf_mod_led_set_gpio_pin(struct rpi_rf_mod_led_led *led, int gpio)
 {
-    if (led == 0)
-        return;
+  if (led == 0)
+    return;
 
-    if (led->gpio != 0)
-    {
-        gpio_free(led->gpio);
-    }
+  if (led->gpio != 0)
+  {
+    gpio_free(led->gpio);
+  }
 
-    if (gpio != 0 && gpio_is_valid(gpio))
-    {
-      gpio_request(gpio, led->cdev.name);
-      gpio_direction_output(gpio, false);
-      gpio_set_value(gpio, led->brightness == LED_OFF ? 0 : 1);
-    }
-    else
-    {
-      gpio = 0;
-    }
+  if (gpio != 0 && gpio_is_valid(gpio))
+  {
+    gpio_request(gpio, led->cdev.name);
+    gpio_direction_output(gpio, false);
+    gpio_set_value(gpio, led->brightness == LED_OFF ? 0 : 1);
+  }
+  else
+  {
+    gpio = 0;
+  }
 
-    led->gpio = gpio;
+  led->gpio = gpio;
 }
 
-static void rpi_rf_mod_led_destroyled(struct rpi_rf_mod_led_led* led)
+static void rpi_rf_mod_led_destroyled(struct rpi_rf_mod_led_led *led)
 {
   led_classdev_unregister(&led->cdev);
 
@@ -138,66 +139,66 @@ module_exit(rpi_rf_mod_led_exit);
 
 static int rpi_rf_mod_led_set_param(const char *val, const struct kernel_param *kp)
 {
-    int gpio, ret;
-    struct rpi_rf_mod_led_led *led;
+  int gpio, ret;
+  struct rpi_rf_mod_led_led *led;
 
-    ret = kstrtoint(val, 10, &gpio);
+  ret = kstrtoint(val, 10, &gpio);
 
-    if (ret != 0)
-        return -EINVAL;
+  if (ret != 0)
+    return -EINVAL;
 
-    if (strcmp(kp->name, "red_gpio_pin") == 0)
-    {
-        red_gpio_pin = gpio;
-        led = red;
-    }
-    else if (strcmp(kp->name, "green_gpio_pin") == 0)
-    {
-        green_gpio_pin = gpio;
-        led = green;
-    }
-    else if (strcmp(kp->name, "blue_gpio_pin") == 0)
-    {
-        blue_gpio_pin = gpio;
-        led = blue;
-    }
-    else
-    {
-      return -ENODEV;
-    }
+  if (strcmp(kp->name, "red_gpio_pin") == 0)
+  {
+    red_gpio_pin = gpio;
+    led = red;
+  }
+  else if (strcmp(kp->name, "green_gpio_pin") == 0)
+  {
+    green_gpio_pin = gpio;
+    led = green;
+  }
+  else if (strcmp(kp->name, "blue_gpio_pin") == 0)
+  {
+    blue_gpio_pin = gpio;
+    led = blue;
+  }
+  else
+  {
+    return -ENODEV;
+  }
 
-    rpi_rf_mod_led_set_gpio_pin(led, gpio);
+  rpi_rf_mod_led_set_gpio_pin(led, gpio);
 
-    return 0;
+  return 0;
 }
 
 static int rpi_rf_mod_led_get_param(char *buffer, const struct kernel_param *kp)
 {
-    int value = 0;
+  int value = 0;
 
-    if (strcmp(kp->name, "red_gpio_pin") == 0)
-    {
-        value = red->gpio;
-    }
-    else if (strcmp(kp->name, "green_gpio_pin") == 0)
-    {
-        value = green->gpio;
-    }
-    else if (strcmp(kp->name, "blue_gpio_pin") == 0)
-    {
-        value = blue->gpio;
-    }
-    else
-    {
-      return -ENODEV;
-    }
+  if (strcmp(kp->name, "red_gpio_pin") == 0)
+  {
+    value = red->gpio;
+  }
+  else if (strcmp(kp->name, "green_gpio_pin") == 0)
+  {
+    value = green->gpio;
+  }
+  else if (strcmp(kp->name, "blue_gpio_pin") == 0)
+  {
+    value = blue->gpio;
+  }
+  else
+  {
+    return -ENODEV;
+  }
 
-    return sprintf(buffer, "%d", value);
+  return sprintf(buffer, "%d", value);
 }
 
 static const struct kernel_param_ops rpi_rf_mod_led_gpio_param_ops = {
-        .set    = rpi_rf_mod_led_set_param,
-        .get    = rpi_rf_mod_led_get_param,
+    .set = rpi_rf_mod_led_set_param,
+    .get = rpi_rf_mod_led_get_param,
 };
 
 module_param_cb(red_gpio_pin, &rpi_rf_mod_led_gpio_param_ops, NULL, S_IRUGO | S_IWUSR);
@@ -211,7 +212,6 @@ MODULE_PARM_DESC(blue_gpio_pin, "GPIO Pin of blue LED");
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("GPIO LED driver for RPI-RF-MOD");
-MODULE_VERSION("1.5");
+MODULE_VERSION("1.6");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("rpi_rf_mod_led");
-

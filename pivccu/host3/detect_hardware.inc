@@ -67,7 +67,10 @@ case $PIVCCU_HMRF_MODE in
           sleep 1
         done
 
-        echo "$HB_RF_ETH_ADDRESS" > /sys/module/hb_rf_eth/parameters/connect
+        for try in {0..30}; do
+          echo "$HB_RF_ETH_ADDRESS" > /sys/module/hb_rf_eth/parameters/connect && break
+          sleep 1
+        done
     fi
 
     for syspath in $(find /sys/bus/usb/devices/); do

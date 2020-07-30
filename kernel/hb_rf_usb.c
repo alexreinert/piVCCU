@@ -23,8 +23,8 @@
 #include <linux/version.h>
 #include "generic_raw_uart.h"
 
-#define WDR_TIMEOUT 5000 /* default urb timeout */
-#define WDR_SHORT_TIMEOUT 1000	/* shorter urb timeout */
+#define WDR_TIMEOUT 5000       /* default urb timeout */
+#define WDR_SHORT_TIMEOUT 1000 /* shorter urb timeout */
 
 #define FTDI_SIO_RESET_REQUEST_TYPE 0x40
 #define FTDI_SIO_RESET_REQUEST 0
@@ -43,7 +43,7 @@
 #define FTDI_SIO_SET_ERROR_CHAR_REQUEST 0x07
 
 #define FTDI_SIO_SET_BAUDRATE_REQUEST_TYPE 0x40
-#define FTDI_SIO_SET_BAUDRATE_REQUEST  0x03
+#define FTDI_SIO_SET_BAUDRATE_REQUEST 0x03
 
 #define FTDI_SIO_SET_LATENCY_TIMER_REQUEST_TYPE 0x40
 #define FTDI_SIO_SET_LATENCY_TIMER_REQUEST 0x09
@@ -54,11 +54,11 @@
 #define FTDI_SIO_SET_DATA_PARITY_NONE (0x0 << 8)
 #define FTDI_SIO_SET_DATA_STOP_BITS_1 (0x0 << 11)
 
-#define FTDI_RS_OE (1<<1)
-#define FTDI_RS_PE (1<<2)
-#define FTDI_RS_FE (1<<3)
-#define FTDI_RS_BI (1<<4)
-#define FTDI_RS_TEMT (1<<6)
+#define FTDI_RS_OE (1 << 1)
+#define FTDI_RS_PE (1 << 2)
+#define FTDI_RS_FE (1 << 3)
+#define FTDI_RS_BI (1 << 4)
+#define FTDI_RS_TEMT (1 << 6)
 
 #define FTDI_SIO_BITMODE_RESET 0x00
 #define FTDI_SIO_BITMODE_CBUS 0x20
@@ -88,10 +88,11 @@ struct hb_rf_usb_port_s
   u8 gpio_direction;
 };
 
-static struct usb_device_id usbid [] = {
-  { USB_DEVICE(0x0403, 0x6F70), },
-  { }
-};
+static struct usb_device_id usbid[] = {
+    {
+        USB_DEVICE(0x0403, 0x6F70),
+    },
+    {}};
 
 MODULE_DEVICE_TABLE(usb, usbid);
 
@@ -116,7 +117,7 @@ static void hb_rf_usb_set_gpio_on_device(struct hb_rf_usb_port_s *port)
 
   urb = usb_alloc_urb(0, GFP_ATOMIC);
 
-  usb_fill_control_urb(urb, port->udev, usb_sndctrlpipe(port->udev, 0), (void*)dr, NULL, 0, hb_rf_usb_set_gpio_on_device_completion, NULL);
+  usb_fill_control_urb(urb, port->udev, usb_sndctrlpipe(port->udev, 0), (void *)dr, NULL, 0, hb_rf_usb_set_gpio_on_device_completion, NULL);
 
   usb_submit_urb(urb, GFP_ATOMIC);
 }
@@ -128,7 +129,8 @@ static int hb_rf_usb_set_bitmode(struct hb_rf_usb_port_s *port, u8 mode)
 
   val = cpu_to_le16((mode << 8) | (port->gpio_direction << 4) | port->gpio_value);
   result = usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), FTDI_SIO_SET_BITMODE_REQUEST, FTDI_SIO_SET_BITMODE_REQUEST_TYPE, val, 0, NULL, 0, WDR_TIMEOUT);
-  if (result < 0) {
+  if (result < 0)
+  {
     dev_err(&port->udev->dev, "bitmode request failed for value 0x%04x: %d\n", val, result);
   }
 
@@ -182,7 +184,7 @@ static void hb_rf_usb_gpio_set(struct gpio_chip *gc, unsigned int gpio, int valu
   spin_unlock_irqrestore(&port->gpio_lock, lock_flags);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
 static int hb_rf_usb_gpio_get_multiple(struct gpio_chip *gc, unsigned long *mask, unsigned long *bits)
 {
   struct hb_rf_usb_port_s *port = container_of(gc, struct hb_rf_usb_port_s, gc);
@@ -226,7 +228,7 @@ static void hb_rf_usb_init_uart(struct hb_rf_usb_port_s *port)
   // reset uart
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), FTDI_SIO_RESET_REQUEST, FTDI_SIO_RESET_REQUEST_TYPE, FTDI_SIO_RESET_SIO, 0, NULL, 0, WDR_TIMEOUT);
   msleep(50);
- 
+
   // set baudrate (115200)
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), FTDI_SIO_SET_BAUDRATE_REQUEST, FTDI_SIO_SET_BAUDRATE_REQUEST_TYPE, 26, 0, NULL, 0, WDR_SHORT_TIMEOUT);
 
@@ -241,14 +243,18 @@ static void hb_rf_usb_init_uart(struct hb_rf_usb_port_s *port)
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), FTDI_SIO_SET_LATENCY_TIMER_REQUEST, FTDI_SIO_SET_LATENCY_TIMER_REQUEST_TYPE, 1, 0, NULL, 0, WDR_SHORT_TIMEOUT);
 
   iface_desc = port->iface->cur_altsetting;
-  for (i = 0; i < iface_desc->desc.bNumEndpoints; i++) {
+  for (i = 0; i < iface_desc->desc.bNumEndpoints; i++)
+  {
     epd = &iface_desc->endpoint[i].desc;
 
-    if (usb_endpoint_is_bulk_in(epd)) {
+    if (usb_endpoint_is_bulk_in(epd))
+    {
       port->read_urb = usb_alloc_urb(0, GFP_KERNEL);
       port->read_buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
       usb_fill_bulk_urb(port->read_urb, port->udev, usb_rcvbulkpipe(port->udev, epd->bEndpointAddress), port->read_buffer, BUFFER_SIZE, hb_rf_usb_process_read_urb, port);
-    } else if (usb_endpoint_is_bulk_out(epd)) {
+    }
+    else if (usb_endpoint_is_bulk_out(epd))
+    {
       port->write_urb = usb_alloc_urb(0, GFP_KERNEL);
       port->write_buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
       usb_fill_bulk_urb(port->write_urb, port->udev, usb_sndbulkpipe(port->udev, epd->bEndpointAddress), port->write_buffer, BUFFER_SIZE, hb_rf_usb_process_write_urb, port);
@@ -266,21 +272,21 @@ static void hb_rf_usb_process_read_urb(struct urb *urb)
   int i;
 
   /* Error handling */
-  if(status & FTDI_RS_BI)
+  if (status & FTDI_RS_BI)
   {
     generic_raw_uart_handle_rx_char(port->raw_uart, GENERIC_RAW_UART_RX_STATE_BREAK, 0);
   }
   else
   {
-    if(status & FTDI_RS_PE)
+    if (status & FTDI_RS_PE)
     {
       flags |= GENERIC_RAW_UART_RX_STATE_PARITY;
     }
-    if(status & FTDI_RS_FE)
+    if (status & FTDI_RS_FE)
     {
       flags |= GENERIC_RAW_UART_RX_STATE_FRAME;
     }
-    if(status & FTDI_RS_OE)
+    if (status & FTDI_RS_OE)
     {
       flags |= GENERIC_RAW_UART_RX_STATE_OVERRUN;
     }
@@ -371,16 +377,16 @@ static int hb_rf_usb_get_gpio_pin_number(struct generic_raw_uart *raw_uart, enum
 {
   struct hb_rf_usb_port_s *port = raw_uart->driver_data;
 
-  switch(pin)
+  switch (pin)
   {
-    case GENERIC_RAW_UART_PIN_BLUE:
-      return port->gc.base;
-    case GENERIC_RAW_UART_PIN_GREEN:
-      return port->gc.base + 1;
-    case GENERIC_RAW_UART_PIN_RED:
-      return port->gc.base + 2;
-    case GENERIC_RAW_UART_PIN_RESET:
-      return 0;
+  case GENERIC_RAW_UART_PIN_BLUE:
+    return port->gc.base;
+  case GENERIC_RAW_UART_PIN_GREEN:
+    return port->gc.base + 1;
+  case GENERIC_RAW_UART_PIN_RED:
+    return port->gc.base + 2;
+  case GENERIC_RAW_UART_PIN_RESET:
+    return 0;
   }
   return 0;
 }
@@ -416,16 +422,16 @@ static void hb_rf_usb_reset_radio_module(struct generic_raw_uart *raw_uart)
 }
 
 static struct raw_uart_driver hb_rf_usb = {
-  .get_gpio_pin_number = hb_rf_usb_get_gpio_pin_number,
-  .reset_radio_module = hb_rf_usb_reset_radio_module,
-  .start_connection = hb_rf_usb_start_connection,
-  .stop_connection = hb_rf_usb_stop_connection,
-  .init_tx = hb_rf_usb_init_tx,
-  .isready_for_tx = hb_rf_usb_isready_for_tx,
-  .tx_chars = hb_rf_usb_tx_chars,
-  .stop_tx = hb_rf_usb_stop_tx,
-  .tx_chunk_size = TX_CHUNK_SIZE,
-  .tx_bulktransfer_size = TX_CHUNK_SIZE,
+    .get_gpio_pin_number = hb_rf_usb_get_gpio_pin_number,
+    .reset_radio_module = hb_rf_usb_reset_radio_module,
+    .start_connection = hb_rf_usb_start_connection,
+    .stop_connection = hb_rf_usb_stop_connection,
+    .init_tx = hb_rf_usb_init_tx,
+    .isready_for_tx = hb_rf_usb_isready_for_tx,
+    .tx_chars = hb_rf_usb_tx_chars,
+    .stop_tx = hb_rf_usb_stop_tx,
+    .tx_chunk_size = TX_CHUNK_SIZE,
+    .tx_bulktransfer_size = TX_CHUNK_SIZE,
 };
 
 static int hb_rf_usb_probe(struct usb_interface *interface, const struct usb_device_id *id)
@@ -450,7 +456,7 @@ static int hb_rf_usb_probe(struct usb_interface *interface, const struct usb_dev
   port->gc.direction_output = hb_rf_usb_gpio_direction_output;
   port->gc.get = hb_rf_usb_gpio_get;
   port->gc.set = hb_rf_usb_gpio_set;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
   port->gc.get_multiple = hb_rf_usb_gpio_get_multiple;
 #endif
   port->gc.set_multiple = hb_rf_usb_gpio_set_multiple;
@@ -498,10 +504,10 @@ static void hb_rf_usb_disconnect(struct usb_interface *interface)
 }
 
 static struct usb_driver hb_rf_usb_driver = {
-  .name = "hb_rf_usb",
-  .id_table = usbid,
-  .probe = hb_rf_usb_probe,
-  .disconnect = hb_rf_usb_disconnect,
+    .name = "hb_rf_usb",
+    .id_table = usbid,
+    .probe = hb_rf_usb_probe,
+    .disconnect = hb_rf_usb_disconnect,
 };
 
 static int __init hb_rf_usb_init(void)
@@ -524,7 +530,6 @@ module_init(hb_rf_usb_init);
 module_exit(hb_rf_usb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.3");
+MODULE_VERSION("1.4");
 MODULE_DESCRIPTION("HB-RF-USB raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
-

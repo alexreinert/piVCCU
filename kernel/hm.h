@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2018 by Alexander Reinert
+ * Copyright (c) 2020 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -19,47 +19,46 @@
  *---------------------------------------------------------------------------*/
 enum hm_dst
 {
-  HM_DST_TRX                   = 0x01,
-  HM_DST_HMIP                  = 0x02,
-  HM_DST_LLMAC                 = 0x03,
-  HM_DST_COMMON                = 0xfe,
+  HM_DST_TRX = 0x01,
+  HM_DST_HMIP = 0x02,
+  HM_DST_LLMAC = 0x03,
+  HM_DST_COMMON = 0xfe,
 };
 
 enum hm_trx_cmd
 {
-  HM_TRX_GET_VERSION           = 0x02,
-  HM_TRX_GET_DUTYCYCLE         = 0x03,
-  HM_TRX_SET_DCUTYCYCLE_LIMIT  = 0x07,
-  HM_TRX_GET_MCU_TYPE          = 0x09,
+  HM_TRX_GET_VERSION = 0x02,
+  HM_TRX_GET_DUTYCYCLE = 0x03,
+  HM_TRX_SET_DCUTYCYCLE_LIMIT = 0x07,
+  HM_TRX_GET_MCU_TYPE = 0x09,
 };
 
 enum hm_llmac_cmd
 {
-  HM_LLMAC_GET_TIMESTAMP       = 0x02,
-  HM_LLMAC_RFD_INIT            = 0x06,
-  HM_LLMAC_GET_SERIAL          = 0x07,
+  HM_LLMAC_GET_TIMESTAMP = 0x02,
+  HM_LLMAC_RFD_INIT = 0x06,
+  HM_LLMAC_GET_SERIAL = 0x07,
   HM_LLMAC_GET_DEFAULT_RF_ADDR = 0x08,
 };
 
 enum hm_common_cmd
 {
-  HM_COMMON_IDENTIFY           = 0x01,
-  HM_COMMON_GET_SGTIN          = 0x04,
+  HM_COMMON_IDENTIFY = 0x01,
+  HM_COMMON_GET_SGTIN = 0x04,
 };
 
 enum hm_hmip_cmd
 {
-  HM_HMIP_SET_RADIO_ADDR       = 0x00,
-  HM_HMIP_SEND                 = 0x03,
-  HM_HMIP_ADD_LINK_PARTNER     = 0x04,
+  HM_HMIP_SET_RADIO_ADDR = 0x00,
+  HM_HMIP_SEND = 0x03,
+  HM_HMIP_ADD_LINK_PARTNER = 0x04,
   HM_HMIP_GET_SECURITY_COUNTER = 0x0a,
   HM_HMIP_SET_SECURITY_COUNTER = 0x08,
   HM_HMIP_SET_MAX_SENT_ATTEMPS = 0x0d,
-  HM_HMIP_GET_LINK_PARTNER     = 0x12,
-  HM_HMIP_GET_NWKEY            = 0x13,
-  HM_HMIP_SET_NWKEY            = 0x14,
+  HM_HMIP_GET_LINK_PARTNER = 0x12,
+  HM_HMIP_GET_NWKEY = 0x13,
+  HM_HMIP_SET_NWKEY = 0x14,
 };
-
 
 static uint16_t hm_crc(unsigned char *buf, size_t len)
 {
@@ -140,7 +139,7 @@ static size_t encodeFrame(unsigned char *buf, size_t len, struct hm_frame *frame
   return frame->cmdlen + 7;
 }
 
-static size_t encodeFrameBuffer(unsigned char* src, unsigned char* dst, size_t len)
+static size_t encodeFrameBuffer(unsigned char *src, unsigned char *dst, size_t len)
 {
   size_t ret = 0;
   unsigned char cur;
@@ -161,7 +160,7 @@ static size_t encodeFrameBuffer(unsigned char* src, unsigned char* dst, size_t l
   return ret;
 }
 
-static size_t decodeFrameBuffer(unsigned char* src, unsigned char* dst, size_t len)
+static size_t decodeFrameBuffer(unsigned char *src, unsigned char *dst, size_t len)
 {
   size_t ret = 0;
   unsigned char cur;
@@ -181,4 +180,3 @@ static size_t decodeFrameBuffer(unsigned char* src, unsigned char* dst, size_t l
 
   return ret;
 }
-
