@@ -37,6 +37,12 @@
 
 #define BUFFER_SIZE 1500
 
+#if defined(SO_RCVTIMEO_OLD)
+  #define MY_SO_RCVTIMEO SO_RCVTIMEO_OLD
+#else
+  #define MY_SO_RCVTIMEO SO_RCVTIMEO
+#endif
+
 static struct gpio_chip gc = {0};
 static spinlock_t gpio_lock;
 static u8 gpio_value = 0;
@@ -206,7 +212,7 @@ static void hb_rf_eth_send_reset(void)
   msleep(100);
 }
 
-static int hb_rf_eth_connect(char *ip)
+static int hb_rf_eth_connect(const char *ip)
 {
   int err;
   mm_segment_t fs;
@@ -239,7 +245,7 @@ static int hb_rf_eth_connect(char *ip)
 
   fs = get_fs();
   set_fs(KERNEL_DS);
-  kernel_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
+  kernel_setsockopt(sock, SOL_SOCKET, MY_SO_RCVTIMEO, (char *)&tv, sizeof(tv));
   set_fs(fs);
 
   header.msg_name = &remote;
@@ -302,7 +308,7 @@ static int hb_rf_eth_connect(char *ip)
   return 0;
 }
 
-static int hb_rf_eth_disconnect(void)
+static void hb_rf_eth_disconnect(void)
 {
   char buffer[4] = {1, 0, 0, 0};
 
@@ -570,5 +576,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.0");
+MODULE_VERSION("1.1");
 MODULE_LICENSE("GPL");

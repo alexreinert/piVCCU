@@ -1,5 +1,3 @@
-CC = gcc-8
-
 obj-m += eq3_char_loop.o
 obj-m += plat_eq3ccu2.o
 obj-m += generic_raw_uart.o
