@@ -31,7 +31,7 @@
 #include "generic_raw_uart.h"
 
 #define HB_RF_ETH_PORT 3008
-#define HB_RF_ETH_PROTOCOL_VERSION 1
+#define HB_RF_ETH_PROTOCOL_VERSION 2
 
 #define TX_CHUNK_SIZE 1468
 
@@ -43,6 +43,8 @@
   #define MY_SO_RCVTIMEO SO_RCVTIMEO
 #endif
 
+static short int autoreconnect = 1;
+
 static struct gpio_chip gc = {0};
 static spinlock_t gpio_lock;
 static u8 gpio_value = 0;
@@ -50,7 +52,6 @@ static u8 gpio_value = 0;
 static struct socket *sock = NULL;
 static struct msghdr header = {0};
 static struct sockaddr_in remote = {0};
-;
 static atomic_t msg_cnt = ATOMIC_INIT(0);
 static struct task_struct *k_recv_thread = NULL;
 
@@ -60,6 +61,8 @@ static struct device *dev = NULL;
 
 static unsigned long nextKeepAliveSentOut = 0;
 static unsigned long lastReceivedKeepAlive = 0;
+
+static char currentEndpointIdentifier = 0;
 
 static uint16_t hb_rf_eth_calc_crc(unsigned char *buf, size_t len)
 {
@@ -149,90 +152,15 @@ static int hb_rf_eth_recv_packet(char *buffer, size_t buffer_size)
   return len;
 }
 
-static int hb_rf_eth_recv_threadproc(void *data)
-{
-  char *buffer;
-  int len;
-  int i;
-
-  buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
-
-  lastReceivedKeepAlive = jiffies;
-
-  while (!kthread_should_stop())
-  {
-    len = hb_rf_eth_recv_packet(buffer, BUFFER_SIZE);
-    if (len >= 4)
-    {
-      switch (buffer[0])
-      {
-      case 2:
-        lastReceivedKeepAlive = jiffies;
-        break;
-      case 7:
-        lastReceivedKeepAlive = jiffies;
-        for (i = 2; i < len - 2; i++)
-        {
-          generic_raw_uart_handle_rx_char(raw_uart, GENERIC_RAW_UART_RX_STATE_NONE, (unsigned char)buffer[i]);
-        }
-        generic_raw_uart_rx_completed(raw_uart);
-        break;
-      default:
-        print_hex_dump(KERN_INFO, "Received unknown UDP packet: ", DUMP_PREFIX_NONE, 16, 1, buffer, len, false);
-        break;
-      }
-    }
-
-    if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000)))
-    {
-      dev_err(dev, "Did not receive any packet in the last 5 seconds, terminating connection.\n");
-      sock_release(sock);
-      sock = NULL;
-      k_recv_thread = NULL;
-      break;
-    }
-
-    if (time_after(jiffies, nextKeepAliveSentOut))
-    {
-      nextKeepAliveSentOut = jiffies + msecs_to_jiffies(1000);
-      buffer[0] = 2;
-      hb_rf_eth_send_msg(buffer, 4);
-    }
-  }
-
-  kfree(buffer);
-
-  return 0;
-}
-
-static void hb_rf_eth_send_reset(void)
-{
-  char buffer[4] = {4, 0, 0, 0};
-  hb_rf_eth_send_msg(buffer, sizeof(buffer));
-  msleep(100);
-}
-
-static int hb_rf_eth_connect(const char *ip)
+static int hb_rf_eth_try_connect(char endpointIdentifier)
 {
   int err;
   mm_segment_t fs;
   struct timeval tv = {0, 100000};
-  char buffer[5] = {0, 0, HB_RF_ETH_PROTOCOL_VERSION, 0, 0};
+  char buffer[6] = {0, 0, HB_RF_ETH_PROTOCOL_VERSION, endpointIdentifier, 0, 0};
   unsigned long timeout;
   char *recv_buffer;
   int len;
-
-  if (ip[0] == 0)
-  {
-    dev_err(dev, "Failed to load module, no remote ip was given.\n");
-    return -EINVAL;
-  }
-
-  dev_info(dev, "Trying to connect to %s\n", ip);
-
-  remote.sin_addr.s_addr = in_aton(ip);
-  remote.sin_family = AF_INET;
-  remote.sin_port = htons(HB_RF_ETH_PORT);
 
   err = sock_create_kern(&init_net, AF_INET, SOCK_DGRAM, IPPROTO_UDP, &sock);
 
@@ -272,10 +200,11 @@ static int hb_rf_eth_connect(const char *ip)
     while (time_before(jiffies, timeout))
     {
       len = hb_rf_eth_recv_packet(recv_buffer, BUFFER_SIZE);
-      if (len == 6)
+      if (len == 7)
       {
         if (recv_buffer[0] == 0 && recv_buffer[2] == HB_RF_ETH_PROTOCOL_VERSION && recv_buffer[3] == buffer[1])
         {
+          currentEndpointIdentifier = recv_buffer[4];
           err = 0;
           break;
         }
@@ -289,22 +218,125 @@ static int hb_rf_eth_connect(const char *ip)
       sock = NULL;
       return err;
     }
+  }
+  return 0;
+}
 
-    k_recv_thread = kthread_run(hb_rf_eth_recv_threadproc, NULL, "k_hb_rf_eth_receiver");
-    if (IS_ERR(k_recv_thread))
+static int hb_rf_eth_recv_threadproc(void *data)
+{
+  char *buffer;
+  int len;
+  int i;
+
+  buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
+
+  lastReceivedKeepAlive = jiffies;
+
+  while (!kthread_should_stop())
+  {
+    len = hb_rf_eth_recv_packet(buffer, BUFFER_SIZE);
+    if (len >= 4)
     {
-      err = PTR_ERR(k_recv_thread);
-      dev_err(dev, "Error creating receiver thread\n");
-      k_recv_thread = NULL;
-      sock_release(sock);
-      sock = NULL;
-      return err;
+      switch (buffer[0])
+      {
+      case 2:
+        lastReceivedKeepAlive = jiffies;
+        break;
+      case 7:
+        lastReceivedKeepAlive = jiffies;
+        for (i = 2; i < len - 2; i++)
+        {
+          generic_raw_uart_handle_rx_char(raw_uart, GENERIC_RAW_UART_RX_STATE_NONE, (unsigned char)buffer[i]);
+        }
+        generic_raw_uart_rx_completed(raw_uart);
+        break;
+      default:
+        print_hex_dump(KERN_INFO, "Received unknown UDP packet: ", DUMP_PREFIX_NONE, 16, 1, buffer, len, false);
+        break;
+      }
     }
 
-    hb_rf_eth_send_reset();
+    if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000)))
+    {
+      dev_err(dev, "Did not receive any packet in the last 5 seconds, terminating connection.\n");
+      sock_release(sock);
+      sock = NULL;
 
-    dev_info(dev, "Successfully connected to %pI4\n", &remote.sin_addr);
+      if (autoreconnect)
+      {
+        while (!kthread_should_stop())
+        {
+          dev_info(dev, "Trying to reconnect to %pI4\n", &remote.sin_addr);
+          if (!IS_ERR(hb_rf_eth_try_connect(currentEndpointIdentifier)))
+            break;
+	  msleep_interruptible(500);
+        }
+	continue;
+      }
+      else
+      {
+        goto exit;
+      }
+    }
+
+    if (time_after(jiffies, nextKeepAliveSentOut))
+    {
+      nextKeepAliveSentOut = jiffies + msecs_to_jiffies(1000);
+      buffer[0] = 2;
+      hb_rf_eth_send_msg(buffer, 4);
+    }
   }
+
+exit:
+  k_recv_thread = NULL;
+  kfree(buffer);
+  return 0;
+}
+
+static void hb_rf_eth_send_reset(void)
+{
+  char buffer[4] = {4, 0, 0, 0};
+  hb_rf_eth_send_msg(buffer, sizeof(buffer));
+  msleep(100);
+}
+
+static int hb_rf_eth_connect(const char *ip)
+{
+  int err;
+
+  if (ip[0] == 0)
+  {
+    dev_err(dev, "Failed to load module, no remote ip was given.\n");
+    return -EINVAL;
+  }
+
+  dev_info(dev, "Trying to connect to %s\n", ip);
+
+  remote.sin_addr.s_addr = in_aton(ip);
+  remote.sin_family = AF_INET;
+  remote.sin_port = htons(HB_RF_ETH_PORT);
+
+  err = hb_rf_eth_try_connect(0);
+  if (IS_ERR(err))
+  {
+    return err;
+  }
+
+  k_recv_thread = kthread_run(hb_rf_eth_recv_threadproc, NULL, "k_hb_rf_eth_receiver");
+  if (IS_ERR(k_recv_thread))
+  {
+    err = PTR_ERR(k_recv_thread);
+    dev_err(dev, "Error creating receiver thread\n");
+    k_recv_thread = NULL;
+    sock_release(sock);
+    sock = NULL;
+    return err;
+  }
+
+  hb_rf_eth_send_reset();
+
+  dev_info(dev, "Successfully connected to %pI4\n", &remote.sin_addr);
+
   return 0;
 }
 
@@ -571,10 +603,13 @@ static const struct kernel_param_ops hb_rf_eth_connect_param_ops = {
 module_param_cb(connect, &hb_rf_eth_connect_param_ops, NULL, S_IWUSR);
 MODULE_PARM_DESC(connect, "Connects the module to a HB-RF-ETH pcb");
 
+module_param(autoreconnect, short, S_IRUSR | S_IWUSR);
+MODULE_PARM_DESC(autoreconnect, "If enabled, the module will automatically try to reconnect");
+
 module_init(hb_rf_eth_init);
 module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.1");
+MODULE_VERSION("1.2");
 MODULE_LICENSE("GPL");
