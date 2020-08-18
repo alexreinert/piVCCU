@@ -1,10 +1,10 @@
 #!/bin/bash
 
-CCU_VERSION=3.51.6
+CCU_VERSION=3.53.26
 CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/firmware/ccu3-firmware/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=41
+PKG_BUILD=42
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -38,6 +38,7 @@ cd $CNT_ROOTFS
 
 patch -l -p1 < $CURRENT_DIR/pivccu/firmware3.patch
 sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/config/cp_maintenance.cgi
+sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/webui/webui.js
 
 mkdir -p $CNT_ROOTFS/firmware/HM-MOD-UART
 wget -q -O $CNT_ROOTFS/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3 https://raw.githubusercontent.com/eq-3/occu/abc3d4c8ee7d0ba090407b6b4431aeca42aeb014/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3
@@ -80,8 +81,8 @@ dpkg-deb --build pivccu3-$PKG_VERSION
 
 cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-armhf.deb
 
-wget -O openjdk-8-jre.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u252-b09-1~deb9u1_armhf.deb
-wget -O openjdk-8-jre-headless.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre-headless_8u252-b09-1~deb9u1_armhf.deb
+wget -O openjdk-8-jre.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u265-b01-0+deb9u1_armhf.deb
+wget -O openjdk-8-jre-headless.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jdk-headless_8u265-b01-0+deb9u1_armhf.deb
 
 dpkg-deb -x openjdk-8-jre.deb .
 dpkg-deb -x openjdk-8-jre-headless.deb .
