@@ -1,10 +1,10 @@
 #!/bin/bash
 
-CCU_VERSION=2.51.6
+CCU_VERSION=2.53.27
 CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tgz"
 
-PKG_BUILD=59
+PKG_BUILD=60
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -32,6 +32,8 @@ cd $CNT_ROOTFS
 
 patch -l -p1 < $CURRENT_DIR/pivccu/firmware.patch
 sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/config/cp_maintenance.cgi
+sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/webui/webui.js
+
 wget -q -O $CNT_ROOTFS/firmware/dualcopro_si1002_update_blhm.eq3 https://raw.githubusercontent.com/eq-3/occu/abc3d4c8ee7d0ba090407b6b4431aeca42aeb014/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3
 
 wget -q -O $CNT_ROOTFS/opt/HmIP/hmip-copro-update.jar https://raw.githubusercontent.com/eq-3/occu/04877bbc3b36a716e50d774554cf88959c51d54e/HMserver/opt/HmIP/hmip-copro-update.jar

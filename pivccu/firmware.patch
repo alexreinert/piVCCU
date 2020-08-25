@@ -1,6 +1,6 @@
-diff -ruN --no-dereference fw.2.51.6.orig/bin/dhcp.script fw.2.51.6.patched/bin/dhcp.script
---- fw.2.51.6.orig/bin/dhcp.script	2020-02-13 10:00:41.656140616 +0100
-+++ fw.2.51.6.patched/bin/dhcp.script	2020-02-13 10:06:07.590025183 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/bin/dhcp.script fw.2.53.27.patched/bin/dhcp.script
+--- fw.2.53.27.orig/bin/dhcp.script	2020-08-26 09:47:51.164566612 +0200
++++ fw.2.53.27.patched/bin/dhcp.script	2020-08-26 09:53:32.866649208 +0200
 @@ -6,12 +6,6 @@
  action=${1}
  nfsroot=false
@@ -14,9 +14,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/bin/dhcp.script fw.2.51.6.patched/bin/
  handle_deconfig() {
    if [[ ${nfsroot} == true ]]; then
        exit 0
-diff -ruN --no-dereference fw.2.51.6.orig/etc/fstab fw.2.51.6.patched/etc/fstab
---- fw.2.51.6.orig/etc/fstab	2020-02-13 10:00:41.996142580 +0100
-+++ fw.2.51.6.patched/etc/fstab	2020-02-13 10:06:07.590025183 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/fstab fw.2.53.27.patched/etc/fstab
+--- fw.2.53.27.orig/etc/fstab	2020-08-26 09:47:51.444568325 +0200
++++ fw.2.53.27.patched/etc/fstab	2020-08-26 09:53:32.866649208 +0200
 @@ -1,14 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -32,9 +32,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/fstab fw.2.51.6.patched/etc/fstab
 -tmpfs           /media         tmpfs    defaults,noatime          0      0
 -debugfs 	/sys/kernel/debug debugfs	noauto 		  0 	0
 -ubi1:user	/usr/local	ubifs	defaults,noatime,nodiratime,rw,sync	0 0
-diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S00eQ3SystemStart fw.2.51.6.patched/etc/init.d/S00eQ3SystemStart
---- fw.2.51.6.orig/etc/init.d/S00eQ3SystemStart	2020-02-13 10:00:41.992142557 +0100
-+++ fw.2.51.6.patched/etc/init.d/S00eQ3SystemStart	2020-02-13 10:06:07.590025183 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/init.d/S00eQ3SystemStart fw.2.53.27.patched/etc/init.d/S00eQ3SystemStart
+--- fw.2.53.27.orig/etc/init.d/S00eQ3SystemStart	2020-08-26 09:47:51.444568325 +0200
++++ fw.2.53.27.patched/etc/init.d/S00eQ3SystemStart	2020-08-26 09:53:32.870649233 +0200
 @@ -7,17 +7,6 @@
  SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
  
@@ -86,9 +86,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S00eQ3SystemStart fw.2.51.6
  }
  
  restart() {
-diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S10udev fw.2.51.6.patched/etc/init.d/S10udev
---- fw.2.51.6.orig/etc/init.d/S10udev	2020-02-13 10:00:41.992142557 +0100
-+++ fw.2.51.6.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/init.d/S10udev fw.2.53.27.patched/etc/init.d/S10udev
+--- fw.2.53.27.orig/etc/init.d/S10udev	2020-08-26 09:47:51.444568325 +0200
++++ fw.2.53.27.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
 @@ -1,46 +0,0 @@
 -#!/bin/sh
 -#
@@ -136,9 +136,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S10udev fw.2.51.6.patched/e
 -
 -
 -exit 0
-diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S15watchdog fw.2.51.6.patched/etc/init.d/S15watchdog
---- fw.2.51.6.orig/etc/init.d/S15watchdog	2020-02-13 10:00:41.992142557 +0100
-+++ fw.2.51.6.patched/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/init.d/S15watchdog fw.2.53.27.patched/etc/init.d/S15watchdog
+--- fw.2.53.27.orig/etc/init.d/S15watchdog	2020-08-26 09:47:51.444568325 +0200
++++ fw.2.53.27.patched/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
 @@ -1,20 +0,0 @@
 -#!/bin/sh
 -#
@@ -160,9 +160,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S15watchdog fw.2.51.6.patch
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S20urandom fw.2.51.6.patched/etc/init.d/S20urandom
---- fw.2.51.6.orig/etc/init.d/S20urandom	2020-02-13 10:00:41.992142557 +0100
-+++ fw.2.51.6.patched/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/init.d/S20urandom fw.2.53.27.patched/etc/init.d/S20urandom
+--- fw.2.53.27.orig/etc/init.d/S20urandom	2020-08-26 09:47:51.444568325 +0200
++++ fw.2.53.27.patched/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
 @@ -1,51 +0,0 @@
 -#! /bin/sh
 -#
@@ -215,9 +215,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S20urandom fw.2.51.6.patche
 -		exit 1
 -		;;
 -esac
-diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S40UsbNetwork fw.2.51.6.patched/etc/init.d/S40UsbNetwork
---- fw.2.51.6.orig/etc/init.d/S40UsbNetwork	2020-02-13 10:00:41.992142557 +0100
-+++ fw.2.51.6.patched/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/init.d/S40UsbNetwork fw.2.53.27.patched/etc/init.d/S40UsbNetwork
+--- fw.2.53.27.orig/etc/init.d/S40UsbNetwork	2020-08-26 09:47:51.444568325 +0200
++++ fw.2.53.27.patched/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
 @@ -1,52 +0,0 @@
 -#!/bin/sh
 -#
@@ -271,9 +271,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S40UsbNetwork fw.2.51.6.pat
 -
 -exit $?
 -
-diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S50eq3configd fw.2.51.6.patched/etc/init.d/S50eq3configd
---- fw.2.51.6.orig/etc/init.d/S50eq3configd	2020-02-13 10:00:41.992142557 +0100
-+++ fw.2.51.6.patched/etc/init.d/S50eq3configd	2020-02-13 10:06:07.594025206 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/init.d/S50eq3configd fw.2.53.27.patched/etc/init.d/S50eq3configd
+--- fw.2.53.27.orig/etc/init.d/S50eq3configd	2020-08-26 09:47:51.444568325 +0200
++++ fw.2.53.27.patched/etc/init.d/S50eq3configd	2020-08-26 09:53:32.870649233 +0200
 @@ -17,6 +17,7 @@
  }
  
@@ -282,9 +282,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S50eq3configd fw.2.51.6.pat
  	echo -n "Starting eq3configd: "
  	init
  	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
-diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S60multimacd fw.2.51.6.patched/etc/init.d/S60multimacd
---- fw.2.51.6.orig/etc/init.d/S60multimacd	2020-02-13 10:00:41.992142557 +0100
-+++ fw.2.51.6.patched/etc/init.d/S60multimacd	2020-02-13 10:06:07.594025206 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/init.d/S60multimacd fw.2.53.27.patched/etc/init.d/S60multimacd
+--- fw.2.53.27.orig/etc/init.d/S60multimacd	2020-08-26 09:47:51.444568325 +0200
++++ fw.2.53.27.patched/etc/init.d/S60multimacd	2020-08-26 09:53:32.870649233 +0200
 @@ -7,39 +7,6 @@
  CFG_TEMPLATE_DIR=/etc/config_templates
  PIDFILE=/var/run/multimacd.pid
@@ -340,9 +340,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S60multimacd fw.2.51.6.patc
  	start-stop-daemon -S -q -b -m -p $PIDFILE --exec /bin/multimacd -- -f /etc/config/multimacd.conf -l $LOGLEVEL_RFD
  	waitStartupComplete
  }
-diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S99eQ3SystemStarted fw.2.51.6.patched/etc/init.d/S99eQ3SystemStarted
---- fw.2.51.6.orig/etc/init.d/S99eQ3SystemStarted	2020-02-13 10:00:41.992142557 +0100
-+++ fw.2.51.6.patched/etc/init.d/S99eQ3SystemStarted	2020-02-13 10:06:07.626025393 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/init.d/S99eQ3SystemStarted fw.2.53.27.patched/etc/init.d/S99eQ3SystemStarted
+--- fw.2.53.27.orig/etc/init.d/S99eQ3SystemStarted	2020-08-26 09:47:51.444568325 +0200
++++ fw.2.53.27.patched/etc/init.d/S99eQ3SystemStarted	2020-08-26 09:53:32.906649452 +0200
 @@ -8,15 +8,6 @@
  
  init() {
@@ -359,9 +359,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/init.d/S99eQ3SystemStarted fw.2.51
  }
  
  start() {
-diff -ruN --no-dereference fw.2.51.6.orig/etc/inittab fw.2.51.6.patched/etc/inittab
---- fw.2.51.6.orig/etc/inittab	2020-02-13 10:00:41.996142580 +0100
-+++ fw.2.51.6.patched/etc/inittab	2020-02-13 10:06:07.626025393 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/inittab fw.2.53.27.patched/etc/inittab
+--- fw.2.53.27.orig/etc/inittab	2020-08-26 09:47:51.448568350 +0200
++++ fw.2.53.27.patched/etc/inittab	2020-08-26 09:53:32.906649452 +0200
 @@ -14,10 +14,7 @@
  # process   == program to run
  
@@ -388,9 +388,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/inittab fw.2.51.6.patched/etc/init
  # Stuff to do before rebooting
  ::shutdown:/etc/init.d/rcK
  null::shutdown:/bin/umount -a -r
-diff -ruN --no-dereference fw.2.51.6.orig/etc/network/if-up.d/eQ3StartNetwork fw.2.51.6.patched/etc/network/if-up.d/eQ3StartNetwork
---- fw.2.51.6.orig/etc/network/if-up.d/eQ3StartNetwork	2020-02-13 10:00:41.992142557 +0100
-+++ fw.2.51.6.patched/etc/network/if-up.d/eQ3StartNetwork	2020-02-13 10:06:07.626025393 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/etc/network/if-up.d/eQ3StartNetwork fw.2.53.27.patched/etc/network/if-up.d/eQ3StartNetwork
+--- fw.2.53.27.orig/etc/network/if-up.d/eQ3StartNetwork	2020-08-26 09:47:51.444568325 +0200
++++ fw.2.53.27.patched/etc/network/if-up.d/eQ3StartNetwork	2020-08-26 09:53:32.906649452 +0200
 @@ -72,20 +72,6 @@
  # restart syslogd to update hostname
  /etc/init.d/S07logging restart 2>/dev/null >/dev/null
@@ -412,9 +412,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/etc/network/if-up.d/eQ3StartNetwork fw
  # make sure no other udhcpc is running
  killall -q udhcpc
  
-diff -ruN --no-dereference fw.2.51.6.orig/firmware/fwmap fw.2.51.6.patched/firmware/fwmap
---- fw.2.51.6.orig/firmware/fwmap	2020-02-13 10:00:45.168160904 +0100
-+++ fw.2.51.6.patched/firmware/fwmap	2020-02-13 10:06:07.626025393 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/firmware/fwmap fw.2.53.27.patched/firmware/fwmap
+--- fw.2.53.27.orig/firmware/fwmap	2020-08-26 09:47:54.256585438 +0200
++++ fw.2.53.27.patched/firmware/fwmap	2020-08-26 09:53:32.906649452 +0200
 @@ -17,7 +17,8 @@
  
  #Coprozessor
@@ -425,9 +425,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/firmware/fwmap fw.2.51.6.patched/firmw
  # CCU2                    coprocessor_update_hm_only.eq3                1.4.1          # HM only CoProzessor CCU2  
  CCU2-RFLGW				coprocessor_update_hm_only.eq3					1.4.1          # HM only CoProzessor CCU2 for HomeMatic RF Lan Gateway
  
-diff -ruN --no-dereference fw.2.51.6.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.2.51.6.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
---- fw.2.51.6.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2020-02-13 10:00:42.156143504 +0100
-+++ fw.2.51.6.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2020-02-13 10:06:07.626025393 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.2.53.27.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
+--- fw.2.53.27.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2020-08-26 09:47:51.624569420 +0200
++++ fw.2.53.27.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2020-08-26 09:53:32.906649452 +0200
 @@ -204,23 +204,6 @@
  						<td class="CLASS21112">${"$"}{dialogSettingsSDCardStatus}:</td>
  						<td>${SDCardStatus}</td>
@@ -452,9 +452,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/opt/HMServer/pages/StorageSettingsDial
  				</table>
  			</td>
  			<td class="CLASS21113" align="left">
-diff -ruN --no-dereference fw.2.51.6.orig/www/config/cp_maintenance.cgi fw.2.51.6.patched/www/config/cp_maintenance.cgi
---- fw.2.51.6.orig/www/config/cp_maintenance.cgi	2020-02-13 10:00:44.076154596 +0100
-+++ fw.2.51.6.patched/www/config/cp_maintenance.cgi	2020-02-13 10:06:07.626025393 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/www/config/cp_maintenance.cgi fw.2.53.27.patched/www/config/cp_maintenance.cgi
+--- fw.2.53.27.orig/www/config/cp_maintenance.cgi	2020-08-26 09:47:53.320579739 +0200
++++ fw.2.53.27.patched/www/config/cp_maintenance.cgi	2020-08-26 09:53:32.910649476 +0200
 @@ -382,109 +382,13 @@
                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                }
@@ -579,9 +579,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/www/config/cp_maintenance.cgi fw.2.51.
  
      # Hide all elements with class j_noForcedUpdate when an update is enforced
      puts "if (forceUpdate) {"
-diff -ruN --no-dereference fw.2.51.6.orig/www/config/cp_security.cgi fw.2.51.6.patched/www/config/cp_security.cgi
---- fw.2.51.6.orig/www/config/cp_security.cgi	2020-02-13 10:00:44.080154619 +0100
-+++ fw.2.51.6.patched/www/config/cp_security.cgi	2020-02-13 10:06:07.626025393 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/www/config/cp_security.cgi fw.2.53.27.patched/www/config/cp_security.cgi
+--- fw.2.53.27.orig/www/config/cp_security.cgi	2020-08-26 09:47:53.324579763 +0200
++++ fw.2.53.27.patched/www/config/cp_security.cgi	2020-08-26 09:53:32.910649476 +0200
 @@ -292,11 +292,11 @@
  
      if {[getProduct] < 3 } {
@@ -619,9 +619,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/www/config/cp_security.cgi fw.2.51.6.p
      division {class="popupTitle"} {
        puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
      }
-diff -ruN --no-dereference fw.2.51.6.orig/www/config/cp_software.cgi fw.2.51.6.patched/www/config/cp_software.cgi
---- fw.2.51.6.orig/www/config/cp_software.cgi	2020-02-13 10:00:44.060154503 +0100
-+++ fw.2.51.6.patched/www/config/cp_software.cgi	2020-02-13 10:06:07.626025393 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/www/config/cp_software.cgi fw.2.53.27.patched/www/config/cp_software.cgi
+--- fw.2.53.27.orig/www/config/cp_software.cgi	2020-08-26 09:47:53.304579641 +0200
++++ fw.2.53.27.patched/www/config/cp_software.cgi	2020-08-26 09:53:32.958649768 +0200
 @@ -518,7 +518,7 @@
       exec /sbin/reboot
    } else {
@@ -631,9 +631,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/www/config/cp_software.cgi fw.2.51.6.p
    }
    
  }
-diff -ruN --no-dereference fw.2.51.6.orig/www/webui/js/lang/de/translate.lang.js fw.2.51.6.patched/www/webui/js/lang/de/translate.lang.js
---- fw.2.51.6.orig/www/webui/js/lang/de/translate.lang.js	2020-02-13 10:00:43.804153024 +0100
-+++ fw.2.51.6.patched/www/webui/js/lang/de/translate.lang.js	2020-02-13 10:06:07.662025604 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/www/webui/js/lang/de/translate.lang.js fw.2.53.27.patched/www/webui/js/lang/de/translate.lang.js
+--- fw.2.53.27.orig/www/webui/js/lang/de/translate.lang.js	2020-08-26 09:47:52.944577449 +0200
++++ fw.2.53.27.patched/www/webui/js/lang/de/translate.lang.js	2020-08-26 09:53:32.958649768 +0200
 @@ -458,7 +458,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
@@ -644,9 +644,9 @@ diff -ruN --no-dereference fw.2.51.6.orig/www/webui/js/lang/de/translate.lang.js
      "dialogSettingsCMLblAvailableSoftwareVersion" : "Verf%FCgbare Software-Version:",
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Software-Update durchf%FChren",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
-diff -ruN --no-dereference fw.2.51.6.orig/www/webui/js/lang/en/translate.lang.js fw.2.51.6.patched/www/webui/js/lang/en/translate.lang.js
---- fw.2.51.6.orig/www/webui/js/lang/en/translate.lang.js	2020-02-13 10:00:43.804153024 +0100
-+++ fw.2.51.6.patched/www/webui/js/lang/en/translate.lang.js	2020-02-13 10:06:07.662025604 +0100
+diff -ruN --no-dereference fw.2.53.27.orig/www/webui/js/lang/en/translate.lang.js fw.2.53.27.patched/www/webui/js/lang/en/translate.lang.js
+--- fw.2.53.27.orig/www/webui/js/lang/en/translate.lang.js	2020-08-26 09:47:52.956577522 +0200
++++ fw.2.53.27.patched/www/webui/js/lang/en/translate.lang.js	2020-08-26 09:53:32.958649768 +0200
 @@ -457,7 +457,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Shutdown",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
@@ -657,3 +657,15 @@ diff -ruN --no-dereference fw.2.51.6.orig/www/webui/js/lang/en/translate.lang.js
      "dialogSettingsCMLblAvailableSoftwareVersion" : "Available software version:",
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Perform software update",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Step 1: Download new software",
+diff -ruN --no-dereference fw.2.53.27.orig/www/webui/webui.js fw.2.53.27.patched/www/webui/webui.js
+--- fw.2.53.27.orig/www/webui/webui.js	2020-08-26 09:47:53.064578179 +0200
++++ fw.2.53.27.patched/www/webui/webui.js	2020-08-26 09:55:11.055248395 +0200
+@@ -23565,7 +23565,7 @@
+     var script = document.createElement("script");
+     script.id = "homematic_com_script";
+     script.type = "text/javascript";
+-    script.src = this.m_URLServer + "/firmware/download?cmd=js_check_version&version="+WEBUI_VERSION+"&product="+this.m_product+"&serial=" + serial;
++    script.src = "https://www.pivccu.de/latestVersion?version=@@@pivccu_version@@@&product="+this.m_product+"&serial=" + serial;
+     $("body").appendChild(script);
+   },
+ 
