@@ -28,6 +28,7 @@
 #include <linux/inet.h>
 #include <net/sock.h>
 #include <linux/kthread.h>
+#include <linux/workqueue.h>
 #include "generic_raw_uart.h"
 
 #define HB_RF_ETH_PORT 3008
@@ -50,7 +51,6 @@ static spinlock_t gpio_lock;
 static u8 gpio_value = 0;
 
 static struct socket *sock = NULL;
-static struct msghdr header = {0};
 static struct sockaddr_in remote = {0};
 static atomic_t msg_cnt = ATOMIC_INIT(0);
 static struct task_struct *k_recv_thread = NULL;
@@ -93,6 +93,7 @@ static void hb_rf_eth_send_msg(char *buffer, size_t len)
 {
   struct kvec vec = {0};
   mm_segment_t oldmm;
+  struct msghdr header = {0};
 
   *((uint8_t *)(buffer + 1)) = (uint8_t)(atomic_inc_return(&msg_cnt));
   *((uint16_t *)(buffer + len - 2)) = (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len - 2)));
@@ -101,6 +102,12 @@ static void hb_rf_eth_send_msg(char *buffer, size_t len)
   {
     vec.iov_len = len;
     vec.iov_base = buffer;
+
+    header.msg_name = &remote;
+    header.msg_namelen = sizeof(struct sockaddr_in);
+    header.msg_control = NULL;
+    header.msg_controllen = 0;
+    header.msg_flags = 0;
 
     oldmm = get_fs();
     set_fs(KERNEL_DS);
@@ -175,12 +182,6 @@ static int hb_rf_eth_try_connect(char endpointIdentifier)
   set_fs(KERNEL_DS);
   kernel_setsockopt(sock, SOL_SOCKET, MY_SO_RCVTIMEO, (char *)&tv, sizeof(tv));
   set_fs(fs);
-
-  header.msg_name = &remote;
-  header.msg_namelen = sizeof(struct sockaddr_in);
-  header.msg_control = NULL;
-  header.msg_controllen = 0;
-  header.msg_flags = 0;
 
   err = sock->ops->connect(sock, (struct sockaddr *)&remote, sizeof(remote), 0);
   if (err < 0)
@@ -358,11 +359,13 @@ static void hb_rf_eth_disconnect(void)
   }
 }
 
-static void hb_rf_eth_send_gpio(void)
+static void hb_rf_eth_send_gpio(struct work_struct *work)
 {
   char buffer[5] = {3, 0, gpio_value, 0, 0};
   hb_rf_eth_send_msg(buffer, sizeof(buffer));
 }
+
+static DECLARE_WORK(hb_rf_eth_send_gpio_work, hb_rf_eth_send_gpio);
 
 static int hb_rf_eth_gpio_request(struct gpio_chip *gc, unsigned int offset)
 {
@@ -403,7 +406,7 @@ static void hb_rf_eth_gpio_set(struct gpio_chip *gc, unsigned int gpio, int valu
   else
     gpio_value &= ~BIT(gpio);
 
-  hb_rf_eth_send_gpio();
+  queue_work(system_highpri_wq, &hb_rf_eth_send_gpio_work);
 
   spin_unlock_irqrestore(&gpio_lock, lock_flags);
 }
@@ -426,7 +429,7 @@ static void hb_rf_eth_gpio_set_multiple(struct gpio_chip *gc, unsigned long *mas
   gpio_value &= ~(*mask);
   gpio_value |= *bits & *mask;
 
-  hb_rf_eth_send_gpio();
+  queue_work(system_highpri_wq, &hb_rf_eth_send_gpio_work);
 
   spin_unlock_irqrestore(&gpio_lock, lock_flags);
 }
@@ -576,6 +579,8 @@ static void __exit hb_rf_eth_exit(void)
   if (raw_uart)
     generic_raw_uart_remove(raw_uart, dev, &hb_rf_eth);
 
+  cancel_work_sync(&hb_rf_eth_send_gpio_work);
+
   gpiochip_remove(&gc);
 
   hb_rf_eth_disconnect();
@@ -611,5 +616,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.2");
+MODULE_VERSION("1.3");
 MODULE_LICENSE("GPL");
