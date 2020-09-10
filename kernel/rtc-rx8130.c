@@ -771,7 +771,8 @@ static int rx8130_probe(struct i2c_client *client, const struct i2c_device_id *i
 	{
 		struct rtc_time tm;
 		dev_info(&client->dev, "bad conditions detected, resetting date\n");
-		rtc_time_to_tm(0, &tm); // set to 1970/1/1
+		rtc_time64_to_tm(0, &tm); // set to 1970/1/1
+
 		rx8130_set_time(&client->dev, &tm);
 	}
 
@@ -852,4 +853,4 @@ module_i2c_driver(rx8130_driver);
 MODULE_AUTHOR("Val Krutov <vkrutov@eea.epson.com>");
 MODULE_DESCRIPTION("RX8130CE RTC driver");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.3");
+MODULE_VERSION("1.4");

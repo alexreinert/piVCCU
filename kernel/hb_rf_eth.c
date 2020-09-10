@@ -38,19 +38,13 @@
 
 #define BUFFER_SIZE 1500
 
-#if defined(SO_RCVTIMEO_OLD)
-  #define MY_SO_RCVTIMEO SO_RCVTIMEO_OLD
-#else
-  #define MY_SO_RCVTIMEO SO_RCVTIMEO
-#endif
-
 static short int autoreconnect = 1;
 
 static struct gpio_chip gc = {0};
 static spinlock_t gpio_lock;
 static u8 gpio_value = 0;
 
-static struct socket *sock = NULL;
+static struct socket *_sock = NULL;
 static struct sockaddr_in remote = {0};
 static atomic_t msg_cnt = ATOMIC_INIT(0);
 static struct task_struct *k_recv_thread = NULL;
@@ -89,7 +83,7 @@ static uint16_t hb_rf_eth_calc_crc(unsigned char *buf, size_t len)
   return crc;
 }
 
-static void hb_rf_eth_send_msg(char *buffer, size_t len)
+static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
 {
   struct kvec vec = {0};
   mm_segment_t oldmm;
@@ -123,12 +117,15 @@ static void hb_rf_eth_send_msg(char *buffer, size_t len)
   }
 }
 
-static int hb_rf_eth_recv_packet(char *buffer, size_t buffer_size)
+static int hb_rf_eth_recv_packet(struct socket *sock, char *buffer, size_t buffer_size)
 {
   struct kvec vec = {0};
   mm_segment_t oldmm;
   struct msghdr msg = {0};
   int len;
+
+  if (sock == NULL)
+    return -EPROTO;
 
   vec.iov_len = buffer_size;
   vec.iov_base = buffer;
@@ -159,48 +156,58 @@ static int hb_rf_eth_recv_packet(char *buffer, size_t buffer_size)
   return len;
 }
 
+static void hb_rf_eth_set_timeout(struct socket *sock)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+  struct __kernel_sock_timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
+  #define MY_SO_RCVTIMEO SO_RCVTIMEO_NEW
+#else
+  struct timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
+  #define MY_SO_RCVTIMEO SO_RCVTIMEO
+#endif
+
+  mm_segment_t fs = get_fs();
+  set_fs(KERNEL_DS);
+  sock_setsockopt(sock, SOL_SOCKET, MY_SO_RCVTIMEO, (char *)&tv, sizeof(tv));
+  set_fs(fs);
+}
+
 static int hb_rf_eth_try_connect(char endpointIdentifier)
 {
   int err;
-  mm_segment_t fs;
-  struct timeval tv = {0, 100000};
   char buffer[6] = {0, 0, HB_RF_ETH_PROTOCOL_VERSION, endpointIdentifier, 0, 0};
   unsigned long timeout;
   char *recv_buffer;
   int len;
+  struct socket *sock;
 
   err = sock_create_kern(&init_net, AF_INET, SOCK_DGRAM, IPPROTO_UDP, &sock);
 
   if (err < 0)
   {
     dev_err(dev, "Error %d while creating socket\n", err);
-    sock = NULL;
     return err;
   }
 
-  fs = get_fs();
-  set_fs(KERNEL_DS);
-  kernel_setsockopt(sock, SOL_SOCKET, MY_SO_RCVTIMEO, (char *)&tv, sizeof(tv));
-  set_fs(fs);
+  hb_rf_eth_set_timeout(sock);
 
   err = sock->ops->connect(sock, (struct sockaddr *)&remote, sizeof(remote), 0);
   if (err < 0)
   {
     dev_err(dev, "Error %d while connecting to %pI4\n", err, &remote.sin_addr);
     sock_release(sock);
-    sock = NULL;
     return err;
   }
   else
   {
-    hb_rf_eth_send_msg(buffer, sizeof(buffer));
+    hb_rf_eth_send_msg(sock, buffer, sizeof(buffer));
 
     err = -ETIMEDOUT;
     recv_buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
     timeout = jiffies + msecs_to_jiffies(50);
     while (time_before(jiffies, timeout))
     {
-      len = hb_rf_eth_recv_packet(recv_buffer, BUFFER_SIZE);
+      len = hb_rf_eth_recv_packet(sock, recv_buffer, BUFFER_SIZE);
       if (len == 7)
       {
         if (recv_buffer[0] == 0 && recv_buffer[2] == HB_RF_ETH_PROTOCOL_VERSION && recv_buffer[3] == buffer[1])
@@ -216,10 +223,11 @@ static int hb_rf_eth_try_connect(char endpointIdentifier)
     {
       dev_err(dev, "Timeout occured while connecting to %pI4\n", &remote.sin_addr);
       sock_release(sock);
-      sock = NULL;
       return err;
     }
   }
+
+  _sock = sock;
   return 0;
 }
 
@@ -235,7 +243,7 @@ static int hb_rf_eth_recv_threadproc(void *data)
 
   while (!kthread_should_stop())
   {
-    len = hb_rf_eth_recv_packet(buffer, BUFFER_SIZE);
+    len = hb_rf_eth_recv_packet(_sock, buffer, BUFFER_SIZE);
     if (len >= 4)
     {
       switch (buffer[0])
@@ -260,16 +268,20 @@ static int hb_rf_eth_recv_threadproc(void *data)
     if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000)))
     {
       dev_err(dev, "Did not receive any packet in the last 5 seconds, terminating connection.\n");
-      sock_release(sock);
-      sock = NULL;
+      sock_release(_sock);
+      _sock = NULL;
 
       if (autoreconnect)
       {
         while (!kthread_should_stop())
         {
           dev_info(dev, "Trying to reconnect to %pI4\n", &remote.sin_addr);
-          if (!IS_ERR(hb_rf_eth_try_connect(currentEndpointIdentifier)))
+          if (hb_rf_eth_try_connect(currentEndpointIdentifier) == 0)
+          {
+            lastReceivedKeepAlive = jiffies;
+            dev_info(dev, "Successfully connected to %pI4\n", &remote.sin_addr);
             break;
+          }
 	  msleep_interruptible(500);
         }
 	continue;
@@ -284,7 +296,7 @@ static int hb_rf_eth_recv_threadproc(void *data)
     {
       nextKeepAliveSentOut = jiffies + msecs_to_jiffies(1000);
       buffer[0] = 2;
-      hb_rf_eth_send_msg(buffer, 4);
+      hb_rf_eth_send_msg(_sock, buffer, 4);
     }
   }
 
@@ -297,7 +309,7 @@ exit:
 static void hb_rf_eth_send_reset(void)
 {
   char buffer[4] = {4, 0, 0, 0};
-  hb_rf_eth_send_msg(buffer, sizeof(buffer));
+  hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
   msleep(100);
 }
 
@@ -318,7 +330,7 @@ static int hb_rf_eth_connect(const char *ip)
   remote.sin_port = htons(HB_RF_ETH_PORT);
 
   err = hb_rf_eth_try_connect(0);
-  if (IS_ERR(err))
+  if (err != 0)
   {
     return err;
   }
@@ -329,8 +341,8 @@ static int hb_rf_eth_connect(const char *ip)
     err = PTR_ERR(k_recv_thread);
     dev_err(dev, "Error creating receiver thread\n");
     k_recv_thread = NULL;
-    sock_release(sock);
-    sock = NULL;
+    sock_release(_sock);
+    _sock = NULL;
     return err;
   }
 
@@ -351,18 +363,18 @@ static void hb_rf_eth_disconnect(void)
     k_recv_thread = NULL;
   }
 
-  if (sock)
+  if (_sock)
   {
-    hb_rf_eth_send_msg(buffer, sizeof(buffer));
-    sock_release(sock);
-    sock = NULL;
+    hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
+    sock_release(_sock);
+    _sock = NULL;
   }
 }
 
 static void hb_rf_eth_send_gpio(struct work_struct *work)
 {
   char buffer[5] = {3, 0, gpio_value, 0, 0};
-  hb_rf_eth_send_msg(buffer, sizeof(buffer));
+  hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
 }
 
 static DECLARE_WORK(hb_rf_eth_send_gpio_work, hb_rf_eth_send_gpio);
@@ -458,7 +470,7 @@ static void hb_rf_eth_reset_radio_module(struct generic_raw_uart *raw_uart)
 static int hb_rf_eth_start_connection(struct generic_raw_uart *raw_uart)
 {
   char buffer[4] = {5, 0, 0, 0};
-  hb_rf_eth_send_msg(buffer, sizeof(buffer));
+  hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
   msleep(20);
   return 0;
 }
@@ -466,7 +478,7 @@ static int hb_rf_eth_start_connection(struct generic_raw_uart *raw_uart)
 static void hb_rf_eth_stop_connection(struct generic_raw_uart *raw_uart)
 {
   char buffer[4] = {6, 0, 0, 0};
-  hb_rf_eth_send_msg(buffer, sizeof(buffer));
+  hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
   msleep(20);
 }
 
@@ -485,7 +497,7 @@ static void hb_rf_eth_tx_chars(struct generic_raw_uart *raw_uart, unsigned char 
 {
   tx_char_buffer[0] = 7;
   memcpy(&tx_char_buffer[2], &chr[index], len);
-  hb_rf_eth_send_msg(tx_char_buffer, len + 4);
+  hb_rf_eth_send_msg(_sock, tx_char_buffer, len + 4);
 }
 
 static void hb_rf_eth_init_tx(struct generic_raw_uart *raw_uart)
@@ -495,7 +507,7 @@ static void hb_rf_eth_init_tx(struct generic_raw_uart *raw_uart)
 
 static bool hb_rf_eth_is_connected(struct generic_raw_uart *raw_uart)
 {
-  return sock != NULL;
+  return _sock != NULL;
 }
 
 static struct raw_uart_driver hb_rf_eth = {
@@ -616,5 +628,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.3");
+MODULE_VERSION("1.4");
 MODULE_LICENSE("GPL");

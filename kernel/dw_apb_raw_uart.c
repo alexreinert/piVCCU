@@ -258,7 +258,7 @@ static irqreturn_t dw_apb_raw_uart_irq_handle(int irq, void *context)
     {
       (void)dw_apb_raw_uart_readb(UART_RX);
     }
-    // no break, fall through
+    // fall through
 
   case UART_IIR_RDI:
     dw_apb_raw_uart_rx_chars(raw_uart);

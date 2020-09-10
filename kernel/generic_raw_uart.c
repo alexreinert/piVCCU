@@ -120,7 +120,7 @@ static int generic_raw_uart_proc_open(struct inode *inode, struct file *file);
 #endif /*PROC_DEBUG*/
 
 static struct file_operations generic_raw_uart_fops =
-    {
+{
         .owner = THIS_MODULE,
         .llseek = no_llseek,
         .read = generic_raw_uart_read,
@@ -133,6 +133,15 @@ static struct file_operations generic_raw_uart_fops =
 };
 
 #ifdef PROC_DEBUG
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0))
+static const struct proc_ops generic_raw_uart_proc_fops =
+    {
+        .proc_open = generic_raw_uart_proc_open,
+        .proc_read = seq_read,
+        .proc_lseek = seq_lseek,
+        .proc_release = single_release,
+};
+#else
 static const struct file_operations generic_raw_uart_proc_fops =
     {
         .owner = THIS_MODULE,
@@ -141,6 +150,7 @@ static const struct file_operations generic_raw_uart_proc_fops =
         .llseek = seq_lseek,
         .release = single_release,
 };
+#endif
 #endif /*PROC_DEBUG*/
 
 static bool generic_raw_uart_is_connected(struct generic_raw_uart_instance *instance)
@@ -998,6 +1008,6 @@ MODULE_PARM_DESC(load_dummy_rx8130_module, "Loads the dummy_rx8130 module");
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.14");
+MODULE_VERSION("1.15");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
