@@ -1,0 +1,10 @@
+Package: detect-radio-module
+Version: {PKG_VERSION}
+Architecture: {PKG_ARCH}
+Maintainer: Alexander Reinert <alex@areinert.de>
+Section: misc
+Priority: extra
+Homepage: https://github.com/alexreinert/piVCCU
+Description: detect_radio_module
+  This package contains a tool to identify Homematic radio modules
+

@@ -16,7 +16,7 @@ case $PIVCCU_HMRF_MODE in
     fi
 
     if [ -z "$PIVCCU_FAKE_RADIO_MAC" ]; then
-      PIVCCU_FAKE_RADIO_MAC=`shuf -i 1-16777215 -n 1`
+      PIVCCU_FAKE_RADIO_MAC=`shuf -i 16711680-16777214 -n 1`
       PIVCCU_FAKE_RADIO_MAC=`printf "0x%06x" $PIVCCU_FAKE_RADIO_MAC`
       echo "PIVCCU_FAKE_RADIO_MAC=\"$PIVCCU_FAKE_RADIO_MAC\"" >> /etc/default/pivccu3
     fi
@@ -31,6 +31,7 @@ case $PIVCCU_HMRF_MODE in
 
     BOARD_SERIAL=$PIVCCU_FAKE_SERIAL
     RADIO_MAC=$PIVCCU_FAKE_RADIO_MAC
+    HMIP_RADIO_MAC=$PIVCCU_FAKE_RADIO_MAC
 
     mount --bind /dev /var/lib/piVCCU3/rootfs/dev
     mount --bind /proc /var/lib/piVCCU3/rootfs/proc
@@ -100,7 +101,7 @@ case $PIVCCU_HMRF_MODE in
           modprobe -q hb_rf_usb-2
 
           for try in {0..30}; do
-            lsmod | grep -q hb_rf_usb
+            lsmod | grep -q hb_rf_usb-2
             if [ $? -eq 0 ]; then
               break
             fi
@@ -117,9 +118,6 @@ case $PIVCCU_HMRF_MODE in
       fi
     done
 
-    mount --bind /dev /var/lib/piVCCU3/rootfs/dev
-    mount --bind /proc /var/lib/piVCCU3/rootfs/proc
-
     for dev_no in {0..5}
     do
       if [ $dev_no -eq 0 ]; then
@@ -134,32 +132,19 @@ case $PIVCCU_HMRF_MODE in
         UART_MAJOR=`cat /sys/class/raw-uart/$UART_DEV/dev | cut -d: -f1`
         UART_MINOR=`cat /sys/class/raw-uart/$UART_DEV/dev | cut -d: -f2`
 
-        RADIO_MAC=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd read-default-rf-address -f /dev/$UART_DEV -h 2>&1 | grep "^0x"` || true
-        if [ -z "$RADIO_MAC" ] || [ "$RADIO_MAC" == "0x000000" ] || [[ "$RADIO_MAC" =~ ^0x..ffff$ ]]; then
-          RF_RPI_MOD_INFO=`timeout 20 chroot /var/lib/piVCCU3/rootfs /opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=/dev/$UART_DEV -jar /opt/HmIP/hmip-copro-update.jar -p /dev/$UART_DEV -v 2>&1` || true
-          RADIO_MAC=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*Radio address = \([0-9A-Fa-f]\{6\}\).*/0x\1/p'`
-          SGTIN=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p'`
-          FW_VERSION=`echo "$RF_RPI_MOD_INFO" | sed -n 's/.*Application version = \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p'`
+        MODULE_INFO=`detect_radio_module /dev/$UART_DEV`
+        if [ $? -eq 0 ]; then
+          HMRF_HARDWARE=`echo $MODULE_INFO | cut -d' ' -f1`
+          BOARD_SERIAL=`echo $MODULE_INFO | cut -d' ' -f2`
+          SGTIN=`echo $MODULE_INFO | cut -d' ' -f3`
+          RADIO_MAC=`echo $MODULE_INFO | cut -d' ' -f4`
+          HMIP_RADIO_MAC=`echo $MODULE_INFO | cut -d' ' -f5`
+          FW_VERSION=`echo $MODULE_INFO | cut -d' ' -f6`
 
-          if [ ! -z "$RADIO_MAC" ] || [ ! -z "$SGTIN" ] ; then
-            HMRF_HARDWARE='RPI-RF-MOD'
-            BOARD_SERIAL=`echo -n "$SGTIN" | tail -c 10`
-          fi
-        else
-          HMRF_HARDWARE='HM-MOD-RPI-PCB'
-          SGTIN=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd update-coprocessor -p /dev/$UART_DEV -t HM-MOD-UART -c -sg 2>&1 | grep "SGTIN:" | cut -d' ' -f5`
-          BOARD_SERIAL=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd update-coprocessor -p /dev/$UART_DEV -t HM-MOD-UART -c -se 2>&1 | grep "SerialNumber:" | cut -d' ' -f5`
-          FW_VERSION=`chroot /var/lib/piVCCU3/rootfs /bin/eq3configcmd update-coprocessor -p /dev/$UART_DEV -t HM-MOD-UART -c -v 2>&1 | grep "Version:" | cut -d' ' -f5`
-        fi
-
-        if [ ! -z "$HMRF_HARDWARE" ]; then
           break
         fi
       fi
     done
-
-    umount /var/lib/piVCCU3/rootfs/dev
-    umount /var/lib/piVCCU3/rootfs/proc
     ;;
 esac
 
@@ -215,19 +200,14 @@ case $PIVCCU_HMIP_MODE in
     else
       HMIP_HARDWARE='HMIP-RFUSB'
 
-      mount --bind /dev /var/lib/piVCCU3/rootfs/dev
-      mount --bind /proc /var/lib/piVCCU3/rootfs/proc
+      MODULE_INFO=`detect_radio_module $HMIP_DEVNAME`
+      SGTIN=`echo $MODULE_INFO | cut -d' ' -f3`
+      HMIP_RADIO_MAC=`echo $MODULE_INFO | cut -d' ' -f5`
+      FW_VERSION=`echo $MODULE_INFO | cut -d' ' -f6`
 
-      HMIP_INFO=`timeout 20 chroot /var/lib/piVCCU3/rootfs /opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=$HMIP_DEVNAME -jar /opt/HmIP/hmip-copro-update.jar -p $HMIP_DEVNAME -v 2>&1` || true
-      SGTIN=`echo "$HMIP_INFO" | sed -n 's/.*SGTIN = \([0-9A-Fa-f]\{24\}\).*/\1/p'`
-      FW_VERSION=`echo "$HMIP_INFO" | sed -n 's/.*Application version = \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p'`
-
-      if [[ "$SGTIN" =~ "3014f5ac94" ]]; then
-       HMIP_HARDWARE='HMIP-RFUSB-TK'
+      if [[ "$SGTIN" =~ "3014F5AC94" ]]; then
+        HMIP_HARDWARE='HMIP-RFUSB-TK'
       fi
-
-      umount /var/lib/piVCCU3/rootfs/dev
-      umount /var/lib/piVCCU3/rootfs/proc
     fi
     ;;
 esac
