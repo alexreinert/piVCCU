@@ -45,25 +45,34 @@ if [ -z "$HMRF_HARDWARE" ]; then
 fi
 echo "HMRF Hardware:  $HMRF_HARDWARE"
 
+if [ -z "$UART_DEVICE_TYPE" ]; then
+  echo " Connected via: $UART_DEVICE_TYPE (/dev/$UART_DEV)"
+fi
+
+if [ -z "$BOARD_SERIAL" ]; then
+  BOARD_SERIAL='unknown'
+fi
+echo " Board serial:  $BOARD_SERIAL"
+
+if [ -z "$RADIO_MAC" ]; then
+  RADIO_MAC='unknown'
+fi
+echo " Radio MAC:     $RADIO_MAC"
+
 if [ -z "$HMIP_HARDWARE" ]; then
   HMIP_HARDWARE='unknown'
 fi
 echo "HMIP Hardware:  $HMIP_HARDWARE"
 
-if [ -z "$BOARD_SERIAL" ]; then
-  BOARD_SERIAL='unknown'
-fi
-echo "Board serial:   $BOARD_SERIAL"
-
-if [ -z "$RADIO_MAC" ]; then
-  RADIO_MAC='unknown'
-fi
-echo "Radio MAC:      $RADIO_MAC"
-
 if [ -z "$SGTIN" ]; then
   SGTIN='unknown'
 fi
-echo "SGTIN:          $SGTIN"
+echo " SGTIN:         $SGTIN"
+
+if [ -z "$HMIP_RADIO_MAC" ]; then
+  HMIP_RADIO_MAC='unknown'
+fi
+echo " Radio MAC:     $HMIP_RADIO_MAC"
 
 /usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --ips --pid --stats --state
 

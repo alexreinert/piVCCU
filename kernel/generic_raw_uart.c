@@ -153,16 +153,6 @@ static const struct file_operations generic_raw_uart_proc_fops =
 #endif
 #endif /*PROC_DEBUG*/
 
-static bool generic_raw_uart_is_connected(struct generic_raw_uart_instance *instance)
-{
-  if (instance->driver->is_connected == 0)
-  {
-    return true;
-  }
-
-  return instance->driver->is_connected(&instance->raw_uart);
-}
-
 static ssize_t generic_raw_uart_read(struct file *filep, char __user *buf, size_t count, loff_t *offset)
 {
   struct generic_raw_uart_instance *instance = container_of(filep->f_inode->i_cdev, struct generic_raw_uart_instance, cdev);
@@ -811,6 +801,21 @@ static ssize_t blue_gpio_pin_show(struct device *dev, struct device_attribute *a
 }
 static DEVICE_ATTR_RO(blue_gpio_pin);
 
+static ssize_t device_type_show(struct device *dev, struct device_attribute *attr, char *page)
+{
+  struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
+  if (instance->driver->get_device_type == 0)
+  {
+    return sprintf(page, "GPIO\n");
+  }
+  else
+  {
+    return instance->driver->get_device_type(&instance->raw_uart, page);
+  }
+}
+static DEVICE_ATTR_RO(device_type);
+
+
 static spinlock_t active_devices_lock;
 static bool active_devices[MAX_DEVICES] = {false};
 
@@ -894,6 +899,8 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   instance->green_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_GREEN);
   instance->blue_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_BLUE);
 
+  err = sysfs_create_file(&instance->dev->kobj, &dev_attr_device_type.attr);
+
   err = sysfs_create_file(&instance->dev->kobj, &dev_attr_red_gpio_pin.attr);
   err = sysfs_create_file(&instance->dev->kobj, &dev_attr_green_gpio_pin.attr);
   err = sysfs_create_file(&instance->dev->kobj, &dev_attr_blue_gpio_pin.attr);
@@ -936,6 +943,8 @@ int generic_raw_uart_remove(struct generic_raw_uart *raw_uart, struct device *de
 #ifdef PROC_DEBUG
   remove_proc_entry(dev_name(instance->dev), NULL);
 #endif
+
+  sysfs_remove_file(&instance->dev->kobj, &dev_attr_device_type.attr);
 
   sysfs_remove_file(&instance->dev->kobj, &dev_attr_red_gpio_pin.attr);
   sysfs_remove_file(&instance->dev->kobj, &dev_attr_green_gpio_pin.attr);
@@ -1008,6 +1017,6 @@ MODULE_PARM_DESC(load_dummy_rx8130_module, "Loads the dummy_rx8130 module");
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.15");
+MODULE_VERSION("1.16");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

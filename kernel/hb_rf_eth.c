@@ -316,6 +316,7 @@ static void hb_rf_eth_send_reset(void)
 static int hb_rf_eth_connect(const char *ip)
 {
   int err;
+  __be32 addr;
 
   if (ip[0] == 0)
   {
@@ -323,9 +324,10 @@ static int hb_rf_eth_connect(const char *ip)
     return -EINVAL;
   }
 
-  dev_info(dev, "Trying to connect to %s\n", ip);
+  addr = in_aton(ip);
+  dev_info(dev, "Trying to connect to %pI4\n", &addr);
 
-  remote.sin_addr.s_addr = in_aton(ip);
+  remote.sin_addr.s_addr = addr;
   remote.sin_family = AF_INET;
   remote.sin_port = htons(HB_RF_ETH_PORT);
 
@@ -505,9 +507,16 @@ static void hb_rf_eth_init_tx(struct generic_raw_uart *raw_uart)
   // nothing to do
 }
 
-static bool hb_rf_eth_is_connected(struct generic_raw_uart *raw_uart)
+static int hb_rf_eth_get_device_type(struct generic_raw_uart *raw_uart, char *page)
 {
-  return _sock != NULL;
+  if (_sock != NULL)
+  {
+    return sprintf(page, "HB-RF-ETH@%pI4\n", &remote.sin_addr);
+  }
+  else
+  {
+    return sprintf(page, "HB-RF-ETH@-\n");
+  }
 }
 
 static struct raw_uart_driver hb_rf_eth = {
@@ -519,10 +528,40 @@ static struct raw_uart_driver hb_rf_eth = {
     .isready_for_tx = hb_rf_eth_isready_for_tx,
     .tx_chars = hb_rf_eth_tx_chars,
     .stop_tx = hb_rf_eth_stop_tx,
+    .get_device_type = hb_rf_eth_get_device_type,
     .tx_chunk_size = TX_CHUNK_SIZE,
     .tx_bulktransfer_size = TX_CHUNK_SIZE,
-    .is_connected = hb_rf_eth_is_connected,
 };
+
+static ssize_t connect_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+  int err;
+  char ip[count + 1];
+
+  if (count == 0)
+    return 0;
+
+  hb_rf_eth_disconnect();
+
+  if (buf[0] == 0 || buf[0] == '-')
+  {
+    return count;
+  }
+
+  memcpy(ip, buf, count);
+  ip[count] = 0;
+
+  err = hb_rf_eth_connect(ip);
+
+  return err == 0 ? count : err;
+}
+static DEVICE_ATTR_WO(connect);
+
+static ssize_t is_connected_show(struct device *dev, struct device_attribute *attr, char *page)
+{
+  return sprintf(page, "%d\n", _sock != NULL ? 1 : 0);
+}
+static DEVICE_ATTR_RO(is_connected);
 
 static int __init hb_rf_eth_init(void)
 {
@@ -574,6 +613,9 @@ static int __init hb_rf_eth_init(void)
     goto failed_raw_uart_probe;
   }
 
+  sysfs_create_file(&dev->kobj, &dev_attr_is_connected.attr);
+  sysfs_create_file(&dev->kobj, &dev_attr_connect.attr);
+
   return 0;
 
 failed_raw_uart_probe:
@@ -590,6 +632,9 @@ static void __exit hb_rf_eth_exit(void)
 {
   if (raw_uart)
     generic_raw_uart_remove(raw_uart, dev, &hb_rf_eth);
+
+  sysfs_remove_file(&dev->kobj, &dev_attr_is_connected.attr);
+  sysfs_remove_file(&dev->kobj, &dev_attr_connect.attr);
 
   cancel_work_sync(&hb_rf_eth_send_gpio_work);
 
@@ -618,7 +663,7 @@ static const struct kernel_param_ops hb_rf_eth_connect_param_ops = {
 };
 
 module_param_cb(connect, &hb_rf_eth_connect_param_ops, NULL, S_IWUSR);
-MODULE_PARM_DESC(connect, "Connects the module to a HB-RF-ETH pcb");
+MODULE_PARM_DESC(connect, "Deprecated! Use /sys/class/hb-rf-eth/hb-rf-eth/connect instead.");
 
 module_param(autoreconnect, short, S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(autoreconnect, "If enabled, the module will automatically try to reconnect");
@@ -628,5 +673,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.4");
+MODULE_VERSION("1.5");
 MODULE_LICENSE("GPL");

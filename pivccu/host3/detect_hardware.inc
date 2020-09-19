@@ -61,15 +61,11 @@ case $PIVCCU_HMRF_MODE in
         fi
 
         for try in {0..30}; do
-          ping -c1 $HB_RF_ETH_ADDRESS > /dev/null
-          if [ $? -eq 0 ]; then
-            break
-          fi
-          sleep 1
-        done
-
-        for try in {0..30}; do
-          echo "$HB_RF_ETH_ADDRESS" > /sys/module/hb_rf_eth/parameters/connect && break
+          if [ -e /sys/class/hb-rf-eth/hb-rf-eth/connect ]; then
+            echo "$HB_RF_ETH_ADDRESS" > /sys/class/hb-rf-eth/hb-rf-eth/connect && break
+	  else
+            echo "$HB_RF_ETH_ADDRESS" > /sys/module/hb_rf_eth/parameters/connect && break
+	  fi
           sleep 1
         done
     fi
@@ -129,11 +125,14 @@ case $PIVCCU_HMRF_MODE in
       if [ -e "/dev/$UART_DEV" ]; then
         echo 1 > /sys/class/raw-uart/$UART_DEV/reset_radio_module
 
-        UART_MAJOR=`cat /sys/class/raw-uart/$UART_DEV/dev | cut -d: -f1`
-        UART_MINOR=`cat /sys/class/raw-uart/$UART_DEV/dev | cut -d: -f2`
-
         MODULE_INFO=`detect_radio_module /dev/$UART_DEV`
         if [ $? -eq 0 ]; then
+          if [ -e "/sys/class/raw-uart/$UART_DEV/device_type" ]; then
+            UART_DEVICE_TYPE=`cat /sys/class/raw-uart/$UART_DEV/device_type`
+          fi
+          UART_MAJOR=`cat /sys/class/raw-uart/$UART_DEV/dev | cut -d: -f1`
+          UART_MINOR=`cat /sys/class/raw-uart/$UART_DEV/dev | cut -d: -f2`
+
           HMRF_HARDWARE=`echo $MODULE_INFO | cut -d' ' -f1`
           BOARD_SERIAL=`echo $MODULE_INFO | cut -d' ' -f2`
           SGTIN=`echo $MODULE_INFO | cut -d' ' -f3`

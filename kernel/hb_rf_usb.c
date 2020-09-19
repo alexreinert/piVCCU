@@ -421,6 +421,12 @@ static void hb_rf_usb_reset_radio_module(struct generic_raw_uart *raw_uart)
   msleep(50);
 }
 
+static int hb_rf_usb_get_device_type(struct generic_raw_uart *raw_uart, char *page)
+{
+  struct hb_rf_usb_port_s *port = raw_uart->driver_data;
+  return sprintf(page, "HB-RF-USB@usb-%s-%s\n", port->udev->bus->bus_name, port->udev->devpath);
+}
+
 static struct raw_uart_driver hb_rf_usb = {
     .get_gpio_pin_number = hb_rf_usb_get_gpio_pin_number,
     .reset_radio_module = hb_rf_usb_reset_radio_module,
@@ -430,6 +436,7 @@ static struct raw_uart_driver hb_rf_usb = {
     .isready_for_tx = hb_rf_usb_isready_for_tx,
     .tx_chars = hb_rf_usb_tx_chars,
     .stop_tx = hb_rf_usb_stop_tx,
+    .get_device_type = hb_rf_usb_get_device_type,
     .tx_chunk_size = TX_CHUNK_SIZE,
     .tx_bulktransfer_size = TX_CHUNK_SIZE,
 };
@@ -530,6 +537,6 @@ module_init(hb_rf_usb_init);
 module_exit(hb_rf_usb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.4");
+MODULE_VERSION("1.5");
 MODULE_DESCRIPTION("HB-RF-USB raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
