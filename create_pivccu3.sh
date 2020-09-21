@@ -4,7 +4,7 @@ CCU_VERSION=3.53.30
 CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/firmware/ccu3-firmware/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=46
+PKG_BUILD=47
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -65,7 +65,7 @@ cp -p $CURRENT_DIR/pivccu/host3/*.sh $CNT_ROOT
 cp -p $CURRENT_DIR/pivccu/host3/*.inc $CNT_ROOT
 
 mkdir -p $TARGET_DIR/lib/systemd/system/
-cp -p $CURRENT_DIR/pivccu/host3/pivccu.service $TARGET_DIR/lib/systemd/system/
+cp -p $CURRENT_DIR/pivccu/host3/*.service $TARGET_DIR/lib/systemd/system/
 
 mkdir -p $TARGET_DIR/DEBIAN
 cp -p $CURRENT_DIR/package/pivccu3/* $TARGET_DIR/DEBIAN

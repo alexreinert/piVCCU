@@ -1,0 +1,10 @@
+Package: wait-sysfs-notify
+Version: {PKG_VERSION}
+Architecture: {PKG_ARCH}
+Maintainer: Alexander Reinert <alex@areinert.de>
+Section: misc
+Priority: extra
+Homepage: https://github.com/alexreinert/piVCCU
+Description: wait_sysfs_notify
+  This package contains a tool to wait for a sysfs_notify on a sysfs entry
+

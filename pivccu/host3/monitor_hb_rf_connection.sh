@@ -1,0 +1,29 @@
+#!/bin/bash
+
+echo -n "Waiting for CCU startup "
+while true; do
+  if [ -e /tmp/pivccu-var/status/startupFinished ] && [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --state --no-humanize` == "RUNNING" ]; then
+    echo " Done."
+    break
+  fi
+  echo -n "."
+  sleep 1
+done
+
+/usr/bin/lxc-attach --lxcpath /var/lib/piVCCU3/ --name lxc -- /etc/piVCCU3/set_hb_rf_eth_connection_dp.tcl false || true
+
+while true; do
+  STATE=`wait_sysfs_notify /sys/class/hb-rf-eth/hb-rf-eth/is_connected`
+  if [ $? != 0 ]; then
+    exit
+  fi
+
+  if [ "$STATE" -eq "1" ]; then
+    echo "HB-RF-ETH has reconnected"
+    /usr/bin/lxc-attach --lxcpath /var/lib/piVCCU3/ --name lxc -- /etc/piVCCU3/set_hb_rf_eth_connection_dp.tcl false || true
+  else
+    echo "HB-RF-ETH is not connected anymore"
+    /usr/bin/lxc-attach --lxcpath /var/lib/piVCCU3/ --name lxc -- /etc/piVCCU3/set_hb_rf_eth_connection_dp.tcl true || true
+  fi
+done
+

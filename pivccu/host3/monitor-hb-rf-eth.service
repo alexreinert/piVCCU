@@ -1,0 +1,15 @@
+[Unit]
+Description=Monitor HB-RF-ETH
+PartOf=pivccu.service
+After=pivccu.service
+ConditionPathExists=/sys/class/hb-rf-eth/hb-rf-eth/is_connected
+
+[Service]
+Type=simple
+ExecStart=/var/lib/piVCCU3/monitor_hb_rf_connection.sh
+Restart=on-abnormal
+RestartSec=5s
+
+[Install]
+WantedBy=pivccu.service
+

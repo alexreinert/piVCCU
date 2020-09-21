@@ -228,6 +228,7 @@ static int hb_rf_eth_try_connect(char endpointIdentifier)
   }
 
   _sock = sock;
+  sysfs_notify(&dev->kobj, NULL, "is_connected");
   return 0;
 }
 
@@ -270,6 +271,7 @@ static int hb_rf_eth_recv_threadproc(void *data)
       dev_err(dev, "Did not receive any packet in the last 5 seconds, terminating connection.\n");
       sock_release(_sock);
       _sock = NULL;
+      sysfs_notify(&dev->kobj, NULL, "is_connected");
 
       if (autoreconnect)
       {
@@ -345,6 +347,7 @@ static int hb_rf_eth_connect(const char *ip)
     k_recv_thread = NULL;
     sock_release(_sock);
     _sock = NULL;
+    sysfs_notify(&dev->kobj, NULL, "is_connected");
     return err;
   }
 
@@ -370,6 +373,7 @@ static void hb_rf_eth_disconnect(void)
     hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
     sock_release(_sock);
     _sock = NULL;
+    sysfs_notify(&dev->kobj, NULL, "is_connected");
   }
 }
 
@@ -673,5 +677,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.5");
+MODULE_VERSION("1.6");
 MODULE_LICENSE("GPL");
