@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -pthread 
+CXXFLAGS = -pthread -static-libstdc++ 
 OBJS = main.o hmframe.o streamparser.o radiomoduleconnector.o radiomoduledetector.o
 
 all: detect_radio_module

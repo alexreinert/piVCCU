@@ -1,4 +1,5 @@
 CXX = g++
+CXXFLAGS = -static-libstdc++
 OBJS = main.o
 
 all: wait_sysfs_notify
