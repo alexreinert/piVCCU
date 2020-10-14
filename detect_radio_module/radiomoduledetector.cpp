@@ -28,7 +28,7 @@ void RadioModuleDetector::detectRadioModule(RadioModuleConnector *radioModuleCon
 {
     _radioModuleConnector = radioModuleConnector;
 
-    _detectState = 0;
+    _detectState = DETECT_STATE_START_BL;
     _detectRetryCount = 0;
     _detectMsgCounter = 0;
 
@@ -38,21 +38,40 @@ void RadioModuleDetector::detectRadioModule(RadioModuleConnector *radioModuleCon
 
     _radioModuleConnector->setFrameHandler(this, true);
 
-    while (_detectRetryCount < 3)
+    while (_detectState == DETECT_STATE_START_BL && _detectRetryCount < 3)
     {
-        if (sem_take(_detectWaitFrameDataSemaphore, 1))
+        sendFrame(_detectMsgCounter++, HM_DST_COMMON, HM_CMD_COMMON_IDENTIFY, NULL, 0);
+        if (!sem_take(_detectWaitFrameDataSemaphore, 3))
         {
-            _detectRetryCount = 0;
-        }
-
-        switch (_detectState)
-        {
-        case DETECT_STATE_IDENTIFY:
-            sendFrame(_detectMsgCounter++, HM_DST_COMMON, HM_CMD_COMMON_IDENTIFY, NULL, 0);
+            sendFrame(_detectMsgCounter++, HM_DST_HMSYSTEM, HM_CMD_HMSYSTEM_IDENTIFY, NULL, 0);
             if (!sem_take(_detectWaitFrameDataSemaphore, 3))
             {
-                sendFrame(_detectMsgCounter++, HM_DST_HMSYSTEM, HM_CMD_HMSYSTEM_IDENTIFY, NULL, 0);
+                _detectRetryCount++;
             }
+        }
+    }
+
+    _detectRetryCount = 0;
+    while (_detectState == DETECT_STATE_START_APP && _detectRetryCount < 3)
+    {
+        sendFrame(_detectMsgCounter++, HM_DST_COMMON, HM_CMD_COMMON_IDENTIFY, NULL, 0);
+        if (!sem_take(_detectWaitFrameDataSemaphore, 3))
+        {
+            sendFrame(_detectMsgCounter++, HM_DST_HMSYSTEM, HM_CMD_HMSYSTEM_IDENTIFY, NULL, 0);
+            if (!sem_take(_detectWaitFrameDataSemaphore, 3))
+            {
+                _detectRetryCount++;
+            }
+        }
+    }
+
+    while (true)
+    {
+        switch (_detectState)
+        {
+        case DETECT_STATE_START_BL:
+        case DETECT_STATE_START_APP:
+            _detectState = DETECT_STATE_FINISHED;
             break;
 
         case DETECT_STATE_GET_MCU_TYPE:
@@ -92,11 +111,13 @@ void RadioModuleDetector::detectRadioModule(RadioModuleConnector *radioModuleCon
             break;
 
         case DETECT_STATE_FINISHED:
-            _radioModuleConnector->setFrameHandler(NULL, false);
-            return;
+            break;
         }
 
-        _detectRetryCount++;
+        if (_detectState == DETECT_STATE_FINISHED || !sem_take(_detectWaitFrameDataSemaphore, 3))
+        {
+            break;
+        }
     }
 
     _radioModuleConnector->setFrameHandler(NULL, false);
@@ -114,16 +135,46 @@ void RadioModuleDetector::handleFrame(unsigned char *buffer, uint16_t len)
 
     switch (_detectState)
     {
-    case DETECT_STATE_IDENTIFY:
-        if (frame.destination == HM_DST_COMMON && frame.command == HM_CMD_COMMON_ACK && frame.data_len == 12 && frame.data[0] == 1 && strncmp((char *)(frame.data + 1), "HMIP_TRX_Bl", 11) == 0)
+    case DETECT_STATE_START_BL:
+        if ((frame.destination == HM_DST_COMMON && frame.command == HM_CMD_COMMON_ACK && frame.data_len == 12 && frame.data[0] == 1 && strncmp((char *)(frame.data + 1), "HMIP_TRX_Bl", 11) == 0) || (frame.destination == HM_DST_COMMON && frame.command == 0 && frame.data_len == 11 && strncmp((char *)(frame.data), "HMIP_TRX_Bl", 11) == 0))
+        {
+            // TRX CoPro in bootloader
+            _detectState = DETECT_STATE_START_APP;
+            sem_give(_detectWaitFrameDataSemaphore);
+        }
+        else if ((frame.destination == HM_DST_HMSYSTEM && frame.command == HM_CMD_HMSYSTEM_ACK && frame.data_len == 10 && frame.data[0] == 2 && strncmp((char *)(frame.data + 1), "Co_CPU_BL", 9) == 0) || (frame.destination == HM_DST_HMSYSTEM && frame.command == 0 && frame.data_len == 9 && strncmp((char *)frame.data, "Co_CPU_BL", 9) == 0))
+        {
+            // Legacy CoPro in bootloader
+            _detectState = DETECT_STATE_START_APP;
+            sem_give(_detectWaitFrameDataSemaphore);
+        }
+        else if ((frame.destination == HM_DST_COMMON && frame.command == HM_CMD_COMMON_ACK && frame.data_len == 14 && frame.data[0] == 1 && strncmp((char *)(frame.data + 1), "DualCoPro_App", 13) == 0) || (frame.destination == HM_DST_COMMON && frame.command == 0 && frame.data_len == 13 && strncmp((char *)frame.data, "DualCoPro_App", 13) == 0))
+        {
+            // Dual CoPro in app --> start bootloader
+            sendFrame(_detectMsgCounter++, HM_DST_COMMON, HM_CMD_COMMON_START_BL, NULL, 0);
+        }
+        else if ((frame.destination == HM_DST_COMMON && frame.command == HM_CMD_COMMON_ACK && frame.data_len == 13 && frame.data[0] == 1 && strncmp((char *)(frame.data + 1), "HMIP_TRX_App", 12) == 0) || (frame.destination == HM_DST_COMMON && frame.command == 0 && frame.data_len == 12 && strncmp((char *)frame.data, "HMIP_TRX_App", 12) == 0))
+        {
+            // HmIP only in app --> start bootloader
+            sendFrame(_detectMsgCounter++, HM_DST_COMMON, HM_CMD_COMMON_START_BL, NULL, 0);
+        }
+        else if ((frame.destination == HM_DST_HMSYSTEM && frame.command == HM_CMD_HMSYSTEM_ACK && frame.data_len == 11 && frame.data[0] == 2 && strncmp((char *)(frame.data + 1), "Co_CPU_App", 10) == 0) || (frame.destination == HM_DST_HMSYSTEM && frame.command == 0 && frame.data_len == 10 && strncmp((char *)frame.data, "Co_CPU_App", 10) == 0))
+        {
+            // Legacy CoPro in app --> start bootloader
+            sendFrame(_detectMsgCounter++, HM_DST_HMSYSTEM, HM_CMD_HMSYSTEM_CHANGE_APP, NULL, 0);
+        }
+        break;
+
+    case DETECT_STATE_START_APP:
+        if ((frame.destination == HM_DST_COMMON && frame.command == HM_CMD_COMMON_ACK && frame.data_len == 12 && frame.data[0] == 1 && strncmp((char *)(frame.data + 1), "HMIP_TRX_Bl", 11) == 0) || (frame.destination == HM_DST_COMMON && frame.command == 0 && frame.data_len == 11 && strncmp((char *)(frame.data), "HMIP_TRX_Bl", 11) == 0))
         {
             // TRX CoPro in bootloader --> start app
             sendFrame(_detectMsgCounter++, HM_DST_COMMON, HM_CMD_COMMON_START_APP, NULL, 0);
         }
-        else if (frame.destination == HM_DST_HMSYSTEM && frame.command == HM_CMD_HMSYSTEM_ACK && frame.data_len == 10 && frame.data[0] == 2 && strncmp((char *)(frame.data + 1), "Co_CPU_BL", 9) == 0)
+        else if ((frame.destination == HM_DST_HMSYSTEM && frame.command == HM_CMD_HMSYSTEM_ACK && frame.data_len == 10 && frame.data[0] == 2 && strncmp((char *)(frame.data + 1), "Co_CPU_BL", 9) == 0) || (frame.destination == HM_DST_HMSYSTEM && frame.command == 0 && frame.data_len == 9 && strncmp((char *)frame.data, "Co_CPU_BL", 9) == 0))
         {
             // Legacy CoPro in bootloader --> start app
-            sendFrame(_detectMsgCounter++, HM_DST_HMSYSTEM, HM_CMD_HMSYSTEM_START_APP, NULL, 0);
+            sendFrame(_detectMsgCounter++, HM_DST_HMSYSTEM, HM_CMD_HMSYSTEM_CHANGE_APP, NULL, 0);
         }
         else if ((frame.destination == HM_DST_COMMON && frame.command == HM_CMD_COMMON_ACK && frame.data_len == 14 && frame.data[0] == 1 && strncmp((char *)(frame.data + 1), "DualCoPro_App", 13) == 0) || (frame.destination == HM_DST_COMMON && frame.command == 0 && frame.data_len == 13 && strncmp((char *)frame.data, "DualCoPro_App", 13) == 0))
         {
@@ -305,4 +356,3 @@ void RadioModuleDetector::sendFrame(uint8_t counter, uint8_t destination, uint8_
 
     _radioModuleConnector->sendFrame(sendBuffer, len);
 }
-

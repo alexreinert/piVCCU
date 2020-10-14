@@ -26,7 +26,7 @@ bool sem_wait_timeout(sem_t *sem, int timeout);
 
 #define sem_take(__sem, __timeout) sem_wait_timeout(&__sem, __timeout)
 #define sem_give(__sem) sem_post(&__sem)
-#define sem_init(__sem) sem_init(&__sem, 1, 1);
+#define sem_init(__sem) sem_init(&__sem, 1, 0);
 
 #if DUMP_FRAMES
 #define log_frame(__text, __buffer, __len) \
