@@ -114,7 +114,7 @@ for dev in ${devices[@]}; do
       DEVTYPE="b"
       echo "mount -t ${UDEV_PROPERTIES[ID_FS_TYPE]} -o noexec,nodev,noatime,nodiratime ${UDEV_PROPERTIES[DEVNAME]} /media/usb$USBDISKINDEX" >> /tmp/pivccu-var/pivccu/create-mounts
       mkdir -p /tmp/pivccu-media/usb$USBDISKINDEX
-      if [ ! -e /tmp/pivccu-media/usb0 ]; then
+      if [ ! -e /tmp/pivccu-media/usb$USBDISKINDEX ]; then
         ln -s /media/usb$USBDISKINDEX /tmp/pivccu-media/usb0
       fi
       mkdir -p /tmp/pivccu-var/status
