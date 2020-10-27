@@ -104,6 +104,7 @@ EOF
 . /var/hm_mode
 
 echo "${HM_HMRF_SERIAL}" >/var/board_serial
+echo "${HM_HMRF_SERIAL}" >/var/rf_board_serial
 echo "${HM_HMRF_VERSION}" >/var/rf_firmware_version
 echo "${HM_HMRF_ADDRESS}" >/var/rf_address
 echo "${HM_HMIP_SERIAL}" >/var/hmip_board_serial
