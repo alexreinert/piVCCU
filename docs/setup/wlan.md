@@ -60,8 +60,8 @@ Because of that, you need a bridge without a physical interface and to use port 
    if [ "\$IFACE" = "\$BRIDGE" ]; then
      echo 1 > /proc/sys/net/ipv4/ip_forward
      iptables -A FORWARD -i \$IFACE -s \$HOST_IP/24 -m conntrack --ctstate NEW -j ACCEPT
-     iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-     iptables -A POSTROUTING -t nat -j MASQUERADE
+     iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -o $BRIDGE
+     iptables -A POSTROUTING -t nat -j MASQUERADE -o $BRIDGE
 
      iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 80 -j DNAT --to-destination \$CCU_IP:80
      iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 1999 -j DNAT --to-destination \$CCU_IP:1999
@@ -77,5 +77,16 @@ Because of that, you need a bridge without a physical interface and to use port 
    EOT'
    sudo chmod +x /etc/network/if-up.d/pivccu
 
-4. Reboot
+4. On Systems like Ubuntu > 18.04 you need to tell netplan to use the if-up.d script with `/etc/networkd-dispatcher/routable.d/50-ifup-hooks`:
+```bash
+#!/bin/sh
+
+for d in up post-up; do
+    hookdir=/etc/network/if-${d}.d
+    [ -e $hookdir ] && /bin/run-parts $hookdir
+done
+exit 0
+```
+
+5. Reboot
 
