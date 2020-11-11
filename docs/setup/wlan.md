@@ -113,9 +113,9 @@ done
 exit 0
 ```
 
-5. If you are using Docker on the same machine you need to remove the intelligent bridge-detection and make it dumb, because Docker also uses bridges:
+5. If you are using Docker on the same machine you need to knock out the intelligent bridge-detection and make it dumb, because Docker also uses bridges:
 ```bash
-sudo sed -i '/BRIDGE/c\BRIDGE="br0"' /var/lib/piVCCU3/detect_hardware.inc
+sudo sed -i '/lxc.network.link/c\lxc.network.link \= br0' /etc/piVCCU3/lxc.config
 ```
 **Note that this will probably need to be done again when the piVCCU package updates.**
 
