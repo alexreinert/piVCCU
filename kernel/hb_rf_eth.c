@@ -29,6 +29,10 @@
 #include <net/sock.h>
 #include <linux/kthread.h>
 #include <linux/workqueue.h>
+#include <linux/sched.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
+#include <uapi/linux/sched/types.h>
+#endif
 #include "generic_raw_uart.h"
 
 #define HB_RF_ETH_PORT 3008
@@ -160,15 +164,21 @@ static void hb_rf_eth_set_timeout(struct socket *sock)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
   struct __kernel_sock_timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
-  #define MY_SO_RCVTIMEO SO_RCVTIMEO_NEW
 #else
   struct timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
-  #define MY_SO_RCVTIMEO SO_RCVTIMEO
 #endif
 
   mm_segment_t fs = get_fs();
   set_fs(KERNEL_DS);
-  sock_setsockopt(sock, SOL_SOCKET, MY_SO_RCVTIMEO, (char *)&tv, sizeof(tv));
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+  sock_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO_NEW, KERNEL_SOCKPTR((char *)&tv), sizeof(tv));
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+  sock_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO_NEW, (char *)&tv, sizeof(tv));
+#else
+  sock_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
+#endif
+
   set_fs(fs);
 }
 
@@ -237,6 +247,16 @@ static int hb_rf_eth_recv_threadproc(void *data)
   char *buffer;
   int len;
   int i;
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+  sched_set_fifo_low(current);
+#else
+  struct sched_param param;
+  param.sched_priority = 5;
+  i = sched_setscheduler(current, SCHED_RR, &param);
+  if (i < 0)
+    dev_err(dev, "Error setting priority of receiver thread (err %d).\n", i);
+#endif
 
   buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
 
@@ -540,10 +560,13 @@ static struct raw_uart_driver hb_rf_eth = {
 static ssize_t connect_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
   int err;
-  char ip[count + 1];
+  char ip[16];
 
   if (count == 0)
     return 0;
+
+  if (count > 15)
+    return -EINVAL;
 
   hb_rf_eth_disconnect();
 
@@ -677,5 +700,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.6");
+MODULE_VERSION("1.7");
 MODULE_LICENSE("GPL");
