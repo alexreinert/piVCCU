@@ -1,6 +1,6 @@
 / {
   soc {
-    periphs@c8834000 {
+    bus@c8834000 {
       pinctrl@4b0 {
         pivccu_gpio: bank@4b0 {
         };
