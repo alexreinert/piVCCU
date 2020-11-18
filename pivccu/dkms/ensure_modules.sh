@@ -33,7 +33,7 @@ if [ ! $? -eq 0 ]; then
   dkms install -m pivccu -v $PKG_VER -k `uname -r` || true
 
   for i in {1..120}; do
-    udevadm settle -t 5 -E /dev/raw-uart && udevadm trigger && udevadm settle -t 5 -E /dev/raw-uart
+    udevadm settle -t 5 -E /dev/raw-uart && udevadm trigger -c add && udevadm trigger && udevadm settle -t 5 -E /dev/raw-uart
     if [ -e /dev/raw-uart ]; then
       break
     fi
