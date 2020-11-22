@@ -21,6 +21,7 @@
 #include <linux/slab.h>
 #include <linux/gpio/driver.h>
 #include <linux/version.h>
+#include "buster_gcc_canary_workaround.h"
 #include "generic_raw_uart.h"
 
 #define TX_CHUNK_SIZE 11

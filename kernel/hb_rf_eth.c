@@ -33,6 +33,7 @@
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <uapi/linux/sched/types.h>
 #endif
+#include "buster_gcc_canary_workaround.h"
 #include "generic_raw_uart.h"
 
 #define HB_RF_ETH_PORT 3008

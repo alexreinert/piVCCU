@@ -21,6 +21,7 @@
 #include <linux/ctype.h>
 #include <linux/leds.h>
 #include <linux/version.h>
+#include "buster_gcc_canary_workaround.h"
 
 static ssize_t led_delay_on_show(struct device *dev,
 		struct device_attribute *attr, char *buf)

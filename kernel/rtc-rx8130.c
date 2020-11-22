@@ -46,6 +46,8 @@
 #include <linux/interrupt.h>
 #include <linux/input.h>
 
+#include "buster_gcc_canary_workaround.h"
+
 // RX-8130 Register definitions
 #define RX8130_REG_SEC 0x10
 #define RX8130_REG_MIN 0x11

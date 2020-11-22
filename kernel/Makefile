@@ -21,6 +21,16 @@ ifeq ($(KERNEL_DIR),)
   KERNEL_DIR := /lib/modules/$(KERNELRELEASE)/build
 endif
 
+# On ARM64, enable GCC compatibility workaround if native canary handling is unavailable (Buster).
+include $(KERNEL_DIR)/scripts/Kbuild.include
+
+ifeq ($(ARCH),arm64)
+  ifeq ($(call cc-option-yn,-mstack-protector-guard=sysreg -mstack-protector-guard-reg=sp_el0 -mstack-protector-guard-offset=0),n)
+    KBUILD_CFLAGS += -DBUSTER_GCC_CANARY_WORKAROUND
+  endif
+endif
+
+
 all:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
 

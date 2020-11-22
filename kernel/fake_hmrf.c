@@ -38,6 +38,7 @@
 #include <asm/termios.h>
 #include <linux/delay.h>
 
+#include "buster_gcc_canary_workaround.h"
 #include "hm.h"
 
 #define DRIVER_NAME "fake-hmrf"

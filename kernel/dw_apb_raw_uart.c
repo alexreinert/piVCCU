@@ -34,6 +34,7 @@
 #include <linux/delay.h>
 #include <linux/version.h>
 
+#include "buster_gcc_canary_workaround.h"
 #include "generic_raw_uart.h"
 
 #define MODULE_NAME "dw_apb_raw_uart"

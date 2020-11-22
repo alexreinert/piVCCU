@@ -26,6 +26,7 @@
 #include <linux/platform_device.h>
 #include <linux/property.h>
 #include <linux/slab.h>
+#include "buster_gcc_canary_workaround.h"
 
 static int red_gpio_pin = 0;
 static int green_gpio_pin = 0;
