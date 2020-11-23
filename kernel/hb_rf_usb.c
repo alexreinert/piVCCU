@@ -23,6 +23,8 @@
 #include <linux/version.h>
 #include "generic_raw_uart.h"
 
+#include "stack_protector.include"
+
 #define WDR_TIMEOUT 5000       /* default urb timeout */
 #define WDR_SHORT_TIMEOUT 1000 /* shorter urb timeout */
 
@@ -537,6 +539,6 @@ module_init(hb_rf_usb_init);
 module_exit(hb_rf_usb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.5");
+MODULE_VERSION("1.6");
 MODULE_DESCRIPTION("HB-RF-USB raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

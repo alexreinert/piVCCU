@@ -35,6 +35,8 @@
 
 #include "generic_raw_uart.h"
 
+#include "stack_protector.include"
+
 #define MODULE_NAME "pl011_raw_uart"
 #define TX_CHUNK_SIZE 11
 
@@ -329,6 +331,6 @@ module_raw_uart_driver(MODULE_NAME, pl011_raw_uart, pl011_raw_uart_of_match);
 
 MODULE_ALIAS("platform:pl011-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.6");
+MODULE_VERSION("1.7");
 MODULE_DESCRIPTION("PL011 raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

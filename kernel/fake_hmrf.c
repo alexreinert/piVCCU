@@ -40,6 +40,8 @@
 
 #include "hm.h"
 
+#include "stack_protector.include"
+
 #define DRIVER_NAME "fake-hmrf"
 
 #define RX_BUF_SIZE 1024
@@ -538,6 +540,6 @@ module_init(fake_hmrf_init);
 module_exit(fake_hmrf_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.4");
+MODULE_VERSION("1.5");
 MODULE_DESCRIPTION("Fake HM-MOD-RPI-PCB driver");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

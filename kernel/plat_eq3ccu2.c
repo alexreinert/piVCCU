@@ -21,6 +21,8 @@
 #include <linux/init.h>   /*needed for macros*/
 #include <linux/module.h> /*needed for all modules*/
 
+#include "stack_protector.include"
+
 static char *board_serial = "";
 static char *radio_mac = "";
 static char *board_extended_info = "";
@@ -62,6 +64,6 @@ module_init(plat_eq3ccu2_init);
 module_exit(plat_eq3ccu2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.3");
+MODULE_VERSION("1.4");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("plat_eq3ccu2 CCU2 emulation module");

@@ -34,6 +34,8 @@
 #include <linux/delay.h>
 #include <linux/version.h>
 
+#include "stack_protector.include"
+
 #include "generic_raw_uart.h"
 
 #define MODULE_NAME "dw_apb_raw_uart"
@@ -411,6 +413,6 @@ module_raw_uart_driver(MODULE_NAME, dw_apb_raw_uart, dw_apb_raw_uart_of_match);
 
 MODULE_ALIAS("platform:dw_apb-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.7");
+MODULE_VERSION("1.8");
 MODULE_DESCRIPTION("dw_apb raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

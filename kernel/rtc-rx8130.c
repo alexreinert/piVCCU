@@ -46,6 +46,8 @@
 #include <linux/interrupt.h>
 #include <linux/input.h>
 
+#include "stack_protector.include"
+
 // RX-8130 Register definitions
 #define RX8130_REG_SEC 0x10
 #define RX8130_REG_MIN 0x11
@@ -853,4 +855,4 @@ module_i2c_driver(rx8130_driver);
 MODULE_AUTHOR("Val Krutov <vkrutov@eea.epson.com>");
 MODULE_DESCRIPTION("RX8130CE RTC driver");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.4");
+MODULE_VERSION("1.5");

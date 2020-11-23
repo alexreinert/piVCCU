@@ -23,6 +23,8 @@
 #include <linux/version.h>
 #include "generic_raw_uart.h"
 
+#include "stack_protector.include"
+
 #define TX_CHUNK_SIZE 11
 
 #define BUFFER_SIZE 256
@@ -510,6 +512,6 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.3");
+MODULE_VERSION("1.4");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

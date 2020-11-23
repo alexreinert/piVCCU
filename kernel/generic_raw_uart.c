@@ -42,6 +42,8 @@
 
 #include "generic_raw_uart.h"
 
+#include "stack_protector.include"
+
 #define DRIVER_NAME "raw-uart"
 
 #define MAX_DEVICES 5
@@ -1017,6 +1019,6 @@ MODULE_PARM_DESC(load_dummy_rx8130_module, "Loads the dummy_rx8130 module");
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.16");
+MODULE_VERSION("1.17");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

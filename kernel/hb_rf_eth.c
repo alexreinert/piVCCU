@@ -35,6 +35,8 @@
 #endif
 #include "generic_raw_uart.h"
 
+#include "stack_protector.include"
+
 #define HB_RF_ETH_PORT 3008
 #define HB_RF_ETH_PROTOCOL_VERSION 2
 
@@ -700,5 +702,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.7");
+MODULE_VERSION("1.8");
 MODULE_LICENSE("GPL");

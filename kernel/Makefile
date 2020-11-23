@@ -21,6 +21,11 @@ ifeq ($(KERNEL_DIR),)
   KERNEL_DIR := /lib/modules/$(KERNELRELEASE)/build
 endif
 
+include $(KERNEL_DIR)/scripts/Kbuild.include
+ifeq ($(call cc-option-yn,-mstack-protector-guard=sysreg -mstack-protector-guard-reg=sp_el0 -mstack-protector-guard-offset=0),n)
+        KBUILD_CFLAGS += -DPIVCCU_CC_HAS_NO_STACKPROTECTOR_SYSREG
+endif
+
 all:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
 

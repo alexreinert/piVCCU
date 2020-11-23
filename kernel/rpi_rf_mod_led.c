@@ -27,6 +27,8 @@
 #include <linux/property.h>
 #include <linux/slab.h>
 
+#include "stack_protector.include"
+
 static int red_gpio_pin = 0;
 static int green_gpio_pin = 0;
 static int blue_gpio_pin = 0;
@@ -212,6 +214,6 @@ MODULE_PARM_DESC(blue_gpio_pin, "GPIO Pin of blue LED");
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("GPIO LED driver for RPI-RF-MOD");
-MODULE_VERSION("1.6");
+MODULE_VERSION("1.7");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("rpi_rf_mod_led");

@@ -42,6 +42,8 @@
 #include <asm/ioctls.h>
 #include <linux/version.h>
 
+#include "stack_protector.include"
+
 #define EQ3LOOP_NUMBER_OF_CHANNELS 4
 #define EQ3LOOP_DRIVER_NAME "eq3loop"
 

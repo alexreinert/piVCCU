@@ -22,6 +22,8 @@
 #include <linux/leds.h>
 #include <linux/version.h>
 
+#include "stack_protector.include"
+
 static ssize_t led_delay_on_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
