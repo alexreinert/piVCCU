@@ -56,7 +56,7 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         FDT_FILE=amlogic/meson-gxbb-odroidc2.dtb
         break
         ;;
-      libretech,cc)
+      libretech,cc|libretech,aml-s905x-cc)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/lepotato.dts.include'
         FDT_FILE=amlogic/meson-gxl-s905x-libretech-cc.dtb
@@ -65,11 +65,13 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
       friendlyelec,nanopc-t4|friendlyarm,nanopc-t4)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/nanopct4.dts.include'
+	FDT_FILE=rockchip/rk3399-nanopc-t4.dtb
         break
         ;; 
       friendlyelec,nanopi-m4|friendlyarm,nanopi-m4)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/nanopim4.dts.include'
+	FDT_FILE=rockchip/rk3399-nanopi-m4.dtb
         break
         ;;
       radxa,rockpi4)
