@@ -1,6 +1,6 @@
 Package: pivccu-modules-raspberrypi
 Version: {PKG_VERSION}
-Architecture: armhf
+Architecture: all
 Maintainer: Alexander Reinert <alex@areinert.de>
 Depends: raspberrypi-kernel-headers, pivccu-modules-dkms, bc
 Pre-Depends: debconf (>= 0.5) | debconf-2.0
