@@ -25,6 +25,31 @@ Because of that, you need a bridge without a physical interface and to use port 
      netmask      255.255.255.0
    EOT'
    ```
+   or via netplan (Ubuntu > 18.04):
+   ```bash
+   sudo apt install bridge-utils
+   sudo bash -c 'cat << EOT > /etc/netplan/50-cloud-init.yaml
+   network:
+       ethernets:
+           eth0:
+               dhcp4: true
+               optional: true
+       version: 2
+       wifis:
+           wlan0:
+               access-points:
+                   <PUT_YOUR_SSID_HERE>:
+                       password: <PUT_YOUR_WLAN_KEY_HERE>
+               dhcp4: true
+               optional: true
+       bridges:
+         br0:
+          addresses: [192.168.253.1/24]
+          parameters:
+               stp: false
+               forward-delay: 0
+   EOT'
+   ```
 
 2. Configure (private) static IP for CCU (this needs to be done after each restore, too)
    (If you are using piVCCU3, please you the path /var/lib/piVCCU3 instead of /var/lib/piVCCU)
@@ -60,8 +85,8 @@ Because of that, you need a bridge without a physical interface and to use port 
    if [ "\$IFACE" = "\$BRIDGE" ]; then
      echo 1 > /proc/sys/net/ipv4/ip_forward
      iptables -A FORWARD -i \$IFACE -s \$HOST_IP/24 -m conntrack --ctstate NEW -j ACCEPT
-     iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -o $BRIDGE
-     iptables -A POSTROUTING -t nat -j MASQUERADE -o $BRIDGE
+     iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -o \$BRIDGE
+     iptables -A POSTROUTING -t nat -j MASQUERADE -s \$HOST_IP/24
 
      iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 80 -j DNAT --to-destination \$CCU_IP:80
      iptables -t nat -A PREROUTING -p tcp -i \$HOST_IF --dport 1999 -j DNAT --to-destination \$CCU_IP:1999
@@ -88,5 +113,11 @@ done
 exit 0
 ```
 
-5. Reboot
+5. If you are using Docker on the same machine you need to knock out the intelligent bridge-detection and make it dumb, because Docker also uses bridges:
+```bash
+sudo sed -i '/lxc.network.link/c\lxc.network.link \= br0' /etc/piVCCU3/lxc.config
+```
+**Note that this will probably need to be done again when the piVCCU package updates.**
+
+6. Reboot
 
