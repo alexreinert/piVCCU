@@ -8,19 +8,28 @@ void readThreadProc(int fd, StreamParser *sp);
 
 int _fd;
 
+bool debug = false;
+
 int main(int argc, char *argv[])
 {
-  if (argc != 2)
+  if ((argc >= 2) && (strcmp(argv[1], "--debug") == 0))
   {
-    printf("Usage: %s <path>\n", argv[0]);
+    debug = true;
+  }
+
+  if (argc != (debug ? 3 : 2))
+  {
+    printf("Usage: %s [--debug] <path>\n", argv[0]);
     return -1;
   }
 
-  int fd = open(argv[1], O_RDWR | O_NOCTTY | O_SYNC);
+  char *path = argv[debug ? 2 : 1];
+
+  int fd = open(path, O_RDWR | O_NOCTTY | O_SYNC);
   if (fd < 0)
   {
     close(fd);
-    printf("%s could not be opened\n", argv[1]);
+    printf("%s could not be opened\n", path);
     return -1;
   }
 
@@ -68,4 +77,17 @@ bool sem_wait_timeout(sem_t *sem, int timeout)
   }
 
   return s == 0;
+}
+
+void log_frame(const char *text, unsigned char buffer[], uint16_t len)
+{
+  if (!debug)
+    return;
+
+  fputs(text, stdout);
+  for (int i = 0; i < len; i++)
+  {
+    printf(" %02x", buffer[i]);
+  }
+  puts("");
 }

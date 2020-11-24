@@ -18,8 +18,6 @@
 
 #pragma once
 
-#define DUMP_FRAMES 0
-
 #define SemaphoreHandle_t sem_t
 
 bool sem_wait_timeout(sem_t *sem, int timeout);
@@ -28,14 +26,5 @@ bool sem_wait_timeout(sem_t *sem, int timeout);
 #define sem_give(__sem) sem_post(&__sem)
 #define sem_init(__sem) sem_init(&__sem, 1, 0);
 
-#if DUMP_FRAMES
-#define log_frame(__text, __buffer, __len) \
-  printf(__text);                          \
-  for (int i = 0; i < __len; i++)          \
-  {                                        \
-    printf(" %02x", __buffer[i]);          \
-  }                                        \
-  printf("\n");
-#else
-#define log_frame(__text, __buffer, __len)
-#endif
+void log_frame(const char *text, unsigned char buffer[], uint16_t len);
+
