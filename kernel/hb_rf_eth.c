@@ -28,7 +28,6 @@
 #include <linux/inet.h>
 #include <net/sock.h>
 #include <linux/kthread.h>
-#include <linux/workqueue.h>
 #include <linux/sched.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <uapi/linux/sched/types.h>
@@ -92,8 +91,8 @@ static uint16_t hb_rf_eth_calc_crc(unsigned char *buf, size_t len)
 static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
 {
   struct kvec vec = {0};
-  mm_segment_t oldmm;
   struct msghdr header = {0};
+  int err;
 
   *((uint8_t *)(buffer + 1)) = (uint8_t)(atomic_inc_return(&msg_cnt));
   *((uint16_t *)(buffer + len - 2)) = (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len - 2)));
@@ -109,13 +108,16 @@ static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
     header.msg_controllen = 0;
     header.msg_flags = 0;
 
-    oldmm = get_fs();
-    set_fs(KERNEL_DS);
-    len = kernel_sendmsg(sock, &header, &vec, 1, len);
-    set_fs(oldmm);
+    err = kernel_sendmsg(sock, &header, &vec, 1, len);
 
-    if (len < 0)
-      dev_err(dev, "Error %d on sending packet\n", (int)len);
+    if (err < 0)
+    {
+      dev_err(dev, "Error %d on sending packet\n", err);
+    }
+    else if (err != len)
+    {
+      dev_err(dev, "Only %d of %d bytes of packet could be sent\n", err, (int)len);
+    }
   }
   else
   {
@@ -126,7 +128,6 @@ static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
 static int hb_rf_eth_recv_packet(struct socket *sock, char *buffer, size_t buffer_size)
 {
   struct kvec vec = {0};
-  mm_segment_t oldmm;
   struct msghdr msg = {0};
   int len;
 
@@ -136,10 +137,7 @@ static int hb_rf_eth_recv_packet(struct socket *sock, char *buffer, size_t buffe
   vec.iov_len = buffer_size;
   vec.iov_base = buffer;
 
-  oldmm = get_fs();
-  set_fs(KERNEL_DS);
   len = kernel_recvmsg(sock, &msg, &vec, 1, buffer_size, 0);
-  set_fs(oldmm);
 
   if (len > 0)
   {
@@ -399,13 +397,17 @@ static void hb_rf_eth_disconnect(void)
   }
 }
 
-static void hb_rf_eth_send_gpio(struct work_struct *work)
+static void hb_rf_eth_send_gpio(unsigned long data)
 {
   char buffer[5] = {3, 0, gpio_value, 0, 0};
   hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
 }
 
-static DECLARE_WORK(hb_rf_eth_send_gpio_work, hb_rf_eth_send_gpio);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+DECLARE_TASKLET_OLD(hb_rf_eth_send_gpio_work, hb_rf_eth_send_gpio);
+#else
+DECLARE_TASKLET(hb_rf_eth_send_gpio_work, hb_rf_eth_send_gpio, 0L);
+#endif
 
 static int hb_rf_eth_gpio_request(struct gpio_chip *gc, unsigned int offset)
 {
@@ -446,7 +448,7 @@ static void hb_rf_eth_gpio_set(struct gpio_chip *gc, unsigned int gpio, int valu
   else
     gpio_value &= ~BIT(gpio);
 
-  queue_work(system_highpri_wq, &hb_rf_eth_send_gpio_work);
+  tasklet_schedule(&hb_rf_eth_send_gpio_work);
 
   spin_unlock_irqrestore(&gpio_lock, lock_flags);
 }
@@ -469,7 +471,7 @@ static void hb_rf_eth_gpio_set_multiple(struct gpio_chip *gc, unsigned long *mas
   gpio_value &= ~(*mask);
   gpio_value |= *bits & *mask;
 
-  queue_work(system_highpri_wq, &hb_rf_eth_send_gpio_work);
+  tasklet_schedule(&hb_rf_eth_send_gpio_work);
 
   spin_unlock_irqrestore(&gpio_lock, lock_flags);
 }
@@ -521,11 +523,27 @@ static bool hb_rf_eth_isready_for_tx(struct generic_raw_uart *raw_uart)
 }
 
 static unsigned char tx_char_buffer[BUFFER_SIZE];
+static size_t tx_char_buffer_len = 0;
+
+static void hb_rf_eth_tx_chars_deferred(unsigned long data)
+{
+  hb_rf_eth_send_msg(_sock, tx_char_buffer, tx_char_buffer_len);
+}
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+DECLARE_TASKLET_OLD(hb_rf_eth_tx_chars_work, hb_rf_eth_tx_chars_deferred);
+#else
+DECLARE_TASKLET(hb_rf_eth_tx_chars_work, hb_rf_eth_tx_chars_deferred, 0L);
+#endif
+
 static void hb_rf_eth_tx_chars(struct generic_raw_uart *raw_uart, unsigned char *chr, int index, int len)
 {
+  tasklet_unlock_wait(&hb_rf_eth_tx_chars_work);
+
   tx_char_buffer[0] = 7;
   memcpy(&tx_char_buffer[2], &chr[index], len);
-  hb_rf_eth_send_msg(_sock, tx_char_buffer, len + 4);
+  tx_char_buffer_len = len + 4;
+  tasklet_hi_schedule(&hb_rf_eth_tx_chars_work);
 }
 
 static void hb_rf_eth_init_tx(struct generic_raw_uart *raw_uart)
@@ -665,7 +683,9 @@ static void __exit hb_rf_eth_exit(void)
   sysfs_remove_file(&dev->kobj, &dev_attr_is_connected.attr);
   sysfs_remove_file(&dev->kobj, &dev_attr_connect.attr);
 
-  cancel_work_sync(&hb_rf_eth_send_gpio_work);
+  tasklet_kill(&hb_rf_eth_tx_chars_work);
+
+  tasklet_kill(&hb_rf_eth_send_gpio_work);
 
   gpiochip_remove(&gc);
 
@@ -702,5 +722,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.8");
+MODULE_VERSION("1.9");
 MODULE_LICENSE("GPL");
