@@ -27,6 +27,10 @@ case "$1" in
     COUNT="${#DEVICES[@]}"
     if [ $COUNT -eq 1 ]; then
       IP=${DEVICES[${!DEVICES[@]}]}
+      db_fset hb_rf_eth/used_module seen false
+      db_subst hb_rf_eth/used_module ip $IP
+      db_input high hb_rf_eth/used_module || true
+      db_go
     elif [ $COUNT -ge 2 ]; then
       db_fset hb_rf_eth/modules seen false
       db_subst hb_rf_eth/modules choices $CHOICES

@@ -8,3 +8,9 @@ Type: select
 Description: Which HB-RF-ETH module should be used?
 Description-DE: Welches HB-RF-ETH Modul soll verwendet werden?
 Choices: ${choices}
+
+Template: hb_rf_eth/used_module
+Type: note
+Description: The HB-RF-ETH module with IP ${ip} will be used.
+Description-DE: Es wird das HB-RF-ETH Modul mit der IP Adresse ${ip} verwendet.
+
