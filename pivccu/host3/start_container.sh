@@ -147,6 +147,13 @@ if [ -x /etc/piVCCU3/pre-start.sh ]; then
   /etc/piVCCU3/pre-start.sh
 fi
 
+if [ -e /proc/sys/abi/cp15_barrier ]; then
+  echo 2 > /proc/sys/abi/cp15_barrier
+fi
+if [ -e /proc/sys/abi/setend ]; then
+  echo 2 > /proc/sys/abi/setend
+fi
+
 /usr/bin/lxc-start --lxcpath /var/lib/piVCCU3 --name lxc --pidfile /var/run/pivccu3.pid --daemon
 
 if [ -x /etc/piVCCU3/post-start.sh ]; then

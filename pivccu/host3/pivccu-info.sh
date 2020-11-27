@@ -45,7 +45,7 @@ if [ -z "$HMRF_HARDWARE" ]; then
 fi
 echo "HMRF Hardware:  $HMRF_HARDWARE"
 
-if [ -z "$UART_DEVICE_TYPE" ]; then
+if [ ! -z "$UART_DEVICE_TYPE" ]; then
   echo " Connected via: $UART_DEVICE_TYPE (/dev/$UART_DEV)"
 fi
 

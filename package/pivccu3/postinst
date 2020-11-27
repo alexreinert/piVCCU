@@ -71,14 +71,11 @@ case "$1" in
             fi
           fi
 
+          . /var/lib/piVCCU3/detect_hardware.inc
           if [ ! -e /sys/devices/virtual/raw-uart ]; then
             db_input critical pivccu/warn_raw_uart_not_found || true
-          else
-            . /var/lib/piVCCU3/detect_hardware.inc
-
-	    if [ -z "$BOARD_SERIAL" ]; then
-              db_input critical pivccu/warn_no_radio_module_found || true
-            fi
+          elif [ -z "$BOARD_SERIAL" ]; then
+            db_input critical pivccu/warn_no_radio_module_found || true
           fi
 	fi
 
