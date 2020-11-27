@@ -32,6 +32,7 @@
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <uapi/linux/sched/types.h>
 #endif
+#include <linux/spinlock.h>
 #include "generic_raw_uart.h"
 
 #include "stack_protector.include"
@@ -53,6 +54,7 @@ static struct socket *_sock = NULL;
 static struct sockaddr_in remote = {0};
 static atomic_t msg_cnt = ATOMIC_INIT(0);
 static struct task_struct *k_recv_thread = NULL;
+static spinlock_t sock_tx_lock;
 
 static struct generic_raw_uart *raw_uart = NULL;
 static struct class *class = NULL;
@@ -93,6 +95,7 @@ static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
   struct kvec vec = {0};
   struct msghdr header = {0};
   int err;
+  unsigned long lock_flags;
 
   *((uint8_t *)(buffer + 1)) = (uint8_t)(atomic_inc_return(&msg_cnt));
   *((uint16_t *)(buffer + len - 2)) = (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len - 2)));
@@ -108,7 +111,9 @@ static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
     header.msg_controllen = 0;
     header.msg_flags = 0;
 
+    spin_lock_irqsave(&sock_tx_lock, lock_flags);
     err = kernel_sendmsg(sock, &header, &vec, 1, len);
+    spin_unlock_irqrestore(&sock_tx_lock, lock_flags);
 
     if (err < 0)
     {
@@ -614,6 +619,8 @@ static int __init hb_rf_eth_init(void)
 {
   int err;
 
+  spin_lock_init(&sock_tx_lock);
+
   spin_lock_init(&gpio_lock);
 
   class = class_create(THIS_MODULE, "hb-rf-eth");
@@ -722,5 +729,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.9");
+MODULE_VERSION("1.10");
 MODULE_LICENSE("GPL");
