@@ -95,7 +95,6 @@ static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
   struct kvec vec = {0};
   struct msghdr header = {0};
   int err;
-  unsigned long lock_flags;
 
   *((uint8_t *)(buffer + 1)) = (uint8_t)(atomic_inc_return(&msg_cnt));
   *((uint16_t *)(buffer + len - 2)) = (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len - 2)));
@@ -111,9 +110,9 @@ static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
     header.msg_controllen = 0;
     header.msg_flags = 0;
 
-    spin_lock_irqsave(&sock_tx_lock, lock_flags);
+    spin_lock(&sock_tx_lock);
     err = kernel_sendmsg(sock, &header, &vec, 1, len);
-    spin_unlock_irqrestore(&sock_tx_lock, lock_flags);
+    spin_unlock(&sock_tx_lock);
 
     if (err < 0)
     {
@@ -729,5 +728,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.10");
+MODULE_VERSION("1.11");
 MODULE_LICENSE("GPL");
