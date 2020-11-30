@@ -4,8 +4,15 @@ set -e
 
 case "$1" in
   install|upgrade)
+    mkdir -p /var/lib/piVCCU/dtb
+    if [[ -d /boot/firmware/overlays ]]; then
+      mount --bind /boot/firmware /var/lib/piVCCU/dtb
+    elif [[ -d /boot/overlays ]]; then
+      mount --bind /boot /var/lib/piVCCU/dtb
+    fi
+
     mkdir -p /usr/share/rpikernelhack/overlays
-    dpkg-divert --package rpikernelhack --divert /usr/share/rpikernelhack/overlays/pivccu-raspberrypi.dtbo /boot/overlays/pivccu-raspberrypi.dtbo
+    dpkg-divert --package rpikernelhack --divert /usr/share/rpikernelhack/overlays/pivccu-raspberrypi.dtbo /var/lib/piVCCU/dtb/overlays/pivccu-raspberrypi.dtbo
     ;;
 
   abort-upgrade)

@@ -6,13 +6,16 @@ set -e
 case "$1" in
   configure)
     if [ -f /usr/share/rpikernelhack/overlays/pivccu-raspberrypi.dtbo ]; then
-      rm -f /boot/overlays/pivccu-raspberrypi.dtbo
-      dpkg-divert --package rpikernelhack --remove --rename /boot/overlays/pivccu-raspberrypi.dtbo
+      rm -f /var/lib/piVCCU/dtb/overlays/pivccu-raspberrypi.dtbo
+      dpkg-divert --package rpikernelhack --remove --rename /var/lib/piVCCU/dtb/overlays/pivccu-raspberrypi.dtbo
       sync
     fi
 
-    sed -i /boot/config.txt -e '/dtoverlay=pivccu-raspberrypi/d'
-    echo "dtoverlay=pivccu-raspberrypi" >> /boot/config.txt
+    sed -i /var/lib/piVCCU/dtb/config.txt -e '/dtoverlay=pivccu-raspberrypi/d'
+    [ -n "$(tail -1 /var/lib/piVCCU/dtb/config.txt)" ] && echo >> /var/lib/piVCCU/dtb/config.txt
+    echo "dtoverlay=pivccu-raspberrypi" >> /var/lib/piVCCU/dtb/config.txt
+
+    umount /var/lib/piVCCU/dtb
 
     systemctl enable pivccu-rpi-modules.service
 

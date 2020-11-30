@@ -1,5 +1,5 @@
 #!/bin/bash
-PKG_BUILD=13
+PKG_BUILD=14
 
 PKG_VERSION=2.0-$PKG_BUILD
 
@@ -16,10 +16,10 @@ cp -p $CURRENT_DIR/pivccu/rpi-modules/pivccu-rpi-modules.service $TARGET_DIR/lib
 mkdir -p $TARGET_DIR/var/lib/piVCCU/rpi-modules
 cp -p $CURRENT_DIR/pivccu/rpi-modules/*.sh $TARGET_DIR/var/lib/piVCCU/rpi-modules
 
-mkdir -p $TARGET_DIR/boot/overlays
+mkdir -p $TARGET_DIR/var/lib/piVCCU/dtb/overlays
 
 cd $CURRENT_DIR/dts
-dtc -@ -I dts -O dtb -W no-unit_address_vs_reg -o $TARGET_DIR/boot/overlays/pivccu-raspberrypi.dtbo pivccu-raspberrypi.dts
+dtc -@ -I dts -O dtb -W no-unit_address_vs_reg -o $TARGET_DIR/var/lib/piVCCU/dtb/overlays/pivccu-raspberrypi.dtbo pivccu-raspberrypi.dts
 
 mkdir -p $TARGET_DIR/DEBIAN
 cp -p $CURRENT_DIR/package/pivccu-modules-raspberrypi/* $TARGET_DIR/DEBIAN

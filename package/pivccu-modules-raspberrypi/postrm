@@ -5,7 +5,8 @@ set -e
 
 case "$1" in
   remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
-    sed -i /boot/config.txt -e '/dtoverlay=pivccu-raspberrypi/d'
+    sed -i /var/lib/piVCCU/dtb/config.txt -e '/dtoverlay=pivccu-raspberrypi/d'
+    umount /var/lib/piVCCU/dtb
     ;;
 
   purge)

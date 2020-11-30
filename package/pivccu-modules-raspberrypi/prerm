@@ -5,6 +5,13 @@ set -e
 case "$1" in
   remove|upgrade|deconfigure)
     systemctl disable pivccu-rpi-modules.service
+
+    mkdir -p /var/lib/piVCCU/dtb
+    if [[ -d /boot/firmware/overlays ]]; then
+      mount --bind /boot/firmware /var/lib/piVCCU/dtb
+    elif [[ -d /boot/overlays ]]; then
+      mount --bind /boot /var/lib/piVCCU/dtb
+    fi
     ;;
 
   failed-upgrade)
