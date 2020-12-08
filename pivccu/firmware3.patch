@@ -1162,6 +1162,40 @@ diff -ruN --no-dereference fw.3.53.34.orig/etc/init.d/S31bluetooth fw.3.53.34.pa
 -esac
 -
 -exit 0
+diff -ruN --no-dereference fw.3.53.34.orig/etc/init.d/S62HMServer fw.3.53.34.patched/etc/init.d/S62HMServer
+--- fw.3.53.34.orig/etc/init.d/S62HMServer	2020-05-04 15:20:13.000000000 +0200
++++ fw.3.53.34.patched/etc/init.d/S62HMServer	2020-12-08 15:13:46.453571093 +0100
+@@ -13,6 +13,8 @@
+   export JAVA_HOME=/opt/java/
+   export PATH=${PATH}:${JAVA_HOME}/bin
+ 
++  . /var/hm_mode
++
+   if [[ ! -e /etc/config/log4j.xml ]]; then
+     cp -a ${CFG_TEMPLATE_DIR}/log4j.xml /etc/config
+   fi
+@@ -22,6 +24,12 @@
+       cp -a ${CFG_TEMPLATE_DIR}/hmip_networkkey.conf /etc/config
+     fi
+   fi
++
++  cp /etc/crRFD.conf /var/etc/crRFD.conf
++
++  if [[ "${HM_HMIP_DEV}" != "RPI-RF-MOD" ]]; then
++    sed -i "s|^Lan\.Routing\.Enabled=.*$|Lan.Routing.Enabled=false|" /var/etc/crRFD.conf
++  fi
+ }
+ 
+ waitStartupComplete() {
+@@ -42,7 +50,7 @@
+ start() {
+   echo -n "Starting HMIPServer: "
+   init
+-  start-stop-daemon -b -S -q -m -p ${PIDFILE} --exec java -- -Xmx128m -Dos.arch=arm -Dlog4j.configuration=file:///etc/config/log4j.xml -Dfile.encoding=ISO-8859-1 -Dgnu.io.rxtx.SerialPorts=/dev/mmd_hmip -jar /opt/HMServer/HMIPServer.jar /etc/crRFD.conf /etc/HMServer.conf
++  start-stop-daemon -b -S -q -m -p ${PIDFILE} --exec java -- -Xmx128m -Dos.arch=arm -Dlog4j.configuration=file:///etc/config/log4j.xml -Dfile.encoding=ISO-8859-1 -Dgnu.io.rxtx.SerialPorts=/dev/mmd_hmip -jar /opt/HMServer/HMIPServer.jar /var/etc/crRFD.conf /etc/HMServer.conf
+   echo -n "."
+   waitStartupComplete
+ }
 diff -ruN --no-dereference fw.3.53.34.orig/etc/inittab fw.3.53.34.patched/etc/inittab
 --- fw.3.53.34.orig/etc/inittab	2020-05-04 15:20:13.000000000 +0200
 +++ fw.3.53.34.patched/etc/inittab	2020-10-27 22:46:15.132792133 +0100
