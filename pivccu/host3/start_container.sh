@@ -141,6 +141,27 @@ for dev in ${devices[@]}; do
   logger -t piVCCU3 -p user.warning -s "Could not find configured USB device $vendor_id:$model_id ($serial_short)." 1>&2
 done
 
+PIVCCU_VERSION=$(dpkg -s pivccu3 | grep '^Version: ' | cut -d' ' -f2)
+
+if [ -e /etc/os-release ]; then
+  OS_RELEASE=$(grep '^ID=' /etc/os-release | cut -d '=' -f2)_$(grep '^VERSION_CODENAME=' /etc/os-release | cut -d '=' -f2)
+else
+  OS_RELEASE=unknown
+fi
+
+OS_ARCH=$(uname -m)
+
+if [ -e /etc/armbian-release ]; then
+  BOARD_TYPE=$(grep '^BOARD=' /etc/armbian-release | cut -d '=' -f2)
+  OS_RELEASE=armbian_$(grep '^DISTRIBUTION_CODENAME=' /etc/armbian-release | cut -d '=' -f2)
+elif [ -e /sys/firmware/devicetree/base/compatible ]; then
+  BOARD_TYPE=$(strings /sys/firmware/devicetree/base/compatible | tr '\n' ':' | tr ',' '_')
+else
+  BOARD_TYPE=unknown
+fi
+
+wget -O /dev/null -q --timeout=5 "https://www.pivccu.de/latestVersion?version=$PIVCCU_VERSION&product=HM-CCU3&serial=$BOARD_SERIAL&os=$OS_RELEASE&board=$BOARD_TYPE" || true
+
 sysctl -w kernel.sched_rt_runtime_us=-1
 
 if [ -x /etc/piVCCU3/pre-start.sh ]; then
