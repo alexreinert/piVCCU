@@ -584,12 +584,12 @@ static struct raw_uart_driver hb_rf_eth = {
 static ssize_t connect_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
   int err;
-  char ip[16];
+  char ip[17];
 
   if (count == 0)
     return 0;
 
-  if (count > 15)
+  if (count > 16)
     return -EINVAL;
 
   hb_rf_eth_disconnect();
@@ -728,5 +728,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.11");
+MODULE_VERSION("1.12");
 MODULE_LICENSE("GPL");
