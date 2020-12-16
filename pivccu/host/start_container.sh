@@ -48,6 +48,38 @@ if [ -x /etc/piVCCU/pre-start.sh ]; then
   /etc/piVCCU/pre-start.sh
 fi
 
+PIVCCU_VERSION=$(dpkg -s pivccu | grep '^Version: ' | cut -d' ' -f2)
+
+if [ -e /etc/os-release ]; then
+  OS_ID=$(grep '^ID=' /etc/os-release | cut -d '=' -f2)
+  VERSION_CODENAME=$(grep '^VERSION_CODENAME=' /etc/os-release | cut -d '=' -f2)
+  if [ -z "$VERSION_CODENAME" ]; then
+    VERSION_CODENAME=$(grep '^VERSION_ID=' /etc/os-release | cut -d '=' -f2)
+  fi
+else
+  OS_ID=unknown
+  VERSION_CODENAME=unknown
+fi
+
+OS_ARCH=$(uname -m)
+
+if [ -e /etc/armbian-release ]; then
+  BOARD_TYPE=$(grep '^BOARD=' /etc/armbian-release | cut -d '=' -f2)
+  ARMBIAN_CODENAME=$(grep '^DISTRIBUTION_CODENAME=' /etc/armbian-release | cut -d '=' -f2)
+  if [ -n "$ARMBIAN_CODENAME" ]; then
+    VERSION_CODENAME=$ARMBIAN_CODENAME
+  fi
+  OS_ID=armbian
+elif [ -e /sys/firmware/devicetree/base/compatible ]; then
+  BOARD_TYPE=$(strings /sys/firmware/devicetree/base/compatible | tr '\n' ':' | tr ',' '_')
+else
+  BOARD_TYPE=unknown
+fi
+
+OS_RELEASE=${OS_ID}_${VERSION_CODENAME}
+
+wget -O /dev/null -q --timeout=5 "https://www.pivccu.de/latestVersion?version=$PIVCCU_VERSION&product=HM-CCU2&serial=$BOARD_SERIAL&os=$OS_RELEASE&board=$BOARD_TYPE" || true
+
 sysctl -w kernel.sched_rt_runtime_us=-1
 
 /usr/bin/lxc-start --lxcpath /var/lib/piVCCU --name lxc --pidfile /var/run/pivccu.pid --daemon
