@@ -29,6 +29,7 @@
 #include <net/sock.h>
 #include <linux/kthread.h>
 #include <linux/sched.h>
+#include <linux/interrupt.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <uapi/linux/sched/types.h>
 #endif
@@ -410,7 +411,7 @@ static void hb_rf_eth_send_gpio(unsigned long data)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 DECLARE_TASKLET_OLD(hb_rf_eth_send_gpio_work, hb_rf_eth_send_gpio);
 #else
-DECLARE_TASKLET(hb_rf_eth_send_gpio_work, hb_rf_eth_send_gpio, 0L);
+DECLARE_TASKLET(hb_rf_eth_send_gpio_work, hb_rf_eth_send_gpio, 0);
 #endif
 
 static int hb_rf_eth_gpio_request(struct gpio_chip *gc, unsigned int offset)
@@ -537,7 +538,7 @@ static void hb_rf_eth_tx_chars_deferred(unsigned long data)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 DECLARE_TASKLET_OLD(hb_rf_eth_tx_chars_work, hb_rf_eth_tx_chars_deferred);
 #else
-DECLARE_TASKLET(hb_rf_eth_tx_chars_work, hb_rf_eth_tx_chars_deferred, 0L);
+DECLARE_TASKLET(hb_rf_eth_tx_chars_work, hb_rf_eth_tx_chars_deferred, 0);
 #endif
 
 static void hb_rf_eth_tx_chars(struct generic_raw_uart *raw_uart, unsigned char *chr, int index, int len)
