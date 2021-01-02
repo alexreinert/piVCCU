@@ -4,7 +4,7 @@ CCU_VERSION=3.55.5
 CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/firmware/ccu3-firmware/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=52
+PKG_BUILD=53
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -80,6 +80,16 @@ cd $WORK_DIR
 dpkg-deb --build pivccu3-$PKG_VERSION
 
 cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-armhf.deb
+
+wget -O openjdk-8-jre.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u275-b01-1~deb9u1_armhf.deb
+wget -O openjdk-8-jre-headless.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre-headless_8u275-b01-1~deb9u1_armhf.deb
+
+dpkg-deb -x openjdk-8-jre.deb .
+dpkg-deb -x openjdk-8-jre-headless.deb .
+
+mv usr/lib/jvm/java-8-openjdk-armhf/jre $CNT_ROOTFS/opt/openjdk
+rm -f $CNT_ROOTFS/opt/java
+ln -s /opt/openjdk $CNT_ROOTFS/opt/java
 
 rm -rf $TARGET_DIR/DEBIAN/*
 cp -p $CURRENT_DIR/package/pivccu3/* $TARGET_DIR/DEBIAN
