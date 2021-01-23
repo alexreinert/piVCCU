@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2020 by Alexander Reinert
+ * Copyright (c) 2021 by Alexander Reinert
  * Author: Alexander Reinert
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 #include <uapi/linux/sched/types.h>
 #endif
 #include <linux/spinlock.h>
+#include <linux/circ_buf.h>
 #include "generic_raw_uart.h"
 
 #include "stack_protector.include"
@@ -55,7 +56,6 @@ static struct socket *_sock = NULL;
 static struct sockaddr_in remote = {0};
 static atomic_t msg_cnt = ATOMIC_INIT(0);
 static struct task_struct *k_recv_thread = NULL;
-static spinlock_t sock_tx_lock;
 
 static struct generic_raw_uart *raw_uart = NULL;
 static struct class *class = NULL;
@@ -65,6 +65,26 @@ static unsigned long nextKeepAliveSentOut = 0;
 static unsigned long lastReceivedKeepAlive = 0;
 
 static char currentEndpointIdentifier = 0;
+
+struct send_msg_queue_entry {
+  char buffer[BUFFER_SIZE];
+  size_t len;
+};
+
+struct send_msg_queue_t
+{
+  struct send_msg_queue_entry *entries;
+  int head;
+  int tail;
+};
+
+static struct send_msg_queue_t *send_msg_queue;
+
+#define QUEUE_LENGTH 32
+
+static struct task_struct *k_send_thread = NULL;
+static spinlock_t queue_write_lock;
+static wait_queue_head_t queue_wq;
 
 static uint16_t hb_rf_eth_calc_crc(unsigned char *buf, size_t len)
 {
@@ -91,43 +111,36 @@ static uint16_t hb_rf_eth_calc_crc(unsigned char *buf, size_t len)
   return crc;
 }
 
-static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
+static void hb_rf_eth_queue_msg(char cmd, char *buffer, size_t len)
 {
-  struct kvec vec = {0};
-  struct msghdr header = {0};
-  int err;
+  int head;
+  int tail;
+  struct send_msg_queue_entry *entry;
 
-  *((uint8_t *)(buffer + 1)) = (uint8_t)(atomic_inc_return(&msg_cnt));
-  *((uint16_t *)(buffer + len - 2)) = (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len - 2)));
+  spin_lock(&queue_write_lock);
 
-  if (sock)
+  head = send_msg_queue->head;
+  tail = READ_ONCE(send_msg_queue->tail);
+
+  if (CIRC_SPACE(head, tail, QUEUE_LENGTH) >= 1)
   {
-    vec.iov_len = len;
-    vec.iov_base = buffer;
+    entry = send_msg_queue->entries + head;
 
-    header.msg_name = &remote;
-    header.msg_namelen = sizeof(struct sockaddr_in);
-    header.msg_control = NULL;
-    header.msg_controllen = 0;
-    header.msg_flags = 0;
+    entry->len = len + 4;
+    entry->buffer[0] = cmd;
+    entry->buffer[1] = 0;
+    memcpy(entry->buffer + 2, buffer, len);
 
-    spin_lock(&sock_tx_lock);
-    err = kernel_sendmsg(sock, &header, &vec, 1, len);
-    spin_unlock(&sock_tx_lock);
+    smp_store_release(&send_msg_queue->head, (head + 1) & (QUEUE_LENGTH - 1));
 
-    if (err < 0)
-    {
-      dev_err(dev, "Error %d on sending packet\n", err);
-    }
-    else if (err != len)
-    {
-      dev_err(dev, "Only %d of %d bytes of packet could be sent\n", err, (int)len);
-    }
+    wake_up(&queue_wq);
   }
   else
   {
-    dev_err(dev, "Error sending packet, not connected\n");
+    dev_err(dev, "No free send buffers\n");
   }
+
+  spin_unlock(&queue_write_lock);
 }
 
 static int hb_rf_eth_recv_packet(struct socket *sock, char *buffer, size_t buffer_size)
@@ -185,6 +198,43 @@ static void hb_rf_eth_set_timeout(struct socket *sock)
 #endif
 
   set_fs(fs);
+}
+
+static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
+{
+  struct kvec vec = {0};
+  struct msghdr header = {0};
+  int err;
+
+  *((uint8_t *)(buffer + 1)) = (uint8_t)(atomic_inc_return(&msg_cnt));
+  *((uint16_t *)(buffer + len - 2)) = (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len - 2)));
+
+  if (sock)
+  {
+    vec.iov_len = len;
+    vec.iov_base = buffer;
+
+    header.msg_name = &remote;
+    header.msg_namelen = sizeof(struct sockaddr_in);
+    header.msg_control = NULL;
+    header.msg_controllen = 0;
+    header.msg_flags = 0;
+
+    err = kernel_sendmsg(sock, &header, &vec, 1, len);
+
+    if (err < 0)
+    {
+      dev_err(dev, "Error %d on sending packet\n", err);
+    }
+    else if (err != len)
+    {
+      dev_err(dev, "Only %d of %d bytes of packet could be sent\n", err, (int)len);
+    }
+  }
+  else
+  {
+    dev_err(dev, "Error sending packet, not connected\n");
+  }
 }
 
 static int hb_rf_eth_try_connect(char endpointIdentifier)
@@ -247,21 +297,67 @@ static int hb_rf_eth_try_connect(char endpointIdentifier)
   return 0;
 }
 
+static void hb_rf_eth_set_high_prio(void)
+{
+  int err;
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+  sched_set_fifo(current);
+#else
+  struct sched_param param;
+  param.sched_priority = 5;
+  err = sched_setscheduler(current, SCHED_RR, &param);
+  if (err < 0)
+    dev_err(dev, "Error setting priority of thread (err %d).\n", err);
+#endif
+}
+
+static bool is_queue_filled(int *head, int *tail)
+{
+  *head = smp_load_acquire(&send_msg_queue->head);
+  *tail = send_msg_queue->tail;
+
+  return CIRC_CNT(*head, *tail, QUEUE_LENGTH) >= 1;
+}
+
+static int hb_rf_eth_send_threadproc(void *data)
+{
+  struct send_msg_queue_entry *entry;
+  char buffer[4] = {2, 0, 0, 0};
+  int head;
+  int tail;
+
+  hb_rf_eth_set_high_prio();
+
+  while (!kthread_should_stop())
+  {
+    if (is_queue_filled(&head, &tail) || wait_event_interruptible_timeout(queue_wq, is_queue_filled(&head, &tail), msecs_to_jiffies(100)) > 0)
+    {
+      entry = send_msg_queue->entries + tail;
+
+      hb_rf_eth_send_msg(_sock, entry->buffer, entry->len);
+
+      tail = (tail + 1) & (QUEUE_LENGTH - 1);
+      smp_store_release(&send_msg_queue->tail, tail);
+    }
+
+    if (time_after(jiffies, nextKeepAliveSentOut))
+    {
+      nextKeepAliveSentOut = jiffies + msecs_to_jiffies(1000);
+      hb_rf_eth_send_msg(_sock, buffer, 4);
+    }
+  }
+
+  return 0;
+}
+
 static int hb_rf_eth_recv_threadproc(void *data)
 {
   char *buffer;
   int len;
   int i;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
-  sched_set_fifo_low(current);
-#else
-  struct sched_param param;
-  param.sched_priority = 5;
-  i = sched_setscheduler(current, SCHED_RR, &param);
-  if (i < 0)
-    dev_err(dev, "Error setting priority of receiver thread (err %d).\n", i);
-#endif
+  hb_rf_eth_set_high_prio();
 
   buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
 
@@ -318,13 +414,6 @@ static int hb_rf_eth_recv_threadproc(void *data)
         goto exit;
       }
     }
-
-    if (time_after(jiffies, nextKeepAliveSentOut))
-    {
-      nextKeepAliveSentOut = jiffies + msecs_to_jiffies(1000);
-      buffer[0] = 2;
-      hb_rf_eth_send_msg(_sock, buffer, 4);
-    }
   }
 
 exit:
@@ -335,8 +424,7 @@ exit:
 
 static void hb_rf_eth_send_reset(void)
 {
-  char buffer[4] = {4, 0, 0, 0};
-  hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
+  hb_rf_eth_queue_msg(4, NULL, 0);
   msleep(100);
 }
 
@@ -375,6 +463,22 @@ static int hb_rf_eth_connect(const char *ip)
     sysfs_notify(&dev->kobj, NULL, "is_connected");
     return err;
   }
+  else
+  {
+    k_send_thread = kthread_run(hb_rf_eth_send_threadproc, NULL, "k_hb_rf_eth_sender");
+    if (IS_ERR(k_send_thread))
+    {
+      err = PTR_ERR(k_send_thread);
+      dev_err(dev, "Error creating sender thread\n");
+      k_send_thread = NULL;
+      kthread_stop(k_recv_thread);
+      k_recv_thread = NULL;
+      sock_release(_sock);
+      _sock = NULL;
+      sysfs_notify(&dev->kobj, NULL, "is_connected");
+      return err;
+    }
+  }
 
   hb_rf_eth_send_reset();
 
@@ -387,6 +491,11 @@ static void hb_rf_eth_disconnect(void)
 {
   char buffer[4] = {1, 0, 0, 0};
 
+  if (k_send_thread)
+  {
+    kthread_stop(k_send_thread);
+    k_send_thread = NULL;
+  }
   if (k_recv_thread)
   {
     kthread_stop(k_recv_thread);
@@ -402,17 +511,10 @@ static void hb_rf_eth_disconnect(void)
   }
 }
 
-static void hb_rf_eth_send_gpio(unsigned long data)
+static void hb_rf_eth_send_gpio(void)
 {
-  char buffer[5] = {3, 0, gpio_value, 0, 0};
-  hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
+  hb_rf_eth_queue_msg(3, &gpio_value, 1);
 }
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
-DECLARE_TASKLET_OLD(hb_rf_eth_send_gpio_work, hb_rf_eth_send_gpio);
-#else
-DECLARE_TASKLET(hb_rf_eth_send_gpio_work, hb_rf_eth_send_gpio, 0);
-#endif
 
 static int hb_rf_eth_gpio_request(struct gpio_chip *gc, unsigned int offset)
 {
@@ -453,7 +555,7 @@ static void hb_rf_eth_gpio_set(struct gpio_chip *gc, unsigned int gpio, int valu
   else
     gpio_value &= ~BIT(gpio);
 
-  tasklet_schedule(&hb_rf_eth_send_gpio_work);
+  hb_rf_eth_send_gpio();
 
   spin_unlock_irqrestore(&gpio_lock, lock_flags);
 }
@@ -476,7 +578,7 @@ static void hb_rf_eth_gpio_set_multiple(struct gpio_chip *gc, unsigned long *mas
   gpio_value &= ~(*mask);
   gpio_value |= *bits & *mask;
 
-  tasklet_schedule(&hb_rf_eth_send_gpio_work);
+  hb_rf_eth_send_gpio();
 
   spin_unlock_irqrestore(&gpio_lock, lock_flags);
 }
@@ -504,16 +606,14 @@ static void hb_rf_eth_reset_radio_module(struct generic_raw_uart *raw_uart)
 
 static int hb_rf_eth_start_connection(struct generic_raw_uart *raw_uart)
 {
-  char buffer[4] = {5, 0, 0, 0};
-  hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
+  hb_rf_eth_queue_msg(5, NULL, 0);
   msleep(20);
   return 0;
 }
 
 static void hb_rf_eth_stop_connection(struct generic_raw_uart *raw_uart)
 {
-  char buffer[4] = {6, 0, 0, 0};
-  hb_rf_eth_send_msg(_sock, buffer, sizeof(buffer));
+  hb_rf_eth_queue_msg(6, NULL, 0);
   msleep(20);
 }
 
@@ -527,28 +627,9 @@ static bool hb_rf_eth_isready_for_tx(struct generic_raw_uart *raw_uart)
   return true;
 }
 
-static unsigned char tx_char_buffer[BUFFER_SIZE];
-static size_t tx_char_buffer_len = 0;
-
-static void hb_rf_eth_tx_chars_deferred(unsigned long data)
-{
-  hb_rf_eth_send_msg(_sock, tx_char_buffer, tx_char_buffer_len);
-}
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
-DECLARE_TASKLET_OLD(hb_rf_eth_tx_chars_work, hb_rf_eth_tx_chars_deferred);
-#else
-DECLARE_TASKLET(hb_rf_eth_tx_chars_work, hb_rf_eth_tx_chars_deferred, 0);
-#endif
-
 static void hb_rf_eth_tx_chars(struct generic_raw_uart *raw_uart, unsigned char *chr, int index, int len)
 {
-  tasklet_unlock_wait(&hb_rf_eth_tx_chars_work);
-
-  tx_char_buffer[0] = 7;
-  memcpy(&tx_char_buffer[2], &chr[index], len);
-  tx_char_buffer_len = len + 4;
-  tasklet_hi_schedule(&hb_rf_eth_tx_chars_work);
+  hb_rf_eth_queue_msg(7, chr + index, len);
 }
 
 static void hb_rf_eth_init_tx(struct generic_raw_uart *raw_uart)
@@ -619,9 +700,13 @@ static int __init hb_rf_eth_init(void)
 {
   int err;
 
-  spin_lock_init(&sock_tx_lock);
-
   spin_lock_init(&gpio_lock);
+
+  spin_lock_init(&queue_write_lock);
+  init_waitqueue_head(&queue_wq);
+
+  send_msg_queue = kzalloc(sizeof(struct send_msg_queue_t), GFP_KERNEL);
+  send_msg_queue->entries = kcalloc(QUEUE_LENGTH, sizeof(struct send_msg_queue_entry), GFP_KERNEL);
 
   class = class_create(THIS_MODULE, "hb-rf-eth");
   if (IS_ERR(class))
@@ -690,16 +775,15 @@ static void __exit hb_rf_eth_exit(void)
   sysfs_remove_file(&dev->kobj, &dev_attr_is_connected.attr);
   sysfs_remove_file(&dev->kobj, &dev_attr_connect.attr);
 
-  tasklet_kill(&hb_rf_eth_tx_chars_work);
-
-  tasklet_kill(&hb_rf_eth_send_gpio_work);
-
   gpiochip_remove(&gc);
 
   hb_rf_eth_disconnect();
 
   device_destroy(class, 0);
   class_destroy(class);
+
+  kfree(send_msg_queue->entries);
+  kfree(send_msg_queue);
 }
 
 static int hb_rf_eth_connect_set(const char *val, const struct kernel_param *kp)
@@ -729,5 +813,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.12");
+MODULE_VERSION("1.13");
 MODULE_LICENSE("GPL");

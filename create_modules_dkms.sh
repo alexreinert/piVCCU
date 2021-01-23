@@ -1,5 +1,5 @@
 #!/bin/bash
-PKG_BUILD=54
+PKG_BUILD=55
 
 PKG_VERSION=1.0.$PKG_BUILD
 
