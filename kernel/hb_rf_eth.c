@@ -61,9 +61,6 @@ static struct generic_raw_uart *raw_uart = NULL;
 static struct class *class = NULL;
 static struct device *dev = NULL;
 
-static unsigned long nextKeepAliveSentOut = 0;
-static unsigned long lastReceivedKeepAlive = 0;
-
 static char currentEndpointIdentifier = 0;
 
 struct send_msg_queue_entry {
@@ -326,6 +323,7 @@ static int hb_rf_eth_send_threadproc(void *data)
   char buffer[4] = {2, 0, 0, 0};
   int head;
   int tail;
+  unsigned long nextKeepAliveSentOut = jiffies;
 
   hb_rf_eth_set_high_prio();
 
@@ -334,6 +332,12 @@ static int hb_rf_eth_send_threadproc(void *data)
     if (is_queue_filled(&head, &tail) || wait_event_interruptible_timeout(queue_wq, is_queue_filled(&head, &tail), msecs_to_jiffies(100)) > 0)
     {
       entry = send_msg_queue->entries + tail;
+
+      if (entry->buffer[0] == 3)
+      {
+        mb();
+        entry->buffer[2] = gpio_value;
+      }
 
       hb_rf_eth_send_msg(_sock, entry->buffer, entry->len);
 
@@ -356,12 +360,11 @@ static int hb_rf_eth_recv_threadproc(void *data)
   char *buffer;
   int len;
   int i;
+  unsigned long lastReceivedKeepAlive = jiffies;
 
   hb_rf_eth_set_high_prio();
 
   buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
-
-  lastReceivedKeepAlive = jiffies;
 
   while (!kthread_should_stop())
   {
@@ -513,6 +516,7 @@ static void hb_rf_eth_disconnect(void)
 
 static void hb_rf_eth_send_gpio(void)
 {
+  mb();
   hb_rf_eth_queue_msg(3, &gpio_value, 1);
 }
 
@@ -813,5 +817,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.13");
+MODULE_VERSION("1.14");
 MODULE_LICENSE("GPL");
