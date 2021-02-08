@@ -17,7 +17,7 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
   * HM-LGW-O-TW-W-EU (HmRF only)
   * [HB-RF-USB](https://github.com/alexreinert/PCB/tree/master/HB-RF-USB) (HmRF+HmIP, piVCCU3 only)
   * [HB-RF-USB-2](https://github.com/alexreinert/PCB/tree/master/HB-RF-USB-2) (HmRF+HmIP, piVCCU3 only)
-  * [HB-RF-ETH](https://github.com/alexreinert/PCB/tree/master/HB-RF-ETH) (HmRF+HmIP, piVCCU3 only, Experimental)
+  * [HB-RF-ETH](https://github.com/alexreinert/PCB/tree/master/HB-RF-ETH) (HmRF+HmIP, piVCCU3 only)
 
 ### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU)
 Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU). Or you can send me a gift from my [Amazon wishlist](https://www.amazon.de/gp/registry/wishlist/3NNUQIQO20AAP/ref=nav_wishlist_lists_1).
@@ -33,20 +33,21 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
   * Asus Tinkerboard running Armbian with Mainline kernel
   * Asus Tinkerboard S running Armbian with Mainline kernel
   * Banana Pi M1 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
-  * Banana Pi Pro running Armbian with Mainline kernel (Experimental)
+  * Banana Pi Pro running Armbian with Mainline kernel
   * Libre Computer AML-S905X-CC (Le Potato) running Armbian with Mainline kernel
   * Odroid C2 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
+  * Odroid C4 running Armbian with Mainline kernel (Experimental, LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
   * Orange Pi Zero, Zero Plus, R1 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
   * Orange Pi One, 2, Lite, Plus, Plus 2, Plus 2E, PC, PC Plus running Armbian with Mainline kernel
 
     :warning: WARNING: Some models of the Orange Pi have a rotated GPIO socket. Please ensure the correct position of Pin 1!
-  * NanoPC T4 running Armbian with Dev kernel (Experimental)
+  * NanoPC T4 running Armbian with Mainline kernel
 
     :warning: WARNING: Do not connect RPI-RF-MOD to a power source. Do connect the NanoPC to a power source only.
-  * NanoPi M4 running Armbian with Dev kernel (Experimental)
-  * Rock Pi 4 running Armbian with Dev kernel (Experimental)
-  * Rock64 running Armbian with Dev kernel (Experimental) (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
-  * RockPro64 running Armbian with Dev kernel (Experimental)
+  * NanoPi M4 running Armbian with Mainline kernel
+  * Rock Pi 4 running Armbian with Mainline kernel
+  * Rock64 running Armbian with Mainline kernel (Experimental, LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
+  * RockPro64 running Armbian with Mainline kernel
 
     :warning: WARNING: Do not connect RPI-RF-MOD to a power source. Do connect the RockPro64 to a power source only.
 * Properly installed HM-MOD-RPI-PCB or RPI-RF-MOD
