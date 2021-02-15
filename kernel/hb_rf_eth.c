@@ -183,8 +183,12 @@ static void hb_rf_eth_set_timeout(struct socket *sock)
   struct timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+  mm_segment_t fs = force_uaccess_begin();
+#else
   mm_segment_t fs = get_fs();
   set_fs(KERNEL_DS);
+#endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
   sock_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO_NEW, KERNEL_SOCKPTR((char *)&tv), sizeof(tv));
@@ -194,7 +198,11 @@ static void hb_rf_eth_set_timeout(struct socket *sock)
   sock_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+  force_uaccess_end(fs);
+#else
   set_fs(fs);
+#endif
 }
 
 static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
