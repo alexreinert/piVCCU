@@ -178,23 +178,21 @@ static int hb_rf_eth_recv_packet(struct socket *sock, char *buffer, size_t buffe
 static void hb_rf_eth_set_timeout(struct socket *sock)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+  #define MY_SO_RCVTIMEO SO_RCVTIMEO_NEW
   struct __kernel_sock_timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
 #else
+  #define MY_SO_RCVTIMEO SO_RCVTIMEO
   struct timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
 #endif
 
-  mm_segment_t fs = get_fs();
-  set_fs(KERNEL_DS);
-
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
   sock_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO_NEW, KERNEL_SOCKPTR((char *)&tv), sizeof(tv));
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
-  sock_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO_NEW, (char *)&tv, sizeof(tv));
 #else
-  sock_setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
-#endif
-
+  mm_segment_t fs = get_fs();
+  set_fs(KERNEL_DS);
+  sock_setsockopt(sock, SOL_SOCKET, MY_SO_RCVTIMEO, (char *)&tv, sizeof(tv));
   set_fs(fs);
+#endif
 }
 
 static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
@@ -817,5 +815,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.14");
+MODULE_VERSION("1.15");
 MODULE_LICENSE("GPL");
