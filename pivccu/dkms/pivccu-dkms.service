@@ -6,6 +6,7 @@ Before=debmatic.service
 [Service]
 ExecStart=/var/lib/piVCCU/dkms/ensure_modules.sh
 Type=oneshot
+TimeoutSec=600s
 
 [Install]
 WantedBy=multi-user.target

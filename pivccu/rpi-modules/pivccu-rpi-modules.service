@@ -7,6 +7,7 @@ After=network-online.target
 [Service]
 ExecStart=/var/lib/piVCCU/rpi-modules/ensure_headers.sh
 Type=oneshot
+TimeoutSec=600s
 
 [Install]
 WantedBy=multi-user.target
