@@ -32,11 +32,22 @@ if [ ! $? -eq 0 ]; then
 
   dkms install -m pivccu -v $PKG_VER -k `uname -r` || true
 
-  for i in {1..120}; do
-    udevadm settle -t 5 -E /dev/raw-uart && udevadm trigger -c add && udevadm trigger && udevadm settle -t 5 -E /dev/raw-uart
-    if [ -e /dev/raw-uart ]; then
-      break
+  modinfo generic_raw_uart &> /dev/null
+  if [ $? -eq 0 ]; then
+    if [ -e /etc/default/hb_rf_eth ]; then
+      . /etc/default/hb_rf_eth
     fi
-  done
+    if [ -z "$HB_RF_ETH_ADDRESS" ]; then
+      for i in {1..12}; do
+        if [ -e /dev/raw-uart ]; then
+          break
+        fi
+        udevadm settle -t 5 -E /dev/raw-uart || true
+        udevadm trigger -c add || true
+        udevadm trigger || true
+        sleep 5
+      done
+    fi
+  fi
 fi
 
