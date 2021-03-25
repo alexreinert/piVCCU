@@ -2,6 +2,7 @@
   serial@ff130000 {
     compatible = "pivccu,dw_apb";
     pivccu,reset_pin = <&pivccu_gpio2 3 0>;
+    pivccu,rtc = <&rpi_rf_mod_rtc>;
   };
 
   pinctrl {
@@ -12,10 +13,11 @@
   i2c@ff150000 {
     status = "okay";
 
-    rx8130@32 {
+    rpi_rf_mod_rtc: rx8130@32 {
       compatible = "epson,rx8130-legacy";
       reg = <0x32>;
       status = "okay";
+      aux-voltage-chargeable = <1>;
       enable-external-capacitor;
     };
   };

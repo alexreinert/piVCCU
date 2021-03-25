@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2020 by Alexander Reinert
+ * Copyright (c) 2021 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -331,6 +331,6 @@ module_raw_uart_driver(MODULE_NAME, pl011_raw_uart, pl011_raw_uart_of_match);
 
 MODULE_ALIAS("platform:pl011-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.7");
+MODULE_VERSION("1.8");
 MODULE_DESCRIPTION("PL011 raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

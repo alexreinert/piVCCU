@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2020 by Alexander Reinert
+ * Copyright (c) 2021 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -35,6 +35,7 @@ enum generic_raw_uart_pin
   GENERIC_RAW_UART_PIN_GREEN = 1,
   GENERIC_RAW_UART_PIN_RED = 2,
   GENERIC_RAW_UART_PIN_RESET = 3,
+  GENERIC_RAW_UART_PIN_ALT_RESET = 4,
 };
 
 struct generic_raw_uart

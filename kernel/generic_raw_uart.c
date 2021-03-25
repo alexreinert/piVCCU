@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2020 by Alexander Reinert
+ * Copyright (c) 2021 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -39,7 +39,8 @@
 #include <linux/gpio.h>
 #include <linux/gpio/consumer.h>
 #include <linux/delay.h>
-
+#include <linux/of.h>
+#include <linux/i2c.h>
 #include "generic_raw_uart.h"
 
 #include "stack_protector.include"
@@ -732,6 +733,8 @@ const char *generic_raw_uart_get_pin_label(enum generic_raw_uart_pin pin)
     return "pivccu,red_pin";
   case GENERIC_RAW_UART_PIN_RESET:
     return "pivccu,reset_pin";
+  case GENERIC_RAW_UART_PIN_ALT_RESET:
+    return "pivccu,alt_reset_pin";
   }
   return 0;
 }
@@ -821,16 +824,118 @@ static DEVICE_ATTR_RO(device_type);
 static spinlock_t active_devices_lock;
 static bool active_devices[MAX_DEVICES] = {false};
 
+static int __match_i2c_client_by_address(struct device *dev, void *addrp)
+{
+  struct i2c_client *client = i2c_verify_client(dev);
+  int addr = *(int *)addrp;
+  return (client && client->addr == addr) ? 1 : 0;
+}
+
+static struct i2c_client *i2c_find_client(struct i2c_adapter *adapter, int addr)
+{
+  struct device *child;
+  child = device_find_child(&adapter->dev, &addr, __match_i2c_client_by_address);
+
+  if (child)
+  {
+    put_device(child);
+    return i2c_verify_client(child);
+  }
+
+  return NULL;
+}
+
+int generic_raw_uart_probe_rtc_device(struct device *dev, bool *rtc_detected)
+{
+  int err = 0;
+
+#ifdef CONFIG_OF
+  struct device_node *rtc_of_node;
+  struct i2c_adapter *rtc_adapter;
+  struct i2c_client *rtc_client;
+  struct i2c_board_info rtc_i2c_info;
+  char rtc_module_alias[I2C_NAME_SIZE + 4] = "i2c:";
+
+  *rtc_detected = false;
+
+  if (dev->of_node)
+  {
+    rtc_of_node = of_parse_phandle(dev->of_node, "pivccu,rtc", 0);
+    if (rtc_of_node)
+    {
+      of_i2c_get_board_info(dev, rtc_of_node, &rtc_i2c_info);
+
+      rtc_adapter = of_get_i2c_adapter_by_node(rtc_of_node->parent);
+      if (rtc_adapter)
+      {
+        rtc_client = i2c_find_client(rtc_adapter, rtc_i2c_info.addr);
+
+        if (!rtc_client)
+        {
+          dev_err(dev, "Configured RTC device is not yet initialized");
+          err = -EPROBE_DEFER;
+        }
+        else
+        {
+	  if (!i2c_client_has_driver(rtc_client))
+          {
+            dev_info(dev, "Missing I2C driver of rtc device, trying to load");
+
+            if (of_modalias_node(rtc_of_node, rtc_module_alias + 4, sizeof(rtc_module_alias) - 4) == 0)
+            {
+              dev_info(dev, "Requesting module %s", rtc_module_alias);
+              request_module(rtc_module_alias);
+            }
+
+	    i2c_unregister_device(rtc_client);
+	    rtc_client = i2c_new_client_device(rtc_adapter, &rtc_i2c_info);
+          }
+
+          if (i2c_client_has_driver(rtc_client))
+          {
+            *rtc_detected = true;
+          }
+
+          err = 0;
+        }
+
+        i2c_put_adapter(rtc_adapter);
+      }
+      else
+      {
+        dev_err(dev, "I2C adapter of configured RTC device is not yet initialized");
+        err = -EPROBE_DEFER;
+      }
+
+      of_node_put(rtc_of_node);
+    }
+  }
+#endif
+
+  return err;
+}
+
 struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *drv, void *driver_data)
 {
   int err;
   int i;
-
   int dev_no = MAX_DEVICES;
-
   struct generic_raw_uart_instance *instance;
-
   unsigned long flags;
+  bool use_alt_reset_pin = false;
+
+
+  err = generic_raw_uart_probe_rtc_device(dev, &use_alt_reset_pin);
+  if (err != 0)
+  {
+    goto failed_probe_rtc;
+  }
+
+  if (use_alt_reset_pin)
+  {
+    dev_info(dev, "Detected RPI-RF-MOD, using alternative reset pin");
+  }
+
   spin_lock_irqsave(&active_devices_lock, flags);
   for (i = 0; i < MAX_DEVICES; i++)
   {
@@ -886,7 +991,7 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
 
   dev_set_drvdata(instance->dev, instance);
 
-  instance->reset_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_RESET);
+  instance->reset_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, use_alt_reset_pin ? GENERIC_RAW_UART_PIN_ALT_RESET : GENERIC_RAW_UART_PIN_RESET);
 
   if (instance->reset_pin != 0)
   {
@@ -933,6 +1038,7 @@ failed_cdev_add:
   unregister_chrdev_region(instance->devid, 1);
   kfree(instance);
 failed_inst_alloc:
+failed_probe_rtc:
   return ERR_PTR(err);
 }
 EXPORT_SYMBOL(generic_raw_uart_probe);
@@ -1019,6 +1125,7 @@ MODULE_PARM_DESC(load_dummy_rx8130_module, "Loads the dummy_rx8130 module");
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.17");
+MODULE_VERSION("1.18");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
+

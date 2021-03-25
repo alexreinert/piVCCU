@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2020 by Alexander Reinert
+ * Copyright (c) 2021 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -368,8 +368,6 @@ failed_inst_alloc:
 
 static int meson_raw_uart_remove(struct platform_device *pdev)
 {
-  reset_control_assert(meson_port->rst);
-
   kfree(meson_port);
   return 0;
 }
@@ -383,6 +381,6 @@ module_raw_uart_driver(MODULE_NAME, meson_raw_uart, meson_raw_uart_of_match);
 
 MODULE_ALIAS("platform:meson-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.4");
+MODULE_VERSION("1.5");
 MODULE_DESCRIPTION("MESON raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

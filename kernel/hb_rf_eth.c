@@ -596,6 +596,7 @@ static int hb_rf_eth_get_gpio_pin_number(struct generic_raw_uart *raw_uart, enum
   case GENERIC_RAW_UART_PIN_BLUE:
     return gc.base + 2;
   case GENERIC_RAW_UART_PIN_RESET:
+  case GENERIC_RAW_UART_PIN_ALT_RESET:
     return 0;
   }
   return 0;
@@ -815,5 +816,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.15");
+MODULE_VERSION("1.16");
 MODULE_LICENSE("GPL");

@@ -12,6 +12,7 @@
       status = "okay";
       compatible = "pivccu,dw_apb";
       pivccu,reset_pin = <&pio 0 7 0>;
+      pivccu,rtc = <&rpi_rf_mod_rtc>;
     };
   };
 
@@ -22,10 +23,11 @@
       #size-cells = <0>;
       status = "okay";
 
-      rx8130@32 {
+      rpi_rf_mod_rtc: rx8130@32 {
         compatible = "epson,rx8130-legacy";
         reg = <0x32>;
         status = "okay";
+        aux-voltage-chargeable = <1>;
         enable-external-capacitor;
       };
     };

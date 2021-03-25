@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2020 by Alexander Reinert
+ * Copyright (c) 2021 by Alexander Reinert
  * Author: Alexander Reinert
  *
  * This program is free software; you can redistribute it and/or modify
@@ -385,6 +385,7 @@ static int hb_rf_usb_2_get_gpio_pin_number(struct generic_raw_uart *raw_uart, en
   case GENERIC_RAW_UART_PIN_RED:
     return port->gc.base;
   case GENERIC_RAW_UART_PIN_RESET:
+  case GENERIC_RAW_UART_PIN_ALT_RESET:
     return 0;
   }
   return 0;
@@ -512,6 +513,6 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.4");
+MODULE_VERSION("1.5");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
