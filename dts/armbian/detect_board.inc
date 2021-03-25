@@ -7,7 +7,7 @@ fi
 if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
   for str in $DEV_TREE_COMPATIBLE; do
     case $str in
-      xunlong,orangepi-one|xunlong,orangepi-lite|xunlong,orangepi-plus|xunlong,orangepi-plus2e|xunlong,orangepi-2|xunlong,orangepi-pc|xunlong,orangepi-pc-plus,bpi-m2-plusallwinner)
+      xunlong,orangepi-one|xunlong,orangepi-lite|xunlong,orangepi-plus|xunlong,orangepi-plus2e|xunlong,orangepi-2|xunlong,orangepi-pc|xunlong,orangepi-pc-plus|sinovoip,bpi-m2-plus)
         OVERLAY_MODE='overlay'
         OVERLAY_FILE='pivccu-orangepi-h3.dtbo'
         break
