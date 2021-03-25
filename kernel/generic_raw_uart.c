@@ -845,6 +845,13 @@ static struct i2c_client *i2c_find_client(struct i2c_adapter *adapter, int addr)
   return NULL;
 }
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 5, 0))
+static inline bool i2c_client_has_driver(struct i2c_client *client)
+{
+	return !IS_ERR_OR_NULL(client) && client->dev.driver;
+}
+#endif
+
 int generic_raw_uart_probe_rtc_device(struct device *dev, bool *rtc_detected)
 {
   int err = 0;
@@ -888,7 +895,11 @@ int generic_raw_uart_probe_rtc_device(struct device *dev, bool *rtc_detected)
             }
 
 	    i2c_unregister_device(rtc_client);
-	    rtc_client = i2c_new_client_device(rtc_adapter, &rtc_i2c_info);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 3, 0))
+            rtc_client = i2c_new_client_device(rtc_adapter, &rtc_i2c_info);
+#else
+            rtc_client = i2c_new_device(rtc_adapter, &rtc_i2c_info);
+#endif
           }
 
           if (i2c_client_has_driver(rtc_client))
@@ -1125,7 +1136,7 @@ MODULE_PARM_DESC(load_dummy_rx8130_module, "Loads the dummy_rx8130 module");
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.18");
+MODULE_VERSION("1.19");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
