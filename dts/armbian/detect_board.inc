@@ -7,7 +7,7 @@ fi
 if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
   for str in $DEV_TREE_COMPATIBLE; do
     case $str in
-      xunlong,orangepi-one|xunlong,orangepi-lite|xunlong,orangepi-plus|xunlong,orangepi-plus2e|xunlong,orangepi-2|xunlong,orangepi-pc|xunlong,orangepi-pc-plus|sinovoip,bpi-m2-plus)
+      xunlong,orangepi-one|xunlong,orangepi-lite|xunlong,orangepi-plus|xunlong,orangepi-plus2e|xunlong,orangepi-2|xunlong,orangepi-pc|xunlong,orangepi-pc-plus)
         OVERLAY_MODE='overlay'
         OVERLAY_FILE='pivccu-orangepi-h3.dtbo'
         break
@@ -30,6 +30,11 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
       lemaker,bananapro)
         OVERLAY_MODE='overlay'
         OVERLAY_FILE='pivccu-bananapi-pro.dtbo'
+        break;
+        ;;
+      sinovoip,bpi-m2-plus)
+        OVERLAY_MODE='overlay'
+        OVERLAY_FILE='pivccu-bananapi-m2-plus.dtbo'
         break;
         ;;
       asus,rk3288-tinker|asus,rk3288-tinker-s)
