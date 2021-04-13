@@ -14,7 +14,7 @@ set script "
   string sSysVarId;
   foreach(sSysVarId, dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs()) {
     object oSysVar = dom.GetObject(sSysVarId);
-    if((alObj == null) && (oSysVar.Name() == \"HB-RF-ETH Connection\")) {
+    if((alObj == null) && ((oSysVar.Name() == \"HB-RF-ETH Connection\") || (oSysVar.Name() == \"HB_RF_ETH_Connection\"))) {
       alObj=oSysVar;
     }
   }
@@ -25,6 +25,7 @@ set script "
       alObj.Name(\"HB-RF-ETH Connection\");
       alObj.ValueType(ivtBinary);
       alObj.ValueSubType(istAlarm);
+      alObj.DPInfo(\"\${hb_eth_connection_description}\");
       alObj.ValueName0(\"\${hb_eth_connection_connected}\");
       alObj.ValueName1(\"\${hb_eth_connection_disconnected}\");
       alObj.ValueUnit(\"\");
@@ -38,9 +39,6 @@ set script "
   }
 
   if(alObj != null) {
-    alObj.ValueType(ivtBinary);
-    alObj.ValueSubType(istAlarm);
-    alObj.DPInfo(\"\${hb_eth_connection_description}\");
     alObj.State($state);
   }
 "
