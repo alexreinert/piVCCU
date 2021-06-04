@@ -35,55 +35,55 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
       asus,rk3288-tinker|asus,rk3288-tinker-s)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/tinkerboard.dts.include'
-        FDT_FILE=rk3288-tinker.dtb
+        FDT_FILE='rk3288-tinker.dtb rk3288-tinker-s.dtb'
         break
         ;;
       pine64,rock64)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/rock64.dts.include'
-        FDT_FILE=rockchip/rk3328-rock64.dtb
+        FDT_FILE='rockchip/rk3328-rock64.dtb'
         break
         ;;
       pine64,rockpro64)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/rockpro64.dts.include'
-        FDT_FILE=rockchip/rk3399-rockpro64.dtb
+        FDT_FILE='rockchip/rk3399-rockpro64.dtb'
         break
         ;;
       hardkernel,odroid-c2)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/odroidc2.dts.include'
-        FDT_FILE=amlogic/meson-gxbb-odroidc2.dtb
+        FDT_FILE='amlogic/meson-gxbb-odroidc2.dtb'
         break
         ;;
       hardkernel,odroid-c4)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/odroidc4.dts.include'
-        FDT_FILE=amlogic/meson-sm1-odroid-c4.dtb
+        FDT_FILE='amlogic/meson-sm1-odroid-c4.dtb'
         break
         ;;
       libretech,cc|libretech,aml-s905x-cc)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/lepotato.dts.include'
-        FDT_FILE=amlogic/meson-gxl-s905x-libretech-cc.dtb
+        FDT_FILE='amlogic/meson-gxl-s905x-libretech-cc.dtb'
         break
         ;;
       friendlyelec,nanopc-t4|friendlyarm,nanopc-t4)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/nanopct4.dts.include'
-	FDT_FILE=rockchip/rk3399-nanopc-t4.dtb
+	FDT_FILE='rockchip/rk3399-nanopc-t4.dtb'
         break
         ;; 
       friendlyelec,nanopi-m4|friendlyarm,nanopi-m4)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/nanopim4.dts.include'
-	FDT_FILE=rockchip/rk3399-nanopi-m4.dtb
+	FDT_FILE='rockchip/rk3399-nanopi-m4.dtb'
         break
         ;;
       radxa,rockpi4)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/rockpi4.dts.include'
-        FDT_FILE=rockchip/rk3399-rock-pi-4.dtb
+        FDT_FILE='rockchip/rk3399-rock-pi-4.dtb'
         break
         ;;
     esac
