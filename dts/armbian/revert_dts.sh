@@ -4,7 +4,7 @@ source $(dirname $0)/detect_board.inc
 case "$OVERLAY_MODE" in
   patch)
     for FILE in $FDT_FILE; do
-      if [ -e $FILE ]; then
+      if [ -e /boot/dtb/$FILE ]; then
         if [ -e /boot/dtb/$FILE.bak ]; then
           cp /boot/dtb/$FILE.bak /boot/dtb/$FILE
         else

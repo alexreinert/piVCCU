@@ -6,7 +6,7 @@ case "$OVERLAY_MODE" in
   patch)
     TMP_DIR=`mktemp -d`
     for FILE in $FDT_FILE; do
-      if [ -e $FILE ]; then
+      if [ -e /boot/dtb/$FILE ]; then
         dtc -I dtb -O dts -q -o $TMP_DIR/devicetree.dts /boot/dtb/$FILE
 
         if [ `grep -c -e 'compatible = "pivccu,' $TMP_DIR/devicetree.dts` -eq 0 ]; then
