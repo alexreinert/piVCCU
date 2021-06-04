@@ -4,11 +4,13 @@ source $(dirname $0)/detect_board.inc
 case "$OVERLAY_MODE" in
   patch)
     for FILE in $FDT_FILE; do
-      if [ -e /boot/dtb/$FILE.bak ]; then
-        cp /boot/dtb/$FILE.bak /boot/dtb/$FILE
-      else
-        echo "piVCCU: Error! Could not find backup file of $FILE, cannot revert"
-        exit
+      if [ -e $FILE ]; then
+        if [ -e /boot/dtb/$FILE.bak ]; then
+          cp /boot/dtb/$FILE.bak /boot/dtb/$FILE
+        else
+          echo "piVCCU: Error! Could not find backup file of $FILE, cannot revert"
+          exit
+        fi
       fi
     done
     ;;
