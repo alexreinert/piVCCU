@@ -21,6 +21,7 @@
 #include <linux/slab.h>
 #include <linux/gpio/driver.h>
 #include <linux/version.h>
+#include <linux/crc32.h>
 #include "generic_raw_uart.h"
 
 #include "stack_protector.include"
@@ -91,10 +92,9 @@ struct hb_rf_usb_port_s
 };
 
 static struct usb_device_id usbid[] = {
-    {
-        USB_DEVICE(0x0403, 0x6F70),
-    },
-    {}};
+  { USB_DEVICE(0x0403, 0x6f70), .driver_info = 0x60d01cf9 },
+  {}
+};
 
 MODULE_DEVICE_TABLE(usb, usbid);
 
@@ -427,7 +427,7 @@ static void hb_rf_usb_reset_radio_module(struct generic_raw_uart *raw_uart)
 static int hb_rf_usb_get_device_type(struct generic_raw_uart *raw_uart, char *page)
 {
   struct hb_rf_usb_port_s *port = raw_uart->driver_data;
-  return sprintf(page, "HB-RF-USB@usb-%s-%s\n", port->udev->bus->bus_name, port->udev->devpath);
+  return sprintf(page, "%s@usb-%s-%s\n", port->udev->product, port->udev->bus->bus_name, port->udev->devpath);
 }
 
 static struct raw_uart_driver hb_rf_usb = {
@@ -449,13 +449,21 @@ static int hb_rf_usb_probe(struct usb_interface *interface, const struct usb_dev
   struct hb_rf_usb_port_s *port;
   struct usb_device *udev = usb_get_dev(interface_to_usbdev(interface));
 
-  if (strcmp(udev->manufacturer, "Alexander Reinert"))
+  struct usb_device_id *match = usb_match_id(interface, usbid);
+  if (!match)
+  {
+    dev_err(&udev->dev, "Unsupported USB device\n");
+    return ENODEV;
+  }
+
+  const unsigned long manufacturer_csum = crc32(0xffffffff, udev->manufacturer, strlen(udev->manufacturer)) ^ 0xffffffff;
+  if ((match->driver_info != 0) && (match->driver_info != manufacturer_csum))
   {
     dev_err(&udev->dev, "Unsupported manufacturer %s\n", udev->manufacturer);
     return -ENODEV;
   }
 
-  dev_info(&udev->dev, "Found HB-RF-USB at usb-%s-%s\n", udev->bus->bus_name, udev->devpath);
+  dev_info(&udev->dev, "Found %s with serial %s at usb-%s-%s\n", udev->product, udev->serial, udev->bus->bus_name, udev->devpath);
 
   port = kzalloc(sizeof(struct hb_rf_usb_port_s), GFP_KERNEL);
   usb_set_intfdata(interface, port);
@@ -548,6 +556,6 @@ module_init(hb_rf_usb_init);
 module_exit(hb_rf_usb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.8");
+MODULE_VERSION("1.9");
 MODULE_DESCRIPTION("HB-RF-USB raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
