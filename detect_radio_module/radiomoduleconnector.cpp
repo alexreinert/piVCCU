@@ -1,5 +1,5 @@
 /* 
- *  Copyright 2020 Alexander Reinert
+ *  Copyright 2021 Alexander Reinert
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -66,8 +66,8 @@ RadioModuleConnector::RadioModuleConnector(int fd) : _fd(fd)
     tty.c_cc[VTIME] = 1;
     tty.c_cc[VMIN] = 0;
 
-    cfsetispeed(&tty, 115200);
-    cfsetospeed(&tty, 115200);
+    cfsetispeed(&tty, B115200);
+    cfsetospeed(&tty, B115200);
     tcsetattr(_fd, TCSANOW, &tty);
   }
 }
