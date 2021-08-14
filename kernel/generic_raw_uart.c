@@ -264,8 +264,19 @@ exit:
   return ret;
 }
 
-static void generic_raw_uart_reset_radio_module(struct generic_raw_uart_instance *instance)
+static int generic_raw_uart_reset_radio_module(struct generic_raw_uart_instance *instance)
 {
+  if (down_interruptible(&instance->sem))
+  {
+    return -ERESTARTSYS;
+  }
+
+  if (instance->open_count > 0)
+  {
+    up(&instance->sem);
+    return -EBUSY;
+  }
+
   if (instance->driver->reset_radio_module == 0)
   {
     if (instance->reset_pin != 0)
@@ -283,6 +294,10 @@ static void generic_raw_uart_reset_radio_module(struct generic_raw_uart_instance
   {
     instance->driver->reset_radio_module(&instance->raw_uart);
   }
+
+  up(&instance->sem);
+
+  return 0;
 }
 
 static int generic_raw_uart_open(struct inode *inode, struct file *filep)
@@ -771,14 +786,14 @@ int generic_raw_uart_get_gpio_pin_number(struct generic_raw_uart_instance *insta
 static ssize_t reset_radio_module_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
   struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
-
   char *endp;
+  int ret;
 
   if (simple_strtol(strim((char *)buf), &endp, 0) == 1)
   {
     dev_info(dev, "Reset radio module");
-    generic_raw_uart_reset_radio_module(instance);
-    return count;
+    ret = generic_raw_uart_reset_radio_module(instance);
+    return ret == 0 ? count : ret;
   }
   else
   {
@@ -856,7 +871,7 @@ int generic_raw_uart_probe_rtc_device(struct device *dev, bool *rtc_detected)
 {
   int err = 0;
 
-#ifdef CONFIG_OF
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0))
   struct device_node *rtc_of_node;
   struct i2c_adapter *rtc_adapter;
   struct i2c_client *rtc_client;
@@ -921,6 +936,8 @@ int generic_raw_uart_probe_rtc_device(struct device *dev, bool *rtc_detected)
       of_node_put(rtc_of_node);
     }
   }
+#else
+  *rtc_detected = false;
 #endif
 
   return err;
@@ -1036,10 +1053,7 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   proc_create_data(dev_name(instance->dev), 0444, NULL, &generic_raw_uart_proc_fops, instance);
 #endif
 
-  if (instance->driver->reset_radio_module == 0)
-  {
-    generic_raw_uart_reset_radio_module(instance);
-  }
+  generic_raw_uart_reset_radio_module(instance);
 
   return &instance->raw_uart;
 
@@ -1136,7 +1150,7 @@ MODULE_PARM_DESC(load_dummy_rx8130_module, "Loads the dummy_rx8130 module");
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.19");
+MODULE_VERSION("1.20");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
