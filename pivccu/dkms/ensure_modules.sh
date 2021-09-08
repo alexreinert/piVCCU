@@ -30,7 +30,17 @@ if [ ! $? -eq 0 ]; then
     fi
   fi
 
-  dkms install -m pivccu -v $PKG_VER -k `uname -r` || true
+  if [[ ! "$(dkms status -m pivccu -v $PKG_VER -k `uname -r`)" =~ "installed" ]]; then
+    dkms install -m pivccu -v $PKG_VER -k `uname -r` || true
+  else
+    if [ "$(uname -s)" == "Linux" ] ; then
+      if [[ -f /boot/System.map-`uname -r` ]]; then
+        depmod -a "$(uname -r)" -F "/boot/System.map-$(uname -r)"
+      else
+        depmod -a "$(uname -r)"
+      fi
+    fi
+  fi
 
   modinfo generic_raw_uart &> /dev/null
   if [ $? -eq 0 ]; then
