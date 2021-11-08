@@ -254,6 +254,7 @@ static irqreturn_t meson_raw_uart_irq_handle(int irq, void *context)
 }
 
 static struct raw_uart_driver meson_raw_uart = {
+    .owner = THIS_MODULE,
     .start_connection = meson_raw_uart_start_connection,
     .stop_connection = meson_raw_uart_stop_connection,
     .init_tx = meson_raw_uart_init_tx,
@@ -381,6 +382,6 @@ module_raw_uart_driver(MODULE_NAME, meson_raw_uart, meson_raw_uart_of_match);
 
 MODULE_ALIAS("platform:meson-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.5");
+MODULE_VERSION("1.6");
 MODULE_DESCRIPTION("MESON raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

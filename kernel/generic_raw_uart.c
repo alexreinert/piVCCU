@@ -41,6 +41,7 @@
 #include <linux/delay.h>
 #include <linux/of.h>
 #include <linux/i2c.h>
+#include <crypto/hash.h>
 #include "generic_raw_uart.h"
 
 #include "stack_protector.include"
@@ -311,6 +312,11 @@ static int generic_raw_uart_open(struct inode *inode, struct file *filep)
     return -ENODEV;
   }
 
+  if (instance->driver->owner && !try_module_get(instance->driver->owner))
+  {
+    return -ENODEV;
+  }
+
   /*Get semaphore*/
   if (down_interruptible(&instance->sem))
   {
@@ -387,6 +393,8 @@ static int generic_raw_uart_close(struct inode *inode, struct file *filep)
   }
 
   up(&instance->sem);
+
+  module_put(instance->driver->owner);
 
   return 0;
 }
@@ -1148,9 +1156,76 @@ static const struct kernel_param_ops generic_raw_uart_set_dummy_rx8130_loader_pa
 module_param_cb(load_dummy_rx8130_module, &generic_raw_uart_set_dummy_rx8130_loader_param_ops, NULL, S_IWUSR);
 MODULE_PARM_DESC(load_dummy_rx8130_module, "Loads the dummy_rx8130 module");
 
+struct sdesc {
+  struct shash_desc shash;
+  char ctx[];
+};
+
+static struct sdesc *init_sdesc(struct crypto_shash *alg)
+{
+  struct sdesc *sdesc;
+  int size;
+
+  size = sizeof(struct shash_desc) + crypto_shash_descsize(alg);
+  sdesc = kmalloc(size, GFP_KERNEL);
+  if (!sdesc)
+    return ERR_PTR(-ENOMEM);
+  sdesc->shash.tfm = alg;
+  return sdesc;
+}
+
+#include "devkey.inc"
+
+bool generic_raw_uart_verify_dkey(struct device *dev, unsigned char *dkey, int dkey_len, unsigned char *skey, uint32_t *pkey, int bytes)
+{
+  unsigned char hkey[32];
+  unsigned char prefix[32];
+  struct sdesc *sdesc;
+  struct crypto_shash *shash;
+
+  switch (bytes)
+  {
+    case 16:
+      shash = crypto_alloc_shash("md5", 0, 0);
+      break;
+    case 32:
+      shash = crypto_alloc_shash("sha256", 0, 0);
+      break;
+    default:
+      return false;
+  }
+
+  if(IS_ERR(shash))
+    return false;
+
+  sdesc = init_sdesc(shash);
+  if (IS_ERR(sdesc))
+  {
+    crypto_free_shash(shash);
+    return false;
+  }
+
+  crypto_shash_digest(&sdesc->shash, dkey, dkey_len, hkey);
+
+  kfree(sdesc);
+  crypto_free_shash(shash);
+
+  snprintf(prefix, sizeof(prefix), "%s %s: DKey: ", dev_driver_string(dev), dev_name(dev));
+  print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_NONE, 32, min(dkey_len, 8), dkey, dkey_len, false);
+  snprintf(prefix, sizeof(prefix), "%s %s: HKey: ", dev_driver_string(dev), dev_name(dev));
+  print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_NONE, 32, 8, hkey, bytes, false);
+  snprintf(prefix, sizeof(prefix), "%s %s: SKey: ", dev_driver_string(dev), dev_name(dev));
+  print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_NONE, 32, 8, skey, bytes * 2, false);
+  snprintf(prefix, sizeof(prefix), "%s %s: PKey: ", dev_driver_string(dev), dev_name(dev));
+  print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_NONE, 32, 8, pkey, bytes * 2, false);
+
+  return verify_device_key(pkey, hkey, skey, bytes);
+}
+EXPORT_SYMBOL(generic_raw_uart_verify_dkey);
+
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.20");
+MODULE_VERSION("1.21");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

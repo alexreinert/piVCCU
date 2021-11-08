@@ -17,6 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *---------------------------------------------------------------------------*/
+#include <linux/module.h>
 
 #define BAUD 115200
 
@@ -47,6 +48,8 @@ struct generic_raw_uart
 
 struct raw_uart_driver
 {
+  struct module *owner;
+
   int (*start_connection)(struct generic_raw_uart *raw_uart);
   void (*stop_connection)(struct generic_raw_uart *raw_uart);
 
@@ -64,11 +67,25 @@ struct raw_uart_driver
   int (*get_device_type)(struct generic_raw_uart *raw_uart, char *page);
 };
 
-extern struct generic_raw_uart *generic_raw_uart_probe(struct device *, struct raw_uart_driver *, void *);
-extern int generic_raw_uart_remove(struct generic_raw_uart *raw_uart, struct device *, struct raw_uart_driver *);
+struct hb_usb_device_info
+{
+  uint32_t vendorhash;
+  uint32_t pkey[16];
+  bool enforce_verification;
+};
+
+#define HB_DEV_KEY(...) __VA_ARGS__
+#define HB_USB_DEVICE(_vend, _prod, _vendorhash, _enforce_verification, _pkey) \
+  USB_DEVICE((_vend), (_prod)), \
+  .driver_info = (kernel_ulong_t)&((struct hb_usb_device_info) { .vendorhash = (_vendorhash), .enforce_verification = _enforce_verification, .pkey = { HB_DEV_KEY _pkey } } )
+
+extern struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *driver, void *driver_data);
+extern int generic_raw_uart_remove(struct generic_raw_uart *raw_uart, struct device *dev, struct raw_uart_driver *driver);
 extern void generic_raw_uart_tx_queued(struct generic_raw_uart *raw_uart);
 extern void generic_raw_uart_handle_rx_char(struct generic_raw_uart *raw_uart, enum generic_raw_uart_rx_flags, unsigned char);
 extern void generic_raw_uart_rx_completed(struct generic_raw_uart *raw_uart);
+
+extern bool generic_raw_uart_verify_dkey(struct device *dev, unsigned char *dkey, int dkey_len, unsigned char *skey, uint32_t *pkey, int bytes);
 
 #define module_raw_uart_driver(__module_name, __raw_uart_driver, __of_match)              \
   static struct generic_raw_uart *__raw_uart_driver##_raw_uart;                           \

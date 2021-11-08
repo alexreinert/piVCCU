@@ -294,11 +294,10 @@ static int hb_rf_eth_try_connect(char endpointIdentifier)
 
 static void hb_rf_eth_set_high_prio(void)
 {
-  int err;
-
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
   sched_set_fifo(current);
 #else
+  int err;
   struct sched_param param;
   param.sched_priority = 5;
   err = sched_setscheduler(current, SCHED_RR, &param);
@@ -523,7 +522,15 @@ static int hb_rf_eth_gpio_request(struct gpio_chip *gc, unsigned int offset)
   if (offset > 2)
     return -ENODEV;
 
+  if (gc->owner && !try_module_get(gc->owner))
+    return -ENODEV;
+
   return 0;
+}
+
+static void hb_rf_eth_gpio_free(struct gpio_chip *gc, unsigned offset)
+{
+  module_put(gc->owner);
 }
 
 static int hb_rf_eth_gpio_direction_get(struct gpio_chip *gc, unsigned int gpio)
@@ -653,6 +660,7 @@ static int hb_rf_eth_get_device_type(struct generic_raw_uart *raw_uart, char *pa
 }
 
 static struct raw_uart_driver hb_rf_eth = {
+    .owner = THIS_MODULE,
     .get_gpio_pin_number = hb_rf_eth_get_gpio_pin_number,
     .reset_radio_module = hb_rf_eth_reset_radio_module,
     .start_connection = hb_rf_eth_start_connection,
@@ -730,6 +738,7 @@ static int __init hb_rf_eth_init(void)
   gc.label = "hb-rf-eth-gpio";
   gc.ngpio = 3;
   gc.request = hb_rf_eth_gpio_request;
+  gc.free = hb_rf_eth_gpio_free;
   gc.get_direction = hb_rf_eth_gpio_direction_get;
   gc.direction_input = hb_rf_eth_gpio_direction_input;
   gc.direction_output = hb_rf_eth_gpio_direction_output;
@@ -816,5 +825,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.16");
+MODULE_VERSION("1.17");
 MODULE_LICENSE("GPL");

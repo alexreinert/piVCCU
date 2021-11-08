@@ -246,6 +246,7 @@ static irqreturn_t pl011_raw_uart_irq_handle(int irq, void *context)
 }
 
 static struct raw_uart_driver pl011_raw_uart = {
+    .owner = THIS_MODULE,
     .start_connection = pl011_raw_uart_start_connection,
     .stop_connection = pl011_raw_uart_stop_connection,
     .init_tx = pl011_raw_uart_init_tx,
@@ -331,6 +332,6 @@ module_raw_uart_driver(MODULE_NAME, pl011_raw_uart, pl011_raw_uart_of_match);
 
 MODULE_ALIAS("platform:pl011-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.8");
+MODULE_VERSION("1.9");
 MODULE_DESCRIPTION("PL011 raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
