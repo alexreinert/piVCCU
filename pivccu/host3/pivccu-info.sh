@@ -8,13 +8,21 @@ fi
 
 . /etc/default/pivccu3
 
-modprobe -a eq3_char_loop &> /dev/null
-if [ $? -eq 0 ]; then
+modprobe -a eq3_char_loop &> /dev/null && RC=$? || RC=$?
+if [ $RC -eq 0 ]; then
   MODULE_STATE="Available"
 else
   MODULE_STATE="Not available"
 fi
 echo "Kernel modules: $MODULE_STATE"
+
+if [ -e /sys/devices/virtual/raw-uart ] && [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --state --no-humanize` == "STOPPED" ]; then
+  . /var/lib/piVCCU3/detect_hardware.inc
+else
+  if [ -e /tmp/pivccu-var/pivccu/conf ]; then
+    . /tmp/pivccu-var/pivccu/conf
+  fi
+fi
 
 if [ -e /sys/devices/virtual/raw-uart ]; then
   RAW_UART_STATE="Available"
@@ -30,14 +38,6 @@ if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi" /proc/device-tree
     UART_STATE="Not assigned to GPIO pins"
   fi
   echo "Rasp.Pi UART:   $UART_STATE"
-fi
-
-if [ -e /sys/devices/virtual/raw-uart ] && [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --state --no-humanize` == "STOPPED" ]; then
-  . /var/lib/piVCCU3/detect_hardware.inc
-else
-  if [ -e /tmp/pivccu-var/pivccu/conf ]; then
-    . /tmp/pivccu-var/pivccu/conf
-  fi
 fi
 
 if [ -z "$HMRF_HARDWARE" ]; then

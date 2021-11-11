@@ -1,14 +1,14 @@
 #!/bin/bash
-modinfo generic_raw_uart &> /dev/null
-if [ ! $? -eq 0 ]; then
+modinfo generic_raw_uart &> /dev/null && RC=$? || RC=$?
+if [ ! $RC -eq 0 ]; then
   PKG_VER=`dpkg -s pivccu-modules-dkms | grep '^Version: ' | cut -d' ' -f2`
 
   if [ -e /usr/src/linux-headers-`uname -r` ]; then
     cd /usr/src/linux-headers-`uname -r`
 
     if [ -e scripts/basic/fixdep ]; then
-      scripts/basic/fixdep >/dev/null 2>&1
-      if [ $? -eq 126 ]; then
+      scripts/basic/fixdep >/dev/null 2>&1 && RC=$? || RC=$?
+      if [ $RC -eq 126 ]; then
         make scripts || true
       fi
     fi
@@ -32,8 +32,8 @@ if [ ! $? -eq 0 ]; then
 
   dkms install -m pivccu -v $PKG_VER -k `uname -r` || true
 
-  modinfo generic_raw_uart &> /dev/null
-  if [ $? -eq 0 ]; then
+  modinfo generic_raw_uart &> /dev/null && RC=$? || RC=$?
+  if [ $RC -eq 0 ]; then
     if [ -e /etc/default/hb_rf_eth ]; then
       . /etc/default/hb_rf_eth
     fi

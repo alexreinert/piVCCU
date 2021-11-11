@@ -5,8 +5,8 @@ KERNEL_REPO="https://github.com/raspberrypi/linux/"
 ACTIVE_KERNEL=`uname -r`
 MODULE_DIR="/lib/modules/$ACTIVE_KERNEL"
 
-modinfo generic_raw_uart &> /dev/null
-if [ $? -eq 0 ]; then
+modinfo generic_raw_uart &> /dev/null && RC=$? || RC=$?
+if [ $RC -eq 0 ]; then
   exit
 fi
 

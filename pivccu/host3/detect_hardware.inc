@@ -76,8 +76,8 @@ case $PIVCCU_HMRF_MODE in
           modprobe -q hb_rf_usb
 
           for try in {0..30}; do
-            lsmod | grep -q hb_rf_usb
-            if [ $? -eq 0 ]; then
+            lsmod | grep -q hb_rf_usb && RC=$? || RC=$?
+            if [ $RC -eq 0 ]; then
               break
             fi
             sleep 1
@@ -97,8 +97,8 @@ case $PIVCCU_HMRF_MODE in
           modprobe -q hb_rf_usb-2
 
           for try in {0..30}; do
-            lsmod | grep -q hb_rf_usb-2
-            if [ $? -eq 0 ]; then
+            lsmod | grep -q hb_rf_usb-2 && RC=$? || RC=$?
+            if [ $RC -eq 0 ]; then
               break
             fi
             sleep 1
@@ -125,8 +125,8 @@ case $PIVCCU_HMRF_MODE in
       if [ -e "/dev/$UART_DEV" ]; then
         echo 1 > /sys/class/raw-uart/$UART_DEV/reset_radio_module
 
-        MODULE_INFO=`detect_radio_module /dev/$UART_DEV`
-        if [ $? -eq 0 ]; then
+        MODULE_INFO=`detect_radio_module /dev/$UART_DEV` && RC=$? || RC=$?
+        if [ $RC -eq 0 ]; then
           if [ -e "/sys/class/raw-uart/$UART_DEV/device_type" ]; then
             UART_DEVICE_TYPE=`cat /sys/class/raw-uart/$UART_DEV/device_type`
           fi
