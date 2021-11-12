@@ -3,6 +3,8 @@ modinfo generic_raw_uart &> /dev/null && RC=$? || RC=$?
 if [ ! $RC -eq 0 ]; then
   PKG_VER=`dpkg -s pivccu-modules-dkms | grep '^Version: ' | cut -d' ' -f2`
 
+  dkms remove -m pivccu -v $PKG_VER -k `uname -r` || true
+
   if [ -e /usr/src/linux-headers-`uname -r` ]; then
     cd /usr/src/linux-headers-`uname -r`
 
