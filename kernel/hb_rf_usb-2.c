@@ -466,7 +466,7 @@ static int hb_rf_usb_2_probe(struct usb_interface *interface, const struct usb_d
   if (!buffer)
     return -ENOMEM;
 
-  usb_control_msg(udev, usb_sndctrlpipe(udev, 0), CP2102N_VENDOR_SPECIFIC, REQTYPE_DEVICE_TO_HOST, CP2102N_GET_CHIPTYPE, 0, buffer, 1, USB_CTRL_GET_TIMEOUT);
+  usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), CP2102N_VENDOR_SPECIFIC, REQTYPE_DEVICE_TO_HOST, CP2102N_GET_CHIPTYPE, 0, buffer, 1, USB_CTRL_GET_TIMEOUT);
   part_num = buffer[0];
 
   if (part_num < 0x20 || part_num > 0x22)
@@ -476,7 +476,7 @@ static int hb_rf_usb_2_probe(struct usb_interface *interface, const struct usb_d
     return -ENODEV;
   }
 
-  usb_control_msg(udev, usb_sndctrlpipe(udev, 0), CP2102N_VENDOR_SPECIFIC, REQTYPE_DEVICE_TO_HOST, CP2102N_READ_CONFIG, 0, buffer, CP2102N_CONFIG_SIZE, USB_CTRL_GET_TIMEOUT);
+  usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), CP2102N_VENDOR_SPECIFIC, REQTYPE_DEVICE_TO_HOST, CP2102N_READ_CONFIG, 0, buffer, CP2102N_CONFIG_SIZE, USB_CTRL_GET_TIMEOUT);
 
   switch (part_num)
   {
@@ -635,6 +635,6 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.8");
+MODULE_VERSION("1.9");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

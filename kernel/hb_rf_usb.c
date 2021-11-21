@@ -502,18 +502,18 @@ static int hb_rf_usb_probe(struct usb_interface *interface, const struct usb_dev
       if (!buffer)
         return -ENOMEM;
 
-      usb_control_msg(udev, usb_sndctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x43, buffer + 32, 2, WDR_TIMEOUT);
-      usb_control_msg(udev, usb_sndctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x00, buffer + 18, 2, WDR_TIMEOUT);
-      usb_control_msg(udev, usb_sndctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x07, buffer + 24, 2, WDR_TIMEOUT);
-      usb_control_msg(udev, usb_sndctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, buffer[19] + 4, buffer + 34, 2, WDR_TIMEOUT);
-      usb_control_msg(udev, usb_sndctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x0d, buffer + 2, 2, WDR_TIMEOUT);
+      usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x43, buffer + 32, 2, WDR_TIMEOUT);
+      usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x00, buffer + 18, 2, WDR_TIMEOUT);
+      usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x07, buffer + 24, 2, WDR_TIMEOUT);
+      usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, buffer[19] + 4, buffer + 34, 2, WDR_TIMEOUT);
+      usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x0d, buffer + 2, 2, WDR_TIMEOUT);
       for (i = 2; i < 11; i++)
-        usb_control_msg(udev, usb_sndctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, i + 0x0c + (buffer[25] >> 1), buffer + i * 2, 2, WDR_TIMEOUT);
-      usb_control_msg(udev, usb_sndctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x09, buffer + 36, 2, WDR_TIMEOUT);
-      usb_control_msg(udev, usb_sndctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x0c, buffer, 2, WDR_TIMEOUT);
-      usb_control_msg(udev, usb_sndctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, (buffer[37] + (buffer[36] & 0x7f)) >> 1, buffer + 30, 2, WDR_TIMEOUT);
+        usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, i + 0x0c + (buffer[25] >> 1), buffer + i * 2, 2, WDR_TIMEOUT);
+      usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x09, buffer + 36, 2, WDR_TIMEOUT);
+      usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, 0x0c, buffer, 2, WDR_TIMEOUT);
+      usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, (buffer[37] + (buffer[36] & 0x7f)) >> 1, buffer + 30, 2, WDR_TIMEOUT);
       for (i = -8; i < 0; i += 2)
-        usb_control_msg(udev, usb_sndctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, ((buffer[36] + i) >> 1) & 0x3f, buffer + 30 + i, 2, WDR_TIMEOUT);
+        usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), FTDI_SIO_READ_EEPROM_REQUEST, FTDI_SIO_READ_EEPROM_REQUEST_TYPE, 0, ((buffer[36] + i) >> 1) & 0x3f, buffer + 30 + i, 2, WDR_TIMEOUT);
 
       if (generic_raw_uart_verify_dkey(&udev->dev, buffer + 32, 4, buffer, hbudi->pkey, 16))
       {
@@ -637,6 +637,6 @@ module_init(hb_rf_usb_init);
 module_exit(hb_rf_usb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.10");
+MODULE_VERSION("1.11");
 MODULE_DESCRIPTION("HB-RF-USB raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
