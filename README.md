@@ -26,7 +26,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 * Debian or Ubuntu based distribution
 * armhf or arm64 architecture, but:
   * x64 is not supported
-  * 64bit kernel in the official RaspberryPi OS is not supported (setting `arm_64bit=1` boot config)
+  * For RaspberryPi OS: You need the [64bit image](https://downloads.raspberrypi.org/raspios_arm64/images/) (currently in beta). Using the 64bit kernel in a 32bit system (via `arm_64bit=1` boot config) will not work.
 * At least kernel 4.14
 
 ### Prequisites for HM-MOD-RPI-PCB and RPI-RF-MOD on GPIO header
