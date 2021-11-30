@@ -64,14 +64,9 @@
    ```
 
 9. Install CCU container
-   * To use CCC2 firmware
-      ```bash
-      sudo apt install pivccu
-      ```
-   * To use CCU3 firmware
-      ```bash
-      sudo apt install pivccu3
-      ```
+   ```bash
+   sudo apt install pivccu3
+   ```
 
 10. Start using your new virtualized CCU, you can get the IP of the container using
    ```bash

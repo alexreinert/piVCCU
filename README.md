@@ -1,13 +1,13 @@
 # piVCCU&reg;
 
-piVCCU is a project to install the original Homematic CCU2 firmware inside a virtualized container (lxc) on ARM based single board computers.
+piVCCU is a project to install the original Homematic CCU3 firmware inside a virtualized container (lxc) on ARM based single board computers.
 
 ### Goals
-* Option to run CCU2 and other software parallel on one device
-* Usage of original CCU2 or CCU3 firmware (and not OCCU)
-* As compatible as possible with original CCU2
+* Option to run CCU3 and other software parallel on one device
+* Usage of original CCU3 firmware (and not OCCU)
+* As compatible as possible with original CCU3
 * Full Homematic and Homematic IP support on all supported platforms (if RF hardware supports it)
-* Support for backup/restore between piVCCU and original CCU2 without modification
+* Support for backup/restore between piVCCU and original CCU3 without modification
 * Easy to install and update with apt
 * Support not only on Raspberry
 * Support for 
@@ -19,17 +19,17 @@ piVCCU is a project to install the original Homematic CCU2 firmware inside a vir
   * [HB-RF-USB-2](https://github.com/alexreinert/PCB/tree/master/HB-RF-USB-2) (HmRF+HmIP, piVCCU3 only)
   * [HB-RF-ETH](https://github.com/alexreinert/PCB/tree/master/HB-RF-ETH) (HmRF+HmIP, piVCCU3 only)
 
-### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU)
-Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KJ3UWNDMXLJKU). Or you can send me a gift from my [Amazon wishlist](https://www.amazon.de/gp/registry/wishlist/3NNUQIQO20AAP/ref=nav_wishlist_lists_1).
+### Donations [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.pivccu.de/donate/paypal)
+Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [PayPal](https://www.pivccu.de/donate/paypal). Or you can send me a gift from my [Amazon wishlist](https://www.pivccu.de/donate/amazon).
 
 ### Prequisites
 * Debian or Ubuntu based distribution
-* armhf or arm64 architecture (x64 is not supported)
+* armhf or arm64 architecture (x64 is not supported, images with mixed armhf binaries and arm64 kernel are not supported)
 * At least kernel 4.14
 
 ### Prequisites for HM-MOD-RPI-PCB and RPI-RF-MOD on GPIO header
 * Supported Single Board Computer
-  * Raspberry Pi 2B/3B/3B+/4B running Raspbian Stretch or Buster
+  * Raspberry Pi 2B/3B/3B+/4B running Raspberry Pi OS Buster or Bullseye
   * Asus Tinkerboard running Armbian with Mainline kernel
   * Asus Tinkerboard S running Armbian with Mainline kernel
   * Banana Pi M1 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)
@@ -80,14 +80,9 @@ sudo apt update && sudo apt upgrade
   * Software emulation of the HM-MOD-RPI-PCB
   * You can add support for (real) HmRF using a external HM-LGW-O-TW-W-EU
 * To switch between radio modes use the following command:
-  * piVCCU (CCU2 firmware)
-     ```bash
-     sudo dpkg-reconfigure pivccu
-     ```
-  * piVCCU3 (CCU3 firmware)
-     ```bash
-     sudo dpkg-reconfigure pivccu3
-     ```
+  ```bash
+  sudo dpkg-reconfigure pivccu3
+  ```
 
 ### Backup
 Starting with version 2.31.25-23 there is the tool pivccu-backup to create CCU2 compatible backups (inside the host).
@@ -217,26 +212,10 @@ To restore a backup file use the WebUI of the CCU.
       9. If you used YAHM without radio module, you should check your interface assignments of the LAN Gateways in the control panel
       
 ### Using USB devices inside container (e.g. for CUxD)
-* piVCCU (CCU2 firmware)
-   1. You can find available devices on the host using
-      ```bash
-      sudo pivccu-device listavailable
-      ```
-   2. Create a hook script on the host
-      ```bash
-      bash -c 'echo "#!/bin/bash" > /etc/piVCCU/post-start.sh'
-      sudo chmod +x /etc/piVCCU/post-start.sh
-      ```
-   3. For each device add an entry to this hook file, e.g. here for ```/dev/ttyUSB0```
-      ```bash
-      bash -c 'echo "pivccu-device add /dev/ttyUSB0" >> /etc/piVCCU/post-start.sh'
-      ```
-   4. The devices will now be available inside the container, just use them like it is described in the CUxD documentation
-* piVCCU3 (CCU3 firmware)
-   You can configure the USB devices using the installer. You can change it later using
-   ```bash
-   sudo dpkg-reconfigure pivccu3
-   ```
+You can configure the USB devices using the installer. You can change it later using
+```bash
+sudo dpkg-reconfigure pivccu3
+```
 
 ### Build packages by your own
 If you like to build the .deb package by yourself
@@ -249,7 +228,7 @@ If you like to build the .deb package by yourself
 ### License
 piVCCU itself – the source files found in this git repository – are licensed under the conditions of the [Apache License 2.0](https://opensource.org/licenses/Apache-2.0).
 The kernel module source files (folder kernel) and the generated kernel .deb files (raspberrypi-kernel-pivccu) licensed under the [GPLv2](http://www.gnu.org/licenses/gpl-2.0.html) license instead.
-The generated CCU container .deb files (pivccu) are containing the original CCU2 firmware, containing multiple different licenses. Please refer to [eQ-3](http://www.eq-3.com) for more information.
+The generated CCU container .deb files (pivccu) are containing the original CCU3 firmware, containing multiple different licenses. Please refer to [eQ-3](http://www.eq-3.com) for more information.
 
 ### Acknowledgement
 The base idea of piVCCU is inspired by [YAHM](https://github.com/leonsio/YAHM/) and [lxccu](https://www.lxccu.com/).

@@ -1,7 +1,7 @@
 ### Prequisites
 
 * Raspberry Pi 2B/3B/3B+/4B
-* Raspbian Stretch or Raspbian Buster
+* Raspberry Pi OS Buster or Bullseye (32 bit image or 64 bit image; the mixed mode 32 bit image with 64 bit kernel is not supported)
 
 ### Installation
 0. Create full backup of your SD card
@@ -110,14 +110,9 @@
    ```
 
 10. Install CCU container
-   * To use CCC2 firmware
-      ```bash
-      sudo apt install pivccu
-      ```
-   * To use CCU3 firmware
-      ```bash
-      sudo apt install pivccu3
-      ```
+   ```bash
+   sudo apt install pivccu3
+   ```
 
 11. Start using your new virtualized CCU, you can get the IP of the container using
    ```bash
