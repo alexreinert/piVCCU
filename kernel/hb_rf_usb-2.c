@@ -71,6 +71,8 @@ struct hb_rf_usb_2_port_s
 
   bool invert_reset;
 
+  unsigned char part_num;
+
   struct urb *write_urb;
   unsigned char *write_buffer;
   bool is_in_tx;
@@ -91,6 +93,7 @@ struct hb_rf_usb_2_port_s
 
 static struct usb_device_id usbid[] = {
   { HB_USB_DEVICE(0x10c4, 0x8c07, 0x60d01cf9ul, false, (0xd7cc3f44ul, 0xf50048a8ul, 0x3cf61d60ul, 0xae8460d1ul, 0x272a5876ul, 0x2dc161f5ul, 0x7737fbaeul, 0x88c996b2ul, 0xed521e88ul, 0xdd24b0acul, 0x4b7c49a4ul, 0xcc457acbul, 0xb2079847ul, 0x6745032aul, 0xaf25d41ful, 0xbecfb9f3ul)) },
+  { HB_USB_DEVICE(0x1b1f, 0xc020, 0, false, (0)) },
   { }
 };
 
@@ -401,29 +404,37 @@ static int hb_rf_usb_2_get_gpio_pin_number(struct generic_raw_uart *raw_uart, en
 {
   struct hb_rf_usb_2_port_s *port = raw_uart->driver_data;
 
-  switch (pin)
+  if (port->part_num >= 0x20 && port->part_num <= 0x22)
   {
-  case GENERIC_RAW_UART_PIN_BLUE:
-    return port->gc.base + 2;
-  case GENERIC_RAW_UART_PIN_GREEN:
-    return port->gc.base + 1;
-  case GENERIC_RAW_UART_PIN_RED:
-    return port->gc.base;
-  case GENERIC_RAW_UART_PIN_RESET:
-  case GENERIC_RAW_UART_PIN_ALT_RESET:
+    switch (pin)
+    {
+    case GENERIC_RAW_UART_PIN_BLUE:
+      return port->gc.base + 2;
+    case GENERIC_RAW_UART_PIN_GREEN:
+      return port->gc.base + 1;
+    case GENERIC_RAW_UART_PIN_RED:
+      return port->gc.base;
+    default:
+      return 0;
+    }
+  }
+  else
+  {
     return 0;
   }
-  return 0;
 }
 
 static void hb_rf_usb_2_reset_radio_module(struct generic_raw_uart *raw_uart)
 {
   struct hb_rf_usb_2_port_s *port = raw_uart->driver_data;
 
-  hb_rf_usb_2_set_gpio_on_device(port, RESET_GPIO_MASK, (port->invert_reset ? 0 : 1));
-  msleep(50);
-  hb_rf_usb_2_set_gpio_on_device(port, RESET_GPIO_MASK, (port->invert_reset ? 1 : 0));
-  msleep(50);
+  if (port->part_num >= 0x20 && port->part_num <= 0x22)
+  {
+    hb_rf_usb_2_set_gpio_on_device(port, RESET_GPIO_MASK, (port->invert_reset ? 0 : 1));
+    msleep(50);
+    hb_rf_usb_2_set_gpio_on_device(port, RESET_GPIO_MASK, (port->invert_reset ? 1 : 0));
+    msleep(50);
+  }
 }
 
 static int hb_rf_usb_2_get_device_type(struct generic_raw_uart *raw_uart, char *page)
@@ -462,34 +473,6 @@ static int hb_rf_usb_2_probe(struct usb_interface *interface, const struct usb_d
     return ENODEV;
   }
 
-  buffer = kmalloc(CP2102N_CONFIG_SIZE, GFP_KERNEL);
-  if (!buffer)
-    return -ENOMEM;
-
-  usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), CP2102N_VENDOR_SPECIFIC, REQTYPE_DEVICE_TO_HOST, CP2102N_GET_CHIPTYPE, 0, buffer, 1, USB_CTRL_GET_TIMEOUT);
-  part_num = buffer[0];
-
-  if (part_num < 0x20 || part_num > 0x22)
-  {
-    dev_err(&udev->dev, "Unsupported chip type %d\n", part_num);
-    kfree(buffer);
-    return -ENODEV;
-  }
-
-  usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), CP2102N_VENDOR_SPECIFIC, REQTYPE_DEVICE_TO_HOST, CP2102N_READ_CONFIG, 0, buffer, CP2102N_CONFIG_SIZE, USB_CTRL_GET_TIMEOUT);
-
-  switch (part_num)
-  {
-    case 0x20:
-    case 0x21:
-      invert_reset = ((buffer[587] & 8) != 0);
-      break;
-
-    case 0x22:
-      invert_reset = ((buffer[586] & 1) != 0);
-      break;
-  }
-
   if (match->driver_info != 0)
   {
     struct hb_usb_device_info *hbudi = (struct hb_usb_device_info*)match->driver_info;
@@ -500,28 +483,64 @@ static int hb_rf_usb_2_probe(struct usb_interface *interface, const struct usb_d
       kfree(buffer);
       return -ENODEV;
     }
-    else if (hbudi->pkey != 0)
+  }
+
+  buffer = kmalloc(CP2102N_CONFIG_SIZE, GFP_KERNEL);
+  if (!buffer)
+    return -ENOMEM;
+
+  usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), CP2102N_VENDOR_SPECIFIC, REQTYPE_DEVICE_TO_HOST, CP2102N_GET_CHIPTYPE, 0, buffer, 1, USB_CTRL_GET_TIMEOUT);
+  part_num = buffer[0];
+
+  if (part_num >= 0x20 && part_num <= 0x22)
+  {
+    usb_control_msg(udev, usb_rcvctrlpipe(udev, 0), CP2102N_VENDOR_SPECIFIC, REQTYPE_DEVICE_TO_HOST, CP2102N_READ_CONFIG, 0, buffer, CP2102N_CONFIG_SIZE, USB_CTRL_GET_TIMEOUT);
+
+    switch (part_num)
     {
-      memcpy(buffer + buffer[191] + 245, buffer + 331 + strlen(udev->product) * 2, 20);
-      memcpy(buffer + 231 + buffer[191], buffer + 62 + buffer[60], buffer[45]);
-      memcpy(buffer + 245 + strlen(udev->product) * 2, buffer + 452 + buffer[450], buffer[192] * 10);
-      memcpy(buffer + buffer[191] + 257, buffer + 518, buffer[60]);
+      case 0x20:
+      case 0x21:
+        invert_reset = ((buffer[587] & 8) != 0);
+        break;
 
-      if ((buffer[449] == 0xff) && generic_raw_uart_verify_dkey(&udev->dev, udev->serial, strlen(udev->serial), buffer + buffer[192] + 192 + strlen(udev->product) * 2, hbudi->pkey, 32))
-      {
-        dev_info(&udev->dev, "Successfully verified device signature\n");
-      }
-      else
-      {
-        dev_err(&udev->dev, "Could not verify device signature\n");
+      case 0x22:
+        invert_reset = ((buffer[586] & 1) != 0);
+        break;
+    }
 
-        if (part_num != 0x22 || hbudi->enforce_verification)
+    if (match->driver_info != 0)
+    {
+      struct hb_usb_device_info *hbudi = (struct hb_usb_device_info*)match->driver_info;
+
+      if (hbudi->pkey[0] != 0)
+      {
+        memcpy(buffer + buffer[191] + 245, buffer + 331 + strlen(udev->product) * 2, 20);
+        memcpy(buffer + 231 + buffer[191], buffer + 62 + buffer[60], buffer[45]);
+        memcpy(buffer + 245 + strlen(udev->product) * 2, buffer + 452 + buffer[450], buffer[192] * 10);
+        memcpy(buffer + buffer[191] + 257, buffer + 518, buffer[60]);
+
+        if ((buffer[449] == 0xff) && generic_raw_uart_verify_dkey(&udev->dev, udev->serial, strlen(udev->serial), buffer + buffer[192] + 192 + strlen(udev->product) * 2, hbudi->pkey, 32))
         {
-          kfree(buffer);
-          return -ENODEV;
+          dev_info(&udev->dev, "Successfully verified device signature\n");
+        }
+        else
+        {
+          dev_err(&udev->dev, "Could not verify device signature\n");
+
+          if (part_num != 0x22 || hbudi->enforce_verification)
+          {
+            kfree(buffer);
+            return -ENODEV;
+          }
         }
       }
     }
+  }
+  else if (part_num != 0x02)
+  {
+    dev_err(&udev->dev, "Unsupported chip type %d\n", part_num);
+    kfree(buffer);
+    return -ENODEV;
   }
 
   dev_info(&udev->dev, "Found %s with serial %s at usb-%s-%s\n", udev->product, udev->serial, udev->bus->bus_name, udev->devpath);
@@ -542,32 +561,36 @@ static int hb_rf_usb_2_probe(struct usb_interface *interface, const struct usb_d
   port->udev = udev;
   port->iface = usb_get_intf(interface);
   port->invert_reset = invert_reset;
+  port->part_num = part_num;
 
   spin_lock_init(&port->is_in_tx_lock);
   spin_lock_init(&port->gpio_lock);
 
-  port->gc.label = "hb-rf-usb-2-gpio";
-  port->gc.ngpio = 3;
-  port->gc.request = hb_rf_usb_2_gpio_request;
-  port->gc.free = hb_rf_usb_2_gpio_free;
-  port->gc.get_direction = hb_rf_usb_2_gpio_direction_get;
-  port->gc.direction_input = hb_rf_usb_2_gpio_direction_input;
-  port->gc.direction_output = hb_rf_usb_2_gpio_direction_output;
-  port->gc.get = hb_rf_usb_2_gpio_get;
-  port->gc.set = hb_rf_usb_2_gpio_set;
+  if (part_num >= 0x20 && part_num <= 0x20)
+  {
+    port->gc.label = "hb-rf-usb-2-gpio";
+    port->gc.ngpio = 3;
+    port->gc.request = hb_rf_usb_2_gpio_request;
+    port->gc.free = hb_rf_usb_2_gpio_free;
+    port->gc.get_direction = hb_rf_usb_2_gpio_direction_get;
+    port->gc.direction_input = hb_rf_usb_2_gpio_direction_input;
+    port->gc.direction_output = hb_rf_usb_2_gpio_direction_output;
+    port->gc.get = hb_rf_usb_2_gpio_get;
+    port->gc.set = hb_rf_usb_2_gpio_set;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
-  port->gc.get_multiple = hb_rf_usb_2_gpio_get_multiple;
+    port->gc.get_multiple = hb_rf_usb_2_gpio_get_multiple;
 #endif
-  port->gc.set_multiple = hb_rf_usb_2_gpio_set_multiple;
-  port->gc.owner = THIS_MODULE;
-  port->gc.parent = &port->udev->dev;
-  port->gc.base = -1;
-  port->gc.can_sleep = false;
+    port->gc.set_multiple = hb_rf_usb_2_gpio_set_multiple;
+    port->gc.owner = THIS_MODULE;
+    port->gc.parent = &port->udev->dev;
+    port->gc.base = -1;
+    port->gc.can_sleep = false;
 
-  port->gpio_value = 0x03;
-  hb_rf_usb_2_set_gpio_on_device(port, LED_GPIO_MASK | RESET_GPIO_MASK, (port->gpio_value << 1) | (invert_reset ? 0 : 1));
+    port->gpio_value = 0x03;
+    hb_rf_usb_2_set_gpio_on_device(port, LED_GPIO_MASK | RESET_GPIO_MASK, (port->gpio_value << 1) | (invert_reset ? 0 : 1));
 
-  gpiochip_add_data(&port->gc, 0);
+    gpiochip_add_data(&port->gc, 0);
+  }
 
   port->raw_uart = generic_raw_uart_probe(&port->udev->dev, &hb_rf_usb_2, port);
 
@@ -585,7 +608,10 @@ static void hb_rf_usb_2_disconnect(struct usb_interface *interface)
   usb_kill_urb(port->write_urb);
   usb_kill_urb(port->read_urb);
 
-  gpiochip_remove(&port->gc);
+  if (port->part_num >= 0x20 && port->part_num <= 0x22)
+  {
+    gpiochip_remove(&port->gc);
+  }
 
   kref_put(&port->kref, hb_rf_usb_2_delete);
 }
@@ -635,6 +661,6 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.9");
+MODULE_VERSION("1.10");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

@@ -496,7 +496,7 @@ static int hb_rf_usb_probe(struct usb_interface *interface, const struct usb_dev
       dev_err(&udev->dev, "Unsupported manufacturer %s\n", udev->manufacturer);
       return -ENODEV;
     }
-    else if (hbudi->pkey != 0)
+    else if (hbudi->pkey[0] != 0)
     {
       buffer = kmalloc(38, GFP_KERNEL);
       if (!buffer)
@@ -637,6 +637,6 @@ module_init(hb_rf_usb_init);
 module_exit(hb_rf_usb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.11");
+MODULE_VERSION("1.12");
 MODULE_DESCRIPTION("HB-RF-USB raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

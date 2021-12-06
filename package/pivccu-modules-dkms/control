@@ -4,6 +4,7 @@ Architecture: all
 Maintainer: Alexander Reinert <alex@areinert.de>
 Provides: pivccu-kernel-modules
 Pre-Depends: dkms, build-essential, bison, flex, debconf (>= 0.5) | debconf-2.0
+Conflicts: pivccu
 Section: kernel
 Priority: extra
 Homepage: https://github.com/alexreinert/piVCCU
