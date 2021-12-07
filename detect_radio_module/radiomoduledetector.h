@@ -1,7 +1,7 @@
 /* 
  *  radiomoduleconnector.h is part of the HB-RF-ETH firmware - https://github.com/alexreinert/HB-RF-ETH
  *  
- *  Copyright 2020 Alexander Reinert
+ *  Copyright 2021 Alexander Reinert
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ typedef enum
     RADIO_MODULE_HMIP_RFUSB = 1,
     RADIO_MODULE_HM_MOD_RPI_PCB = 3,
     RADIO_MODULE_RPI_RF_MOD = 4,
+    RADIO_MODULE_UNKNOWN = 255,
 } radio_module_type_t;
 
 typedef enum

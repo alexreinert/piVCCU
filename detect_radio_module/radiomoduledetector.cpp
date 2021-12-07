@@ -1,7 +1,7 @@
 /* 
  *  radiomoduledetector.cpp is part of the HB-RF-ETH firmware - https://github.com/alexreinert/HB-RF-ETH
  *  
- *  Copyright 2020 Alexander Reinert
+ *  Copyright 2021 Alexander Reinert
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,14 +32,14 @@ void RadioModuleDetector::detectRadioModule(RadioModuleConnector *radioModuleCon
     _detectRetryCount = 0;
     _detectMsgCounter = 0;
 
-    _radioModuleType = RADIO_MODULE_NONE;
-
     sem_init(_detectWaitFrameDataSemaphore);
 
     _radioModuleConnector->setFrameHandler(this, true);
 
     while (_detectState == DETECT_STATE_START_BL && _detectRetryCount < 3)
     {
+        _radioModuleType = RADIO_MODULE_NONE;
+
         sendFrame(_detectMsgCounter++, HM_DST_COMMON, HM_CMD_COMMON_IDENTIFY, NULL, 0);
         if (!sem_take(_detectWaitFrameDataSemaphore, 3))
         {
@@ -139,28 +139,33 @@ void RadioModuleDetector::handleFrame(unsigned char *buffer, uint16_t len)
         if ((frame.destination == HM_DST_COMMON && frame.command == HM_CMD_COMMON_ACK && frame.data_len == 12 && frame.data[0] == 1 && strncmp((char *)(frame.data + 1), "HMIP_TRX_Bl", 11) == 0) || (frame.destination == HM_DST_COMMON && frame.command == 0 && frame.data_len == 11 && strncmp((char *)(frame.data), "HMIP_TRX_Bl", 11) == 0))
         {
             // TRX CoPro in bootloader
+            _radioModuleType = RADIO_MODULE_UNKNOWN;
             _detectState = DETECT_STATE_START_APP;
             sem_give(_detectWaitFrameDataSemaphore);
         }
         else if ((frame.destination == HM_DST_HMSYSTEM && frame.command == HM_CMD_HMSYSTEM_ACK && frame.data_len == 10 && frame.data[0] == 2 && strncmp((char *)(frame.data + 1), "Co_CPU_BL", 9) == 0) || (frame.destination == HM_DST_HMSYSTEM && frame.command == 0 && frame.data_len == 9 && strncmp((char *)frame.data, "Co_CPU_BL", 9) == 0))
         {
             // Legacy CoPro in bootloader
+            _radioModuleType = RADIO_MODULE_UNKNOWN;
             _detectState = DETECT_STATE_START_APP;
             sem_give(_detectWaitFrameDataSemaphore);
         }
         else if ((frame.destination == HM_DST_COMMON && frame.command == HM_CMD_COMMON_ACK && frame.data_len == 14 && frame.data[0] == 1 && strncmp((char *)(frame.data + 1), "DualCoPro_App", 13) == 0) || (frame.destination == HM_DST_COMMON && frame.command == 0 && frame.data_len == 13 && strncmp((char *)frame.data, "DualCoPro_App", 13) == 0))
         {
             // Dual CoPro in app --> start bootloader
+            _radioModuleType = RADIO_MODULE_UNKNOWN;
             sendFrame(_detectMsgCounter++, HM_DST_COMMON, HM_CMD_COMMON_START_BL, NULL, 0);
         }
         else if ((frame.destination == HM_DST_COMMON && frame.command == HM_CMD_COMMON_ACK && frame.data_len == 13 && frame.data[0] == 1 && strncmp((char *)(frame.data + 1), "HMIP_TRX_App", 12) == 0) || (frame.destination == HM_DST_COMMON && frame.command == 0 && frame.data_len == 12 && strncmp((char *)frame.data, "HMIP_TRX_App", 12) == 0))
         {
             // HmIP only in app --> start bootloader
+            _radioModuleType = RADIO_MODULE_UNKNOWN;
             sendFrame(_detectMsgCounter++, HM_DST_COMMON, HM_CMD_COMMON_START_BL, NULL, 0);
         }
         else if ((frame.destination == HM_DST_HMSYSTEM && frame.command == HM_CMD_HMSYSTEM_ACK && frame.data_len == 11 && frame.data[0] == 2 && strncmp((char *)(frame.data + 1), "Co_CPU_App", 10) == 0) || (frame.destination == HM_DST_HMSYSTEM && frame.command == 0 && frame.data_len == 10 && strncmp((char *)frame.data, "Co_CPU_App", 10) == 0))
         {
             // Legacy CoPro in app --> start bootloader
+            _radioModuleType = RADIO_MODULE_UNKNOWN;
             sendFrame(_detectMsgCounter++, HM_DST_HMSYSTEM, HM_CMD_HMSYSTEM_CHANGE_APP, NULL, 0);
         }
         break;
@@ -234,17 +239,27 @@ void RadioModuleDetector::handleFrame(unsigned char *buffer, uint16_t len)
             switch (_radioModuleType)
             {
             case RADIO_MODULE_RPI_RF_MOD:
+                sprintf(_serial, "%02X%02X%02X%02X%02X", frame.data[8], frame.data[9], frame.data[10], frame.data[11], frame.data[12]);
                 _bidCosRadioMAC = 0xff0000 | (frame.data[11] << 8) | frame.data[12];
                 if (_bidCosRadioMAC == 0xffffff)
                     _bidCosRadioMAC = 0xfffffe;
-                sprintf(_serial, "%02X%02X%02X%02X%02X", frame.data[8], frame.data[9], frame.data[10], frame.data[11], frame.data[12]);
                 _detectState = DETECT_STATE_GET_BIDCOS_RF_ADDRESS;
                 break;
 
             case RADIO_MODULE_HMIP_RFUSB:
-                _bidCosRadioMAC = 0;
                 sprintf(_serial, "%02X%02X%02X%02X%02X", frame.data[8], frame.data[9], frame.data[10], frame.data[11], frame.data[12]);
-                _detectState = DETECT_STATE_FINISHED;
+                if (_firmwareVersion[0] < 4)
+                {
+                  _bidCosRadioMAC = 0;
+                  _detectState = DETECT_STATE_FINISHED;
+                }
+                else
+                {
+                  _bidCosRadioMAC = 0xff0000 | (frame.data[11] << 8) | frame.data[12];
+                  if (_bidCosRadioMAC == 0xffffff)
+                      _bidCosRadioMAC = 0xfffffe;
+                  _detectState = DETECT_STATE_GET_BIDCOS_RF_ADDRESS;
+                }
                 break;
 
             default:
@@ -261,12 +276,12 @@ void RadioModuleDetector::handleFrame(unsigned char *buffer, uint16_t len)
             uint32_t radioMac = (frame.data[1] << 16) | (frame.data[2] << 8) | frame.data[3];
             if (radioMac != 0 && (radioMac & 0xffff) != 0xffff)
                 _bidCosRadioMAC = radioMac;
-            _detectState = _radioModuleType == RADIO_MODULE_RPI_RF_MOD ? DETECT_STATE_FINISHED : DETECT_STATE_GET_SERIAL;
+            _detectState = _radioModuleType == RADIO_MODULE_HM_MOD_RPI_PCB ? DETECT_STATE_GET_SERIAL : DETECT_STATE_FINISHED;
             sem_give(_detectWaitFrameDataSemaphore);
         }
         else if (frame.destination == HM_DST_LLMAC && frame.command == HM_CMD_LLMAC_ACK && frame.data_len == 1 && frame.data[0] == 0)
         {
-            if (_radioModuleType == RADIO_MODULE_RPI_RF_MOD)
+            if (_radioModuleType == RADIO_MODULE_RPI_RF_MOD || _radioModuleType == RADIO_MODULE_HMIP_RFUSB)
                 _detectState = DETECT_STATE_FINISHED;
             sem_give(_detectWaitFrameDataSemaphore);
         }
@@ -352,7 +367,7 @@ void RadioModuleDetector::sendFrame(uint8_t counter, uint8_t destination, uint8_
     frame.data_len = data_len;
     uint16_t len = frame.encode(sendBuffer, sizeof(sendBuffer), true);
 
-    log_frame("Sending HM frame:", sendBuffer, len);
+    log_frame("Sending HM frame: ", sendBuffer, len);
 
     _radioModuleConnector->sendFrame(sendBuffer, len);
 }
