@@ -13,11 +13,11 @@ fi
 
 . /var/lib/piVCCU3/detect_hardware.inc
 
-if [ -z "$HMRF_HARDWARE" ]; then
+if [ -z "$HM_HMRF_DEV" ]; then
   logger -t piVCCU3 -p user.warn -s "HMRF hardware was not detected" 1>&2
 fi
 
-if [ -z "$HMIP_HARDWARE" ]; then
+if [ -z "$HM_HMIP_DEV" ]; then
   logger -t piVCCU3 -p user.warn -s "HMIP hardware was not detected" 1>&2
 fi
 
@@ -60,29 +60,33 @@ cat /etc/piVCCU3/lxc.config > $CONFIG_FILE
 
 sed -i $CONFIG_FILE -e "s/<mac_auto>/$MAC/"
 sed -i $CONFIG_FILE -e "s/<bridge_auto>/$BRIDGE/"
-sed -i $CONFIG_FILE -e "s/<eq3loop_major>/$EQ3LOOP_MAJOR/"
-sed -i $CONFIG_FILE -e "s/<uart_major>/$UART_MAJOR/"
-sed -i $CONFIG_FILE -e "s/<uart_minor>/$UART_MINOR/"
-sed -i $CONFIG_FILE -e "s/<hmip_major>/$HMIP_MAJOR/"
-sed -i $CONFIG_FILE -e "s/<hmip_minor>/$HMIP_MINOR/"
+sed -i $CONFIG_FILE -e "s/<eq3loop_major>/$HM_EQ3LOOP_MAJOR/"
+sed -i $CONFIG_FILE -e "s/<uart_major>/$HM_RAW_UART_MAJOR/"
+sed -i $CONFIG_FILE -e "s/<uart_minor>/$HM_RAW_UART_MINOR/"
+sed -i $CONFIG_FILE -e "s/<hmip_major>/$HM_HMIP_MAJOR/"
+sed -i $CONFIG_FILE -e "s/<hmip_minor>/$HM_HMIP_MINOR/"
 
 command -v lxc-update-config > /dev/null && lxc-update-config -c $CONFIG_FILE
 
 cat > /tmp/pivccu-var/pivccu/conf << EOF
-HMRF_HARDWARE="$HMRF_HARDWARE"
-HMIP_HARDWARE="$HMIP_HARDWARE"
-SGTIN="$SGTIN"
-FW_VERSION="$FW_VERSION"
-EQ3LOOP_MAJOR="$EQ3LOOP_MAJOR"
-UART_MAJOR="$UART_MAJOR"
-UART_MINOR="$UART_MINOR"
-UART_DEV="$UART_DEV"
-UART_DEVICE_TYPE="$UART_DEVICE_TYPE"
-HMIP_MAJOR="$HMIP_MAJOR"
-HMIP_MINOR="$HMIP_MINOR"
-BOARD_SERIAL="$BOARD_SERIAL"
-RADIO_MAC="$RADIO_MAC"
-HMIP_RADIO_MAC="$HMIP_RADIO_MAC"
+HM_RAW_UART_MAJOR='$HM_RAW_UART_MAJOR'
+HM_RAW_UART_MINOR='$HM_RAW_UART_MINOR'
+HM_HMIP_MAJOR='$HM_HMIP_MAJOR'
+HM_HMIP_MINOR='$HM_HMIP_MINOR'
+HM_EQ3LOOP_MAJOR='$HM_EQ3LOOP_MAJOR'
+HM_HMIP_DEV='$HM_HMIP_DEV'
+HM_HMIP_DEVNODE='$HM_HMIP_DEVNODE'
+HM_HMIP_SERIAL='$HM_HMIP_SERIAL'
+HM_HMIP_VERSION='$HM_HMIP_VERSION'
+HM_HMIP_SGTIN='$HM_HMIP_SGTIN'
+HM_HMIP_ADDRESS='$HM_HMIP_ADDRESS'
+HM_HMIP_DEVTYPE='$HM_HMIP_DEVTYPE'
+HM_HMRF_DEV='$HM_HMRF_DEV'
+HM_HMRF_DEVNODE='$HM_HMRF_DEVNODE'
+HM_HMRF_SERIAL='$HM_HMRF_SERIAL'
+HM_HMRF_VERSION='$HM_HMRF_VERSION'
+HM_HMRF_ADDRESS='$HM_HMRF_ADDRESS'
+HM_HMRF_DEVTYPE='$HM_HMRF_DEVTYPE'
 EOF
 
 OIFS=$IFS
@@ -171,7 +175,7 @@ fi
 
 OS_RELEASE=${OS_ID}_${VERSION_CODENAME}
 
-wget -O /dev/null -q --timeout=5 "https://www.pivccu.de/latestVersion?version=$PIVCCU_VERSION&product=HM-CCU3&serial=$BOARD_SERIAL&os=$OS_RELEASE&board=$BOARD_TYPE" || true
+wget -O /dev/null -q --timeout=5 "https://www.pivccu.de/latestVersion?version=$PIVCCU_VERSION&product=HM-CCU3&serial=$HM_HMIP_SERIAL&os=$OS_RELEASE&board=$BOARD_TYPE" || true
 
 sysctl -w kernel.sched_rt_runtime_us=-1
 

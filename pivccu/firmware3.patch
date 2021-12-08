@@ -984,6 +984,25 @@ diff -ruN --no-dereference fw.3.61.6.orig/etc/init.d/S11InitRFHardware fw.3.61.6
 -esac
 -
 -exit $?
+diff -ruN --no-dereference fw.3.61.6.orig/etc/init.d/S12UpdateRFHardware fw.3.61.6.patched/etc/init.d/S12UpdateRFHardware
+--- fw.3.61.6.orig/etc/init.d/S12UpdateRFHardware
++++ fw.3.61.6.patched/etc/init.d/S12UpdateRFHardware
+@@ -120,13 +120,13 @@
+     fi
+     echo -n "HMIP-RFUSB: "
+ 
+-    NEW_VERSION=$(ls /firmware/HmIP-RFUSB/hmip_coprocessor_update-*.eq3 | sed 's/.*hmip_coprocessor_update-\(.*\)\.eq3/\1/')
++    NEW_VERSION=$(ls /firmware/HmIP-RFUSB/dualcopro_update_blhmip-*.eq3 | sed 's/.*dualcopro_update_blhmip-\(.*\)\.eq3/\1/')
+     OLD_VERSION=$(/opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=${HM_HMIP_DEVNODE} -jar /opt/HmIP/hmip-copro-update.jar -p ${HM_HMIP_DEVNODE} -v 2>/dev/null | grep "Application version =" | cut -d' ' -f5)
+     if [[ "${NEW_VERSION}" != "${OLD_VERSION}" ]]; then
+       echo -n "${OLD_VERSION}=>${NEW_VERSION}, "
+ 
+       # run firmware update
+-      HM_HMIP_VERSION=$(/opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=${HM_HMIP_DEVNODE} -jar /opt/HmIP/hmip-copro-update.jar -p ${HM_HMIP_DEVNODE} -o -f /firmware/HmIP-RFUSB/hmip_coprocessor_update-*.eq3 2>/dev/null | grep "Version:" | cut -d' ' -f5)
++      HM_HMIP_VERSION=$(/opt/java/bin/java -Dgnu.io.rxtx.SerialPorts=${HM_HMIP_DEVNODE} -jar /opt/HmIP/hmip-copro-update.jar -p ${HM_HMIP_DEVNODE} -o -f /firmware/HmIP-RFUSB/dualcopro_update_blhmip-*.eq3 2>/dev/null | grep "Version:" | cut -d' ' -f5)
+ 
+       echo "${HM_HMIP_VERSION}" >/var/hmip_firmware_version
+       if [[ -z "${HM_HMRF_DEV}" ]]; then
 diff -ruN --no-dereference fw.3.61.6.orig/etc/init.d/S13irqbalance fw.3.61.6.patched/etc/init.d/S13irqbalance
 --- fw.3.61.6.orig/etc/init.d/S13irqbalance
 +++ fw.3.61.6.patched/etc/init.d/S13irqbalance
@@ -1423,7 +1442,7 @@ diff -ruN --no-dereference fw.3.61.6.orig/www/webui/js/lang/de/translate.lang.js
      "dialogSettingsCMTDErrorProtocol" : "Fehler-<br/>protokoll",
 -    "dialogSettingsCMLblActualSoftwareVersion" : "Aktuelle Software-Version:",
 +    "dialogSettingsCMLblActualSoftwareVersion" : "Aktuelle piVCCU-Version:",
-+    "dialogSettingspiVCCUDonateHint" : "Bitte unterst%FCtzen Sie die Entwicklung von piVCCU mit einer Spende via <a href='https://www.pivccu.de/donate/paypal' rel='nofollow'>PayPal</a> oder eine Aufmerksamkeit auf meinem <a href='https://www.pivccu.de/donate/amazon'>Amazon Wunschzettel</a>.",
++    "dialogSettingspiVCCUDonateHint" : "Bitte unterst%FCtzen Sie die Entwicklung von piVCCU mit einer Spende via <a href='https://ko-fi.com/alexreinert' rel='nofollow'>Ko-fi</a>, <a href='https://www.pivccu.de/donate/paypal' rel='nofollow'>PayPal</a> oder einer Aufmerksamkeit auf meinem <a href='https://www.pivccu.de/donate/amazon'>Amazon Wunschzettel</a>.",
      "dialogSettingsCMLblAvailableSoftwareVersion" : "Verf%FCgbare Software-Version:",
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Software-Update durchf%FChren",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
@@ -1458,7 +1477,7 @@ diff -ruN --no-dereference fw.3.61.6.orig/www/webui/js/lang/en/translate.lang.js
      "dialogSettingsCMTDErrorProtocol" : "Error<br/>log",
 -    "dialogSettingsCMLblActualSoftwareVersion" : "Current software version:",
 +    "dialogSettingsCMLblActualSoftwareVersion" : "Current piVCCU version:",
-+    "dialogSettingspiVCCUDonateHint" : "Please support the development of piVCCU with a donation via <a href='https://www.pivccu.de/donate/paypal' rel='nofollow'>PayPal</a> or a gift of my <a href='https://www.pivccu.de/donate/amazon'>Amazom wishlist</a>.",
++    "dialogSettingspiVCCUDonateHint" : "Please support the development of piVCCU with a donation via <a href='https://ko-fi.com/alexreinert' rel='nofollow'>Ko-fi</a>, <a href='https://www.pivccu.de/donate/paypal' rel='nofollow'>PayPal</a> or a gift of my <a href='https://www.pivccu.de/donate/amazon'>Amazom wishlist</a>.",
      "dialogSettingsCMLblAvailableSoftwareVersion" : "Available software version:",
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Perform software update",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Step 1: Download new software",

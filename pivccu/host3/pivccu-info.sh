@@ -16,7 +16,7 @@ else
 fi
 echo "Kernel modules: $MODULE_STATE"
 
-if [ -e /sys/devices/virtual/raw-uart ] && [ `/usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --state --no-humanize` == "STOPPED" ]; then
+if [ -e /sys/devices/virtual/raw-uart ] && [ "`/usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --state --no-humanize`" == "STOPPED" ]; then
   . /var/lib/piVCCU3/detect_hardware.inc
 else
   if [ -e /tmp/pivccu-var/pivccu/conf ]; then
@@ -40,39 +40,49 @@ if [ -f /proc/device-tree/model ] && [ `grep -c "Raspberry Pi" /proc/device-tree
   echo "Rasp.Pi UART:   $UART_STATE"
 fi
 
-if [ -z "$HMRF_HARDWARE" ]; then
-  HMRF_HARDWARE='unknown'
-fi
-echo "HMRF Hardware:  $HMRF_HARDWARE"
+if [ -z "$HM_HMRF_DEV" ]; then
+  echo "HMRF Hardware:  unknown"
+elif [ "$HM_HMRF_DEVTYPE" == "FAKE" ]; then
+  echo "HMRF Hardware:  Emulated"
+else
+  echo "HMRF Hardware:  $HM_HMRF_DEV"
 
-if [ ! -z "$UART_DEVICE_TYPE" ]; then
-  echo " Connected via: $UART_DEVICE_TYPE (/dev/$UART_DEV)"
+  if [ ! -z "$HM_HMRF_DEVTYPE" ]; then
+    echo " Connected via: $HM_HMRF_DEVTYPE ($HM_HMRF_DEVNODE)"
+  fi
+
+  if [ -z "$HM_HMRF_SERIAL" ]; then
+    HM_HMRF_SERIAL='unknown'
+  fi
+  echo " Board serial:  $HM_HMRF_SERIAL"
+
+  if [ -z "$HM_HMRF_ADDRESS" ]; then
+    HM_HMRF_ADDRESS='unknown'
+  fi
+  echo " Radio MAC:     $HM_HMRF_ADDRESS"
 fi
 
-if [ -z "$BOARD_SERIAL" ]; then
-  BOARD_SERIAL='unknown'
-fi
-echo " Board serial:  $BOARD_SERIAL"
+if [ -z "$HM_HMIP_DEV" ]; then
+  echo "HMIP Hardware:  unknown"
+elif [ "$HM_HMIP_DEVTYPE" == "FAKE" ]; then
+  echo "HMIP Hardware:  Emulated"
+else
+  echo "HMIP Hardware:  $HM_HMIP_DEV"
 
-if [ -z "$RADIO_MAC" ]; then
-  RADIO_MAC='unknown'
-fi
-echo " Radio MAC:     $RADIO_MAC"
+  if [ ! -z "$HM_HMIP_DEVTYPE" ]; then
+    echo " Connected via: $HM_HMIP_DEVTYPE ($HM_HMIP_DEVNODE)"
+  fi
 
-if [ -z "$HMIP_HARDWARE" ]; then
-  HMIP_HARDWARE='unknown'
-fi
-echo "HMIP Hardware:  $HMIP_HARDWARE"
+  if [ -z "$HM_HMIP_SGTIN" ]; then
+    HM_HMIP_SGTIN='unknown'
+  fi
+  echo " SGTIN:         $HM_HMIP_SGTIN"
 
-if [ -z "$SGTIN" ]; then
-  SGTIN='unknown'
+  if [ -z "$HM_HMIP_ADDRESS" ]; then
+    HM_HMIP_ADDRESS='unknown'
+  fi
+  echo " Radio MAC:     $HM_HMIP_ADDRESS"
 fi
-echo " SGTIN:         $SGTIN"
-
-if [ -z "$HMIP_RADIO_MAC" ]; then
-  HMIP_RADIO_MAC='unknown'
-fi
-echo " Radio MAC:     $HMIP_RADIO_MAC"
 
 /usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --ips --pid --stats --state
 

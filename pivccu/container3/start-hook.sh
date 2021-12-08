@@ -10,10 +10,10 @@ rm -f /dev/mmd_bidcos
 rm -f /dev/mmd_hmip
 rm -f /dev/raw-uart
 
-mknod -m 666 /dev/eq3loop c $EQ3LOOP_MAJOR 0
-mknod -m 666 /dev/mmd_hmip c $HMIP_MAJOR $HMIP_MINOR
-mknod -m 666 /dev/mmd_bidcos c $EQ3LOOP_MAJOR 2
-mknod -m 666 /dev/raw-uart c $UART_MAJOR $UART_MINOR
+mknod -m 666 /dev/eq3loop c $HM_EQ3LOOP_MAJOR 0
+mknod -m 666 /dev/mmd_hmip c $HM_HMIP_MAJOR $HM_HMIP_MINOR
+mknod -m 666 /dev/mmd_bidcos c $HM_EQ3LOOP_MAJOR 2
+mknod -m 666 /dev/raw-uart c $HM_RAW_UART_MAJOR $HM_RAW_UART_MINOR
 
 mkdir -p /dev/net
 if [ ! -e /dev/net/tun ]; then
@@ -43,73 +43,59 @@ if [ "0$HAS_USB" -eq 1 ]; then
   fi
 fi
 
-case $HMRF_HARDWARE in
-  "FAKE_HMRF")
-    HM_HMRF_DEV="HM-MOD-RPI-PCB"
-    HM_HMRF_DEVNODE="/dev/raw-uart"
-    HM_HMRF_VERSION=`cat /sys/module/fake_hmrf/parameters/firmware_version` 
-    ;;
-  "HM-MOD-RPI-PCB")
-    HM_HMRF_DEV="HM-MOD-RPI-PCB"
-    HM_HMRF_DEVNODE="/dev/raw-uart"
-    HM_HMRF_VERSION="$FW_VERSION"
-    ;;
-  "RPI-RF-MOD")
-    HM_HMRF_DEV="RPI-RF-MOD"
-    HM_HMRF_DEVNODE="/dev/raw-uart"
-    HM_HMRF_VERSION="$FW_VERSION"
-    ;;
-esac
-
-case $HMIP_HARDWARE in
-  "HMIP-RFUSB")
-    HM_HMIP_DEV="HMIP-RFUSB"
-    HM_HMIP_DEVNODE="/dev/mmd_hmip"
-    HM_HMIP_VERSION="$FW_VERSION"
-    ;;
-  "HMIP-RFUSB-TK")
-    HM_HMIP_DEV="HMIP-RFUSB-TK"
-    HM_HMIP_DEVNODE="/dev/mmd_hmip"
-    HM_HMIP_VERSION="$FW_VERSION"
-    ;;
-  *)
-    HM_HMIP_DEV="$HM_HMRF_DEV"
-    HM_HMIP_DEVNODE="$HM_HMRF_DEVNODE"
-    HM_HMIP_VERSION="$HM_HMRF_VERSION"
-    ;;
-esac
+HM_HMIP_DEVNODE="/dev/raw-uart"
+HM_HMRF_DEVNODE="/dev/raw-uart"
+if [ "$HM_HMIP_DEV" == "HMIP-RFUSB-TK" ]; then
+  HM_HMIP_DEVNODE="/dev/mmd_hmip"
+fi
 
 cat > /var/hm_mode << EOF
 HM_HOST='rpi3'
+HM_MODE='NORMAL'
+HM_LED_GREEN=''
+HM_LED_GREEN_MODE1='none'
+HM_LED_GREEN_MODE2='none'
+HM_LED_RED=''
+HM_LED_RED_MODE1='none'
+HM_LED_RED_MODE2='none'
+HM_LED_YELLOW=''
+HM_LED_YELLOW_MODE1='none'
+HM_LED_YELLOW_MODE2='none'
 HM_HOST_GPIO_UART='/dev/raw-uart'
 HM_HOST_GPIO_RESET=''
-HM_LED_GREEN=''
-HM_LED_RED=''
-HM_LED_YELLOW=''
 HM_RTC=''
-HM_MODE='NORMAL'
-HM_HMRF_DEVNODE='$HM_HMRF_DEVNODE'
-HM_HMIP_DEVNODE='$HM_HMIP_DEVNODE'
-HM_HMRF_DEV='$HM_HMRF_DEV'
 HM_HMIP_DEV='$HM_HMIP_DEV'
-HM_HMRF_SERIAL='$BOARD_SERIAL'
-HM_HMRF_VERSION='$HM_HMRF_VERSION'
-HM_HMRF_ADDRESS='$RADIO_MAC'
-HM_HMIP_SGTIN='$SGTIN'
-HM_HMIP_SERIAL='$BOARD_SERIAL'
+HM_HMIP_DEVNODE='$HM_HMIP_DEVNODE'
+HM_HMIP_SERIAL='$HM_HMIP_SERIAL'
 HM_HMIP_VERSION='$HM_HMIP_VERSION'
-HM_HMIP_ADDRESS='$HMIP_RADIO_MAC'
+HM_HMIP_SGTIN='$HM_HMIP_SGTIN'
+HM_HMIP_ADDRESS='$HM_HMIP_ADDRESS'
+HM_HMIP_ADDRESS_ACTIVE='$HM_HMIP_ADDRESS'
+HM_HMIP_DEVTYPE='$HM_HMIP_DEVTYPE'
+HM_HMRF_DEV='$HM_HMRF_DEV'
+HM_HMRF_DEVNODE='$HM_HMRF_DEVNODE'
+HM_HMRF_SERIAL='$HM_HMRF_SERIAL'
+HM_HMRF_VERSION='$HM_HMRF_VERSION'
+HM_HMRF_ADDRESS='$HM_HMRF_ADDRESS'
+HM_HMRF_ADDRESS_ACTIVE='$HM_HMRF_ADDRESS'
+HM_HMRF_DEVTYPE='$HM_HMRF_DEVTYPE'
 EOF
 
-. /var/hm_mode
+if [[ -n "${HM_HMIP_SERIAL}" ]]; then
+  echo -n "${HM_HMIP_SERIAL}" > /var/board_serial
+else
+  echo -n "${HM_HMRF_SERIAL}" > /var/board_serial
+fi
 
-echo "${HM_HMRF_SERIAL}" >/var/board_serial
-echo "${HM_HMRF_SERIAL}" >/var/rf_board_serial
-echo "${HM_HMRF_VERSION}" >/var/rf_firmware_version
-echo "${HM_HMRF_ADDRESS}" >/var/rf_address
-echo "${HM_HMIP_SERIAL}" >/var/hmip_board_serial
-echo "${HM_HMIP_VERSION}" >/var/hmip_firmware_version
-echo "${HM_HMIP_ADDRESS}" >/var/hmip_address
-echo "${HM_HMIP_SGTIN}" >/var/board_sgtin
-echo "${HM_HMIP_SGTIN}" >/var/hmip_board_sgtin
+if [[ -n "${HM_HMIP_SGTIN}" ]]; then
+  echo -n "${HM_HMIP_SGTIN}" > /var/board_sgtin
+fi
+
+echo -n "${HM_HMRF_SERIAL}" > /var/rf_board_serial
+echo -n "${HM_HMRF_ADDRESS}" > /var/rf_address
+echo -n "${HM_HMRF_VERSION}" > /var/rf_firmware_version
+echo -n "${HM_HMIP_SERIAL}" > /var/hmip_board_serial
+echo -n "${HM_HMIP_VERSION}" > /var/hmip_firmware_version
+echo -n "${HM_HMIP_ADDRESS}" > /var/hmip_address
+echo -n "${HM_HMIP_SGTIN}" > /var/hmip_board_sgtin
 
