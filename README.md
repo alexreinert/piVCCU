@@ -20,8 +20,8 @@ piVCCU is a project to install the original Homematic CCU3 firmware inside a vir
   * [HB-RF-USB-2](https://github.com/alexreinert/PCB/tree/master/HB-RF-USB-2) (HmRF+HmIP)
   * [HB-RF-ETH](https://github.com/alexreinert/PCB/tree/master/HB-RF-ETH) (HmRF+HmIP)
 
-### Donations [<img src="https://ko-fi.com/img/githubbutton_sm.svg" height="20" alt="Support me on Ko-fi">](https://ko-fi.com/alexreinert) [<img src="https://img.shields.io/badge/donate-PayPal-green.svg" height="20" alt="Donate via Paypal">](https://www.pivccu.de/donate/paypal)
-Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [Ko-fi](https://ko-fi.com/alexreinert), [PayPal](https://www.pivccu.de/donate/paypal) or you can send me a gift from my [Amazon wishlist](https://www.pivccu.de/donate/amazon).
+### Donations [<img src="https://ko-fi.com/img/githubbutton_sm.svg" height="20" alt="Support me on Ko-fi">](https://ko-fi.com/alexreinert) [<img src="https://img.shields.io/badge/donate-PayPal-green.svg" height="20" alt="Donate via Paypal">](https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=4PW43VJ2DZ7R2)
+Keeping this project running is very expensive, e.g. I have to buy a lot of different test devices. If you like to support this project, please consider sending me a donation via [Ko-fi](https://ko-fi.com/alexreinert), [PayPal](https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=4PW43VJ2DZ7R2) or you can send me a gift from my [Amazon wishlist](https://www.amazon.de/gp/registry/wishlist/3NNUQIQO20AAP/ref=nav_wishlist_lists_1).
 
 ### Prequisites
 * Debian or Ubuntu based distribution

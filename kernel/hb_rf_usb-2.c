@@ -566,7 +566,7 @@ static int hb_rf_usb_2_probe(struct usb_interface *interface, const struct usb_d
   spin_lock_init(&port->is_in_tx_lock);
   spin_lock_init(&port->gpio_lock);
 
-  if (part_num >= 0x20 && part_num <= 0x20)
+  if (part_num >= 0x20 && part_num <= 0x22)
   {
     port->gc.label = "hb-rf-usb-2-gpio";
     port->gc.ngpio = 3;
@@ -661,6 +661,6 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.10");
+MODULE_VERSION("1.11");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
