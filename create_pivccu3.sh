@@ -1,11 +1,11 @@
 #!/bin/bash
 
-CCU_VERSION=3.61.6
+CCU_VERSION=3.61.7
 CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/firmware/ccu3-firmware/ccu3-$CCU_VERSION.tgz"
 CCU_DOWNLOAD_URL="https://homematic-ip.com/sites/default/files/downloads/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=64
+PKG_BUILD=65
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -37,7 +37,7 @@ umount $WORK_DIR/image
 
 cd $CNT_ROOTFS
 
-patch -l -p1 < $CURRENT_DIR/pivccu/firmware3.patch
+patch -E -l -p1 < $CURRENT_DIR/pivccu/firmware3.patch
 sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/config/cp_maintenance.cgi
 sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/webui/webui.js
 
