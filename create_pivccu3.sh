@@ -5,7 +5,7 @@ CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/firmware/ccu3-firmware/ccu3-$CCU_VERSION.tgz"
 CCU_DOWNLOAD_URL="https://homematic-ip.com/sites/default/files/downloads/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=65
+PKG_BUILD=66
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -46,7 +46,7 @@ wget -q -O $CNT_ROOTFS/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3 htt
 wget -q -O $CNT_ROOTFS/firmware/HM-MOD-UART/fwmap https://raw.githubusercontent.com/eq-3/occu/abc3d4c8ee7d0ba090407b6b4431aeca42aeb014/firmware/HM-MOD-UART/fwmap
 
 mkdir -p $CNT_ROOTFS/firmware/HmIP-RFUSB
-wget -q -O $CNT_ROOTFS/firmware/HmIP-RFUSB/dualcopro_update_blhmip-4.2.14.eq3 https://raw.githubusercontent.com/eq-3/occu/6d64665d1eaa1f770046dd2af6c8980a4b012bd7/firmware/HmIP-RFUSB/dualcopro_update_blhmip-4.2.14.eq3
+wget -q -P $CNT_ROOTFS/firmware/HmIP-RFUSB https://raw.githubusercontent.com/eq-3/occu/a2641df55cdde81239bbdbe7cf4dbcd4e3e62c5b/firmware/HmIP-RFUSB-Beta/dualcopro_update_blhmip-4.4.16.eq3
 
 mkdir -p $CNT_ROOTFS/etc/piVCCU3
 cp -p $CURRENT_DIR/pivccu/container3/* $CNT_ROOTFS/etc/piVCCU3
