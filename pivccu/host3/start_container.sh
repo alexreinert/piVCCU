@@ -25,7 +25,7 @@ RED_PIN=0
 GREEN_PIN=0
 BLUE_PIN=0
 
-if [ "$HMRF_HARDWARE" == "RPI-RF-MOD" ]; then
+if [ "$HM_HMIP_DEV" == "RPI-RF-MOD" ]; then
   modprobe dummy_rx8130 || true
 
   if [ -e "/sys/module/generic_raw_uart/parameters/red_gpio_pin" ]; then
