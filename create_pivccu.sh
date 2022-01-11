@@ -1,10 +1,10 @@
 #!/bin/bash
 
-CCU_VERSION=2.59.7
+CCU_VERSION=2.61.7
 CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/HM-CCU2-Firmware_Updates/HM-CCU-$CCU_VERSION/HM-CCU-$CCU_VERSION.tgz"
 
-PKG_BUILD=66
+PKG_BUILD=67
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -30,7 +30,7 @@ mv rootfs/*/root $CNT_ROOTFS
 
 cd $CNT_ROOTFS
 
-patch -l -p1 < $CURRENT_DIR/pivccu/firmware.patch
+patch -E -l -p1 < $CURRENT_DIR/pivccu/firmware.patch
 sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/config/cp_maintenance.cgi
 sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/webui/webui.js
 

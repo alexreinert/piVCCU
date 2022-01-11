@@ -1,6 +1,6 @@
-diff -ruN --no-dereference fw.2.59.7.orig/bin/dhcp.script fw.2.59.7.patched/bin/dhcp.script
---- fw.2.59.7.orig/bin/dhcp.script	2021-07-07 09:14:31.860831660 +0200
-+++ fw.2.59.7.patched/bin/dhcp.script	2021-07-07 09:31:09.787412563 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/bin/dhcp.script fw.2.61.7.patched/bin/dhcp.script
+--- fw.2.61.7.orig/bin/dhcp.script
++++ fw.2.61.7.patched/bin/dhcp.script
 @@ -6,12 +6,6 @@
  action=${1}
  nfsroot=false
@@ -14,9 +14,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/bin/dhcp.script fw.2.59.7.patched/bin/
  handle_deconfig() {
    if [[ ${nfsroot} == true ]]; then
        exit 0
-diff -ruN --no-dereference fw.2.59.7.orig/etc/fstab fw.2.59.7.patched/etc/fstab
---- fw.2.59.7.orig/etc/fstab	2021-07-07 09:14:31.912832003 +0200
-+++ fw.2.59.7.patched/etc/fstab	2021-07-07 09:31:09.791412589 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/etc/fstab fw.2.61.7.patched/etc/fstab
+--- fw.2.61.7.orig/etc/fstab
++++ fw.2.61.7.patched/etc/fstab
 @@ -1,14 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -32,9 +32,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/fstab fw.2.59.7.patched/etc/fstab
 -tmpfs           /media         tmpfs    defaults,noatime          0      0
 -debugfs 	/sys/kernel/debug debugfs	noauto 		  0 	0
 -ubi1:user	/usr/local	ubifs	defaults,noatime,nodiratime,rw,sync	0 0
-diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S00eQ3SystemStart fw.2.59.7.patched/etc/init.d/S00eQ3SystemStart
---- fw.2.59.7.orig/etc/init.d/S00eQ3SystemStart	2021-07-07 09:14:31.912832003 +0200
-+++ fw.2.59.7.patched/etc/init.d/S00eQ3SystemStart	2021-07-07 09:31:09.791412589 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/etc/init.d/S00eQ3SystemStart fw.2.61.7.patched/etc/init.d/S00eQ3SystemStart
+--- fw.2.61.7.orig/etc/init.d/S00eQ3SystemStart
++++ fw.2.61.7.patched/etc/init.d/S00eQ3SystemStart
 @@ -7,17 +7,6 @@
  SERIAL=$(cat /sys/module/plat_eq3ccu2/parameters/board_serial)
  
@@ -86,9 +86,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S00eQ3SystemStart fw.2.59.7
  }
  
  restart() {
-diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S10udev fw.2.59.7.patched/etc/init.d/S10udev
---- fw.2.59.7.orig/etc/init.d/S10udev	2021-07-07 09:14:31.908831977 +0200
-+++ fw.2.59.7.patched/etc/init.d/S10udev	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.61.7.orig/etc/init.d/S10udev fw.2.61.7.patched/etc/init.d/S10udev
+--- fw.2.61.7.orig/etc/init.d/S10udev
++++ fw.2.61.7.patched/etc/init.d/S10udev
 @@ -1,46 +0,0 @@
 -#!/bin/sh
 -#
@@ -136,9 +136,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S10udev fw.2.59.7.patched/e
 -
 -
 -exit 0
-diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S15watchdog fw.2.59.7.patched/etc/init.d/S15watchdog
---- fw.2.59.7.orig/etc/init.d/S15watchdog	2021-07-07 09:14:31.912832003 +0200
-+++ fw.2.59.7.patched/etc/init.d/S15watchdog	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.61.7.orig/etc/init.d/S15watchdog fw.2.61.7.patched/etc/init.d/S15watchdog
+--- fw.2.61.7.orig/etc/init.d/S15watchdog
++++ fw.2.61.7.patched/etc/init.d/S15watchdog
 @@ -1,20 +0,0 @@
 -#!/bin/sh
 -#
@@ -160,9 +160,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S15watchdog fw.2.59.7.patch
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S20urandom fw.2.59.7.patched/etc/init.d/S20urandom
---- fw.2.59.7.orig/etc/init.d/S20urandom	2021-07-07 09:14:31.912832003 +0200
-+++ fw.2.59.7.patched/etc/init.d/S20urandom	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.61.7.orig/etc/init.d/S20urandom fw.2.61.7.patched/etc/init.d/S20urandom
+--- fw.2.61.7.orig/etc/init.d/S20urandom
++++ fw.2.61.7.patched/etc/init.d/S20urandom
 @@ -1,51 +0,0 @@
 -#! /bin/sh
 -#
@@ -215,9 +215,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S20urandom fw.2.59.7.patche
 -		exit 1
 -		;;
 -esac
-diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S40UsbNetwork fw.2.59.7.patched/etc/init.d/S40UsbNetwork
---- fw.2.59.7.orig/etc/init.d/S40UsbNetwork	2021-07-07 09:14:31.912832003 +0200
-+++ fw.2.59.7.patched/etc/init.d/S40UsbNetwork	1970-01-01 01:00:00.000000000 +0100
+diff -ruN --no-dereference fw.2.61.7.orig/etc/init.d/S40UsbNetwork fw.2.61.7.patched/etc/init.d/S40UsbNetwork
+--- fw.2.61.7.orig/etc/init.d/S40UsbNetwork
++++ fw.2.61.7.patched/etc/init.d/S40UsbNetwork
 @@ -1,52 +0,0 @@
 -#!/bin/sh
 -#
@@ -271,9 +271,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S40UsbNetwork fw.2.59.7.pat
 -
 -exit $?
 -
-diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S50eq3configd fw.2.59.7.patched/etc/init.d/S50eq3configd
---- fw.2.59.7.orig/etc/init.d/S50eq3configd	2021-07-07 09:14:31.908831977 +0200
-+++ fw.2.59.7.patched/etc/init.d/S50eq3configd	2021-07-07 09:31:09.791412589 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/etc/init.d/S50eq3configd fw.2.61.7.patched/etc/init.d/S50eq3configd
+--- fw.2.61.7.orig/etc/init.d/S50eq3configd
++++ fw.2.61.7.patched/etc/init.d/S50eq3configd
 @@ -17,6 +17,7 @@
  }
  
@@ -282,9 +282,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S50eq3configd fw.2.59.7.pat
  	echo -n "Starting eq3configd: "
  	init
  	start-stop-daemon -S -q -p /var/run/eq3configd.pid --exec /bin/eq3configd &
-diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S60multimacd fw.2.59.7.patched/etc/init.d/S60multimacd
---- fw.2.59.7.orig/etc/init.d/S60multimacd	2021-07-07 09:14:31.912832003 +0200
-+++ fw.2.59.7.patched/etc/init.d/S60multimacd	2021-07-07 09:31:09.791412589 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/etc/init.d/S60multimacd fw.2.61.7.patched/etc/init.d/S60multimacd
+--- fw.2.61.7.orig/etc/init.d/S60multimacd
++++ fw.2.61.7.patched/etc/init.d/S60multimacd
 @@ -7,35 +7,6 @@
  CFG_TEMPLATE_DIR=/etc/config_templates
  PIDFILE=/var/run/multimacd.pid
@@ -336,9 +336,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S60multimacd fw.2.59.7.patc
  	start-stop-daemon -S -q -b -m -p $PIDFILE --exec /bin/multimacd -- -f /etc/config/multimacd.conf -l $LOGLEVEL_RFD
  	waitStartupComplete
  }
-diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S99eQ3SystemStarted fw.2.59.7.patched/etc/init.d/S99eQ3SystemStarted
---- fw.2.59.7.orig/etc/init.d/S99eQ3SystemStarted	2021-07-07 09:14:31.912832003 +0200
-+++ fw.2.59.7.patched/etc/init.d/S99eQ3SystemStarted	2021-07-07 09:31:09.899413299 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/etc/init.d/S99eQ3SystemStarted fw.2.61.7.patched/etc/init.d/S99eQ3SystemStarted
+--- fw.2.61.7.orig/etc/init.d/S99eQ3SystemStarted
++++ fw.2.61.7.patched/etc/init.d/S99eQ3SystemStarted
 @@ -8,15 +8,6 @@
  
  init() {
@@ -355,9 +355,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/init.d/S99eQ3SystemStarted fw.2.59
  }
  
  start() {
-diff -ruN --no-dereference fw.2.59.7.orig/etc/inittab fw.2.59.7.patched/etc/inittab
---- fw.2.59.7.orig/etc/inittab	2021-07-07 09:14:31.912832003 +0200
-+++ fw.2.59.7.patched/etc/inittab	2021-07-07 09:31:09.899413299 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/etc/inittab fw.2.61.7.patched/etc/inittab
+--- fw.2.61.7.orig/etc/inittab
++++ fw.2.61.7.patched/etc/inittab
 @@ -14,10 +14,7 @@
  # process   == program to run
  
@@ -384,9 +384,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/inittab fw.2.59.7.patched/etc/init
  # Stuff to do before rebooting
  ::shutdown:/etc/init.d/rcK
  null::shutdown:/bin/umount -a -r
-diff -ruN --no-dereference fw.2.59.7.orig/etc/network/if-up.d/eQ3StartNetwork fw.2.59.7.patched/etc/network/if-up.d/eQ3StartNetwork
---- fw.2.59.7.orig/etc/network/if-up.d/eQ3StartNetwork	2021-07-07 09:14:31.908831977 +0200
-+++ fw.2.59.7.patched/etc/network/if-up.d/eQ3StartNetwork	2021-07-07 09:31:09.899413299 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/etc/network/if-up.d/eQ3StartNetwork fw.2.61.7.patched/etc/network/if-up.d/eQ3StartNetwork
+--- fw.2.61.7.orig/etc/network/if-up.d/eQ3StartNetwork
++++ fw.2.61.7.patched/etc/network/if-up.d/eQ3StartNetwork
 @@ -72,20 +72,6 @@
  # restart syslogd to update hostname
  /etc/init.d/S07logging restart 2>/dev/null >/dev/null
@@ -408,9 +408,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/etc/network/if-up.d/eQ3StartNetwork fw
  # make sure no other udhcpc is running
  killall -q udhcpc
  
-diff -ruN --no-dereference fw.2.59.7.orig/firmware/fwmap fw.2.59.7.patched/firmware/fwmap
---- fw.2.59.7.orig/firmware/fwmap	2021-07-07 09:14:35.408855091 +0200
-+++ fw.2.59.7.patched/firmware/fwmap	2021-07-07 09:31:09.899413299 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/firmware/fwmap fw.2.61.7.patched/firmware/fwmap
+--- fw.2.61.7.orig/firmware/fwmap
++++ fw.2.61.7.patched/firmware/fwmap
 @@ -17,7 +17,8 @@
  
  #Coprozessor
@@ -421,9 +421,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/firmware/fwmap fw.2.59.7.patched/firmw
  # CCU2                    coprocessor_update_hm_only.eq3                1.4.1          # HM only CoProzessor CCU2  
  CCU2-RFLGW				coprocessor_update_hm_only.eq3					1.4.1          # HM only CoProzessor CCU2 for HomeMatic RF Lan Gateway
  
-diff -ruN --no-dereference fw.2.59.7.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.2.59.7.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
---- fw.2.59.7.orig/opt/HMServer/pages/StorageSettingsDialog.ftl	2021-07-07 09:14:32.056832954 +0200
-+++ fw.2.59.7.patched/opt/HMServer/pages/StorageSettingsDialog.ftl	2021-07-07 09:31:09.899413299 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/opt/HMServer/pages/StorageSettingsDialog.ftl fw.2.61.7.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
+--- fw.2.61.7.orig/opt/HMServer/pages/StorageSettingsDialog.ftl
++++ fw.2.61.7.patched/opt/HMServer/pages/StorageSettingsDialog.ftl
 @@ -204,23 +204,6 @@
  						<td class="CLASS21112">${"$"}{dialogSettingsSDCardStatus}:</td>
  						<td>${SDCardStatus}</td>
@@ -448,10 +448,10 @@ diff -ruN --no-dereference fw.2.59.7.orig/opt/HMServer/pages/StorageSettingsDial
  				</table>
  			</td>
  			<td class="CLASS21113" align="left">
-diff -ruN --no-dereference fw.2.59.7.orig/www/config/cp_maintenance.cgi fw.2.59.7.patched/www/config/cp_maintenance.cgi
---- fw.2.59.7.orig/www/config/cp_maintenance.cgi	2021-07-07 09:14:33.908845184 +0200
-+++ fw.2.59.7.patched/www/config/cp_maintenance.cgi	2021-07-07 09:31:09.907413353 +0200
-@@ -381,129 +381,13 @@
+diff -ruN --no-dereference fw.2.61.7.orig/www/config/cp_maintenance.cgi fw.2.61.7.patched/www/config/cp_maintenance.cgi
+--- fw.2.61.7.orig/www/config/cp_maintenance.cgi
++++ fw.2.61.7.patched/www/config/cp_maintenance.cgi
+@@ -366,129 +366,13 @@
                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                }
                table_data {
@@ -579,26 +579,15 @@ diff -ruN --no-dereference fw.2.59.7.orig/www/config/cp_maintenance.cgi fw.2.59.
 -          division {class="j_forcedUpdate" style="padding:10px;"} {
 -            puts "<br/>\${dialogSettingsCMHintSoftwareUpdate2}"
 -          }
-+        table_data {align="left"} {class="CLASS20904"} {
-+          puts "\${dialogSettingspiVCCUDonateHint}"
++        table_data {align="left"} {class="CLASS20904"} {^M
++          puts "\${dialogSettingspiVCCUDonateHint}"^M
          }
        }
        table_row {class="CLASS20902 j_noForcedUpdate j_fwUpdateOnly"} {
-@@ -924,10 +808,6 @@
-   cgi_javascript {
-     puts "translatePage('#messagebox');"
-     puts "jQuery('#messagebox').show();"
--    puts "var latestVersion = translateKey('lblAvailableFirmwareVersionNotKnown');"
--    puts "latestVersion = homematic.com.getLatestVersion();"
--    puts "if (latestVersion == undefined || isNaN(parseInt(latestVersion.split('.')\[0\]))) {latestVersion = translateKey('lblAvailableFirmwareVersionNotKnown');}"
--    puts "jQuery('#availableSWVersion').html(latestVersion);"
- 
-     # Hide all elements with class j_noForcedUpdate when an update is enforced
-     puts "if (forceUpdate) {"
-diff -ruN --no-dereference fw.2.59.7.orig/www/config/cp_security.cgi fw.2.59.7.patched/www/config/cp_security.cgi
---- fw.2.59.7.orig/www/config/cp_security.cgi	2021-07-07 09:14:33.932845343 +0200
-+++ fw.2.59.7.patched/www/config/cp_security.cgi	2021-07-07 09:31:09.907413353 +0200
-@@ -292,11 +292,11 @@
+diff -ruN --no-dereference fw.2.61.7.orig/www/config/cp_security.cgi fw.2.61.7.patched/www/config/cp_security.cgi
+--- fw.2.61.7.orig/www/config/cp_security.cgi
++++ fw.2.61.7.patched/www/config/cp_security.cgi
+@@ -293,11 +293,11 @@
  
      if {[getProduct] < 3 } {
        # CCU2
@@ -612,7 +601,7 @@ diff -ruN --no-dereference fw.2.59.7.orig/www/config/cp_security.cgi fw.2.59.7.p
    }]} {
  
      # TWIST-22
-@@ -630,12 +630,7 @@
+@@ -631,12 +631,7 @@
        if { "false" == $backuperror } { 
          #if { [version_compare $system_version 3.0.0] < 0 } {
          # Erase user file system
@@ -626,7 +615,7 @@ diff -ruN --no-dereference fw.2.59.7.orig/www/config/cp_security.cgi fw.2.59.7.p
          #} 
          #Apply backup
          cd /
-@@ -817,8 +812,6 @@
+@@ -818,8 +813,6 @@
    cgi_javascript {puts "MessageBox.close();"}
  
    if { "false" == $backuperror } {
@@ -635,9 +624,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/www/config/cp_security.cgi fw.2.59.7.p
      division {class="popupTitle"} {
        puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
      }
-diff -ruN --no-dereference fw.2.59.7.orig/www/config/cp_software.cgi fw.2.59.7.patched/www/config/cp_software.cgi
---- fw.2.59.7.orig/www/config/cp_software.cgi	2021-07-07 09:14:33.872844947 +0200
-+++ fw.2.59.7.patched/www/config/cp_software.cgi	2021-07-07 09:31:09.907413353 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/www/config/cp_software.cgi fw.2.61.7.patched/www/config/cp_software.cgi
+--- fw.2.61.7.orig/www/config/cp_software.cgi
++++ fw.2.61.7.patched/www/config/cp_software.cgi
 @@ -528,7 +528,7 @@
       exec /sbin/reboot
    } else {
@@ -647,9 +636,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/www/config/cp_software.cgi fw.2.59.7.p
    }
    
  }
-diff -ruN --no-dereference fw.2.59.7.orig/www/webui/js/lang/de/translate.lang.js fw.2.59.7.patched/www/webui/js/lang/de/translate.lang.js
---- fw.2.59.7.orig/www/webui/js/lang/de/translate.lang.js	2021-07-07 09:14:33.008839241 +0200
-+++ fw.2.59.7.patched/www/webui/js/lang/de/translate.lang.js	2021-07-07 09:31:09.955413669 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/www/webui/js/lang/de/translate.lang.js fw.2.61.7.patched/www/webui/js/lang/de/translate.lang.js
+--- fw.2.61.7.orig/www/webui/js/lang/de/translate.lang.js
++++ fw.2.61.7.patched/www/webui/js/lang/de/translate.lang.js
 @@ -459,7 +459,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
@@ -660,9 +649,9 @@ diff -ruN --no-dereference fw.2.59.7.orig/www/webui/js/lang/de/translate.lang.js
      "dialogSettingsCMLblAvailableSoftwareVersion" : "Verf%FCgbare Software-Version:",
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Software-Update durchf%FChren",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Schritt 1: Neue Software herunterladen",
-diff -ruN --no-dereference fw.2.59.7.orig/www/webui/js/lang/en/translate.lang.js fw.2.59.7.patched/www/webui/js/lang/en/translate.lang.js
---- fw.2.59.7.orig/www/webui/js/lang/en/translate.lang.js	2021-07-07 09:14:33.032839400 +0200
-+++ fw.2.59.7.patched/www/webui/js/lang/en/translate.lang.js	2021-07-07 09:31:09.955413669 +0200
+diff -ruN --no-dereference fw.2.61.7.orig/www/webui/js/lang/en/translate.lang.js fw.2.61.7.patched/www/webui/js/lang/en/translate.lang.js
+--- fw.2.61.7.orig/www/webui/js/lang/en/translate.lang.js
++++ fw.2.61.7.patched/www/webui/js/lang/en/translate.lang.js
 @@ -458,7 +458,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Shutdown",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
@@ -673,10 +662,10 @@ diff -ruN --no-dereference fw.2.59.7.orig/www/webui/js/lang/en/translate.lang.js
      "dialogSettingsCMLblAvailableSoftwareVersion" : "Available software version:",
      "dialogSettingsCMLblPerformSoftwareUpdate" : "Perform software update",
      "dialogSettingsCMLblPerformSoftwareUpdateStep1" : "Step 1: Download new software",
-diff -ruN --no-dereference fw.2.59.7.orig/www/webui/webui.js fw.2.59.7.patched/www/webui/webui.js
---- fw.2.59.7.orig/www/webui/webui.js	2021-07-07 09:14:33.260840905 +0200
-+++ fw.2.59.7.patched/www/webui/webui.js	2021-07-07 09:31:09.967413749 +0200
-@@ -24185,7 +24185,7 @@
+diff -ruN --no-dereference fw.2.61.7.orig/www/webui/webui.js fw.2.61.7.patched/www/webui/webui.js
+--- fw.2.61.7.orig/www/webui/webui.js
++++ fw.2.61.7.patched/www/webui/webui.js
+@@ -24410,7 +24410,7 @@
      var script = document.createElement("script");
      script.id = "homematic_com_script";
      script.type = "text/javascript";
