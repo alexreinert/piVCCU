@@ -26,9 +26,17 @@ case "$1" in
         db_go
       fi
     fi
+
+    if [ -f /usr/lib/systemd/system/pivccu-rpi-modules.service ]; then
+      CFG_KERNEL=""
+      db_get pivccu/configure_kernel
+      if [ "$RET" = "true" ]; then
+        CFG_KERNEL=" -c"
+      fi
+      sed -i -r "s|^(ExecStart=.*ensure_headers\.sh).*|\1${CFG_KERNEL}|" /usr/lib/systemd/system/pivccu-rpi-modules.service
+    fi
     ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)
     ;;
 esac
-

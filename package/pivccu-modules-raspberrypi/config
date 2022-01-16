@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+db_input critical pivccu/configure_kernel || true
+db_go

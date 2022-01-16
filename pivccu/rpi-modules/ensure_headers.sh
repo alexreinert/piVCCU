@@ -5,18 +5,19 @@ KERNEL_REPO="https://github.com/raspberrypi/linux/"
 ACTIVE_KERNEL=`uname -r`
 MODULE_DIR="/lib/modules/$ACTIVE_KERNEL"
 
-modinfo generic_raw_uart &> /dev/null && RC=$? || RC=$?
-if [ $RC -eq 0 ]; then
+modinfo generic_raw_uart &> /dev/null
+if [ $? -eq 0 ]; then
   exit
 fi
 
-if [ -e $MODULE_DIR/build ]; then
+if [ -d $MODULE_DIR/build ]; then
   exit
 fi
 
 set -e
 
 if [ -f /boot/.firmware_revision ]; then
+  # Raspberry Pi OS after rpi-update
   FW_HASH=`cat /boot/.firmware_revision`
   KERNEL_GIT_HASH=`wget -O - -q $FW_REPO$FW_HASH/git_hash`
   KERNEL_GIT_VERSION=`wget -O - -q $FW_REPO$FW_HASH/uname_string7 | cut -d' ' -f3`
@@ -32,18 +33,25 @@ if [ -f /boot/.firmware_revision ]; then
   echo "Unpacking kernel sources"
   cd $MODULE_DIR
   tar -xzf $MODULE_DIR/linux.tar.gz
-  rm $MODULE_DIR/linux.tar.gz
-  mv $MODULE_DIR/linux-$KERNEL_GIT_HASH $MODULE_DIR/source
+  rm -f $MODULE_DIR/linux.tar.gz
+  mv -f $MODULE_DIR/linux-$KERNEL_GIT_HASH $MODULE_DIR/source
   ln -sf $MODULE_DIR/source $MODULE_DIR/build
 
-  echo "Configuring kernel sources"
-  cd $MODULE_DIR/source
-  KERNEL=kernel7
-  modprobe configs &> /dev/null
-  zcat /proc/config.gz > $MODULE_DIR/source/.config
-  make modules_prepare
+  # check if parameter set
+  if [ "$1" = "-c" ]; then
+    echo "Configuring kernel sources"
+    VER=`uname -r | sed -r 's/.*\-v([0-9a-z]*)(\+*.*)/\1/'`
+    if echo "$VER" | grep -qvx "7\|7l\|8"; then
+      echo "Unable to configure kernel"
+      exit 1
+    fi
+    KERNEL="kernel$VER"
+    cd $MODULE_DIR/source
+    modprobe configs &> /dev/null
+    zcat /proc/config.gz > $MODULE_DIR/source/.config
+    make modules_prepare
+  fi
 else
   echo "Could not determine kernel source."
   exit 1
 fi
-

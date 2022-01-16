@@ -2,3 +2,8 @@ Template: pivccu/reboot_required
 Type: note
 Description: WARNING: A reboot is required to enable the modules.
 Description-DE: WARNUNG: Ein Neustart ist erforderlich um die Module zu aktivieren.
+
+Template: pivccu/configure_kernel
+Type: boolean
+Description: Enable kernel configuration after kernel download?
+Description-DE: Kernel-Konfiguration nach Kernel-Download aktivieren?
