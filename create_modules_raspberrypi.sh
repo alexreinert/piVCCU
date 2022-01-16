@@ -29,7 +29,7 @@ done
 
 cd $WORK_DIR
 
-dpkg-deb --build pivccu-modules-raspberrypi-$PKG_VERSION
+fakeroot dpkg-deb --build pivccu-modules-raspberrypi-$PKG_VERSION
 
 cp pivccu-modules-raspberrypi-*.deb $CURRENT_DIR
 
