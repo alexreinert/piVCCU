@@ -2,7 +2,7 @@ Package: pivccu-modules-raspberrypi
 Version: {PKG_VERSION}
 Architecture: all
 Maintainer: Alexander Reinert <alex@areinert.de>
-Depends: raspberrypi-kernel-headers | linux-headers-raspi, pivccu-modules-dkms, bc
+Depends: raspberrypi-kernel-headers | linux-headers-raspi | linux-headers-arm64, pivccu-modules-dkms, bc
 Pre-Depends: debconf (>= 0.5) | debconf-2.0
 Section: kernel
 Priority: extra
