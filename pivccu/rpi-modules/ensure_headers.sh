@@ -19,8 +19,13 @@ set -e
 if [ -f /boot/.firmware_revision ]; then
   # Raspberry Pi OS after rpi-update
   FW_HASH=`cat /boot/.firmware_revision`
+  ARM_VER=`uname -r | sed -r 's/.*\-v([0-9a-z]*)(\+*.*)/\1/'`
+  if echo "$ARM_VER" | grep -qvx "7\|7l\|8"; then
+    echo "Unsupported arm version"
+    exit 1
+  fi
   KERNEL_GIT_HASH=`wget -O - -q $FW_REPO$FW_HASH/git_hash`
-  KERNEL_GIT_VERSION=`wget -O - -q $FW_REPO$FW_HASH/uname_string7 | cut -d' ' -f3`
+  KERNEL_GIT_VERSION=`wget -O - -q $FW_REPO$FW_HASH/uname_string$ARM_VER | cut -d' ' -f3`
 
   if [ "$KERNEL_GIT_VERSION" != "$ACTIVE_KERNEL" ]; then
     echo "/boot/.firmware_revision does not match active kernel version."
@@ -40,12 +45,7 @@ if [ -f /boot/.firmware_revision ]; then
   # check if parameter set
   if [ "$1" = "-c" ]; then
     echo "Configuring kernel sources"
-    VER=`uname -r | sed -r 's/.*\-v([0-9a-z]*)(\+*.*)/\1/'`
-    if echo "$VER" | grep -qvx "7\|7l\|8"; then
-      echo "Unable to configure kernel"
-      exit 1
-    fi
-    KERNEL="kernel$VER"
+    KERNEL="kernel$ARM_VER"
     cd $MODULE_DIR/source
     modprobe configs &> /dev/null
     zcat /proc/config.gz > $MODULE_DIR/source/.config
