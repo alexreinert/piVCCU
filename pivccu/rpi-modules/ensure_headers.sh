@@ -49,7 +49,7 @@ if [ -f /boot/.firmware_revision ]; then
     cd $MODULE_DIR/source
     modprobe configs &> /dev/null
     zcat /proc/config.gz > $MODULE_DIR/source/.config
-    make modules_prepare
+    make modules_prepare > /dev/null
   fi
 else
   echo "Could not determine kernel source."
