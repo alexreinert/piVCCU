@@ -37,15 +37,15 @@
    * Option 1: Disabled bluetooth (prefered)
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
-      dtoverlay=pi3-disable-bt
+      dtoverlay=disable-bt
       EOT'
-      sudo systemctl disable hciuart.service
+      systemctl is-active --quiet hciuart.service && sudo systemctl disable hciuart.service
       ```
 
    * Option 2: Bluetooth attached to mini uart
       ```bash
       sudo bash -c 'cat << EOT >> /boot/config.txt
-      dtoverlay=pi3-miniuart-bt
+      dtoverlay=miniuart-bt
       enable_uart=1
       force_turbo=1
       core_freq=250
@@ -54,8 +54,7 @@
 
 7. Disable serial console in command line (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
    ```bash
-   sudo sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
-   sudo sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
+   sudo sed -i /boot/cmdline.txt -e "s/console=\(serial0\|ttyAMA0\),[0-9]\+ //"
    ```
 
 8. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
@@ -104,12 +103,38 @@
       ```
    * To use Wireless LAN, please take a look [here](wlan.md)
 
-9. Reboot the system
+9. Check systemd settings
+   Some systemd services like pivccu-rpi-modules.service are depending on network-online.target to ensure that the network is *really* online.
+   But in Raspberry Pi OS this is not configured out of the box.
+   Required settings are depending on the network configuration method.
+
+   For details look [here](https://www.freedesktop.org/wiki/Software/systemd/NetworkTarget/#cutthecraphowdoimakesurethatmyservicestartsafterthenetworkisreallyonline).
+
+   If network configuration is done in /etc/network/interfaces check:
+   ```bash
+   systemctl is-enabled ifupdown-wait-online.service
+   ```
+   If it´s ```disabled``` enable it:
+   ```bash
+   sudo systemctl enable ifupdown-wait-online.service
+   ```
+
+   Edit the configuration file ```/etc/default/networking```:
+   ```properties
+   WAIT_ONLINE_METHOD=ping
+   WAIT_ONLINE_ADDRESS=8.8.8.8
+   ```
+
+   ```bash
+   sudo sed -i -r "s/^.*(WAIT_ONLINE_METHOD=).*/\1ping/;s/^.*(WAIT_ONLINE_ADDRESS=).*/\18.8.8.8/" /etc/default/networking
+   ```
+
+10. Reboot the system
    ```bash
    sudo reboot
    ```
 
-10. Install CCU container
+11. Install CCU container
    ```bash
    sudo apt install pivccu3
    ```
