@@ -104,6 +104,7 @@
    * To use Wireless LAN, please take a look [here](wlan.md)
 
 9. Check systemd settings
+
    Some systemd services like pivccu-rpi-modules.service are depending on network-online.target to ensure that the network is *really* online.
    But in Raspberry Pi OS this is not configured out of the box.
    Required settings are depending on the network configuration method.
