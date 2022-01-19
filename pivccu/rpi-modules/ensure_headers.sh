@@ -48,7 +48,8 @@ if [ -f /boot/.firmware_revision ]; then
     KERNEL="kernel$ARM_VER"
     cd $MODULE_DIR/source
     modprobe configs &> /dev/null
-    zcat /proc/config.gz > $MODULE_DIR/source/.config
+    zcat /proc/config.gz > .config
+    make olddefconfig
     make modules_prepare > /dev/null
   fi
 else
