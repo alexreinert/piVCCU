@@ -49,7 +49,7 @@ if [ -f /boot/.firmware_revision ]; then
     cd $MODULE_DIR/source
     modprobe configs &> /dev/null
     zcat /proc/config.gz > .config
-    make olddefconfig
+    make olddefconfig > /dev/null
     make modules_prepare > /dev/null
   fi
 else
