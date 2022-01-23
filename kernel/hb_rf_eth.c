@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2021 by Alexander Reinert
+ * Copyright (c) 2022 by Alexander Reinert
  * Author: Alexander Reinert
  *
  * This program is free software; you can redistribute it and/or modify
@@ -609,9 +609,10 @@ static int hb_rf_eth_get_gpio_pin_number(struct generic_raw_uart *raw_uart, enum
   return 0;
 }
 
-static void hb_rf_eth_reset_radio_module(struct generic_raw_uart *raw_uart)
+static int hb_rf_eth_reset_radio_module(struct generic_raw_uart *raw_uart)
 {
   hb_rf_eth_send_reset();
+  return 0;
 }
 
 static int hb_rf_eth_start_connection(struct generic_raw_uart *raw_uart)
@@ -651,11 +652,11 @@ static int hb_rf_eth_get_device_type(struct generic_raw_uart *raw_uart, char *pa
 {
   if (_sock != NULL)
   {
-    return sprintf(page, "HB-RF-ETH@%pI4\n", &remote.sin_addr);
+    return snprintf(page, MAX_DEVICE_TYPE_LEN, "HB-RF-ETH@%pI4", &remote.sin_addr);
   }
   else
   {
-    return sprintf(page, "HB-RF-ETH@-\n");
+    return snprintf(page, MAX_DEVICE_TYPE_LEN, "HB-RF-ETH@-");
   }
 }
 
@@ -825,5 +826,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.17");
+MODULE_VERSION("1.18");
 MODULE_LICENSE("GPL");

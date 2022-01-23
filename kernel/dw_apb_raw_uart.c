@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2021 by Alexander Reinert
+ * Copyright (c) 2022 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -64,7 +64,7 @@ static void dw_apb_raw_uart_tx_chars(struct generic_raw_uart *raw_uart, unsigned
 static void dw_apb_raw_uart_init_tx(struct generic_raw_uart *raw_uart);
 static void dw_apb_raw_uart_rx_chars(struct generic_raw_uart *raw_uart);
 static irqreturn_t dw_apb_raw_uart_irq_handle(int irq, void *context);
-static int dw_apb_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev);
+static int dw_apb_raw_uart_probe(struct platform_device *pdev);
 static int dw_apb_raw_uart_remove(struct platform_device *pdev);
 
 struct dw_apb_port_s
@@ -116,7 +116,7 @@ static void dw_apb_raw_uart_write_lcr(int value)
   }
 }
 
-static void dw_apb_raw_uart_init_uart(struct generic_raw_uart *raw_uart)
+static void dw_apb_raw_uart_init_uart(void)
 {
   long rate;
   int divisor;
@@ -293,7 +293,7 @@ static struct raw_uart_driver dw_apb_raw_uart = {
     .tx_bulktransfer_size = 1,
 };
 
-static int dw_apb_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev)
+static int dw_apb_raw_uart_probe(struct platform_device *pdev)
 {
   int err;
   u32 val;
@@ -369,7 +369,7 @@ static int dw_apb_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platf
 
   dw_apb_port->dev = dev;
 
-  dw_apb_raw_uart_init_uart(raw_uart);
+  dw_apb_raw_uart_init_uart();
 
   dev_info(dev, "Initialized dw_apb device; mapbase=0x%08lx; irq=%lu; sclk rate=%lu; pclk rate=%ld",
            dw_apb_port->mapbase,
@@ -414,6 +414,6 @@ module_raw_uart_driver(MODULE_NAME, dw_apb_raw_uart, dw_apb_raw_uart_of_match);
 
 MODULE_ALIAS("platform:dw_apb-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.10");
+MODULE_VERSION("1.11");
 MODULE_DESCRIPTION("dw_apb raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

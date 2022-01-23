@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2021 by Alexander Reinert
+ * Copyright (c) 2022 by Alexander Reinert
  * Author: Alexander Reinert
  *
  * This program is free software; you can redistribute it and/or modify
@@ -94,6 +94,7 @@ struct hb_rf_usb_2_port_s
 static struct usb_device_id usbid[] = {
   { HB_USB_DEVICE(0x10c4, 0x8c07, 0x60d01cf9ul, false, (0xd7cc3f44ul, 0xf50048a8ul, 0x3cf61d60ul, 0xae8460d1ul, 0x272a5876ul, 0x2dc161f5ul, 0x7737fbaeul, 0x88c996b2ul, 0xed521e88ul, 0xdd24b0acul, 0x4b7c49a4ul, 0xcc457acbul, 0xb2079847ul, 0x6745032aul, 0xaf25d41ful, 0xbecfb9f3ul)) },
   { HB_USB_DEVICE(0x1b1f, 0xc020, 0, false, (0)) },
+  { HB_USB_DEVICE(0x10c4, 0x8d81, 0, true, (0x08b1480eul, 0x8f349c82ul, 0xe56ba2d8ul, 0x84fe66b7ul, 0x0f102855ul, 0x79bd41d5ul, 0x8d8905e0ul, 0xe9c16cc3ul, 0xbb188368ul, 0x4167f9bful, 0x05084458ul, 0x24a171daul, 0xfdbf5b3bul, 0xec31efeaul, 0x1653f3eful, 0x495f8104ul)) },
   { }
 };
 
@@ -424,7 +425,7 @@ static int hb_rf_usb_2_get_gpio_pin_number(struct generic_raw_uart *raw_uart, en
   }
 }
 
-static void hb_rf_usb_2_reset_radio_module(struct generic_raw_uart *raw_uart)
+static int hb_rf_usb_2_reset_radio_module(struct generic_raw_uart *raw_uart)
 {
   struct hb_rf_usb_2_port_s *port = raw_uart->driver_data;
 
@@ -434,13 +435,15 @@ static void hb_rf_usb_2_reset_radio_module(struct generic_raw_uart *raw_uart)
     msleep(50);
     hb_rf_usb_2_set_gpio_on_device(port, RESET_GPIO_MASK, (port->invert_reset ? 1 : 0));
     msleep(50);
+    return 0;
   }
+  return -ENOSYS;
 }
 
 static int hb_rf_usb_2_get_device_type(struct generic_raw_uart *raw_uart, char *page)
 {
   struct hb_rf_usb_2_port_s *port = raw_uart->driver_data;
-  return sprintf(page, "%s@usb-%s-%s\n", port->udev->product, port->udev->bus->bus_name, port->udev->devpath);
+  return snprintf(page, MAX_DEVICE_TYPE_LEN, "%s@usb-%s-%s", port->udev->product, port->udev->bus->bus_name, port->udev->devpath);
 }
 
 static struct raw_uart_driver hb_rf_usb_2 = {
@@ -661,6 +664,6 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.11");
+MODULE_VERSION("1.12");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

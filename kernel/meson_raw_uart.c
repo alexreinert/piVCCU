@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2021 by Alexander Reinert
+ * Copyright (c) 2022 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -77,7 +77,7 @@ static void meson_raw_uart_tx_chars(struct generic_raw_uart *raw_uart, unsigned 
 static void meson_raw_uart_init_tx(struct generic_raw_uart *raw_uart);
 static void meson_raw_uart_rx_chars(struct generic_raw_uart *raw_uart);
 static irqreturn_t meson_raw_uart_irq_handle(int irq, void *context);
-static int meson_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev);
+static int meson_raw_uart_probe(struct platform_device *pdev);
 static int meson_raw_uart_remove(struct platform_device *pdev);
 
 struct meson_port_s
@@ -285,7 +285,7 @@ static inline struct clk *meson_raw_uart_probe_clk(struct device *dev, const cha
   return clk;
 }
 
-static int meson_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev)
+static int meson_raw_uart_probe(struct platform_device *pdev)
 {
   int err;
   struct device *dev = &pdev->dev;
@@ -382,6 +382,6 @@ module_raw_uart_driver(MODULE_NAME, meson_raw_uart, meson_raw_uart_of_match);
 
 MODULE_ALIAS("platform:meson-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.6");
+MODULE_VERSION("1.7");
 MODULE_DESCRIPTION("MESON raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

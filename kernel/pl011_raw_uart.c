@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2021 by Alexander Reinert
+ * Copyright (c) 2022 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -48,7 +48,7 @@ static void pl011_raw_uart_tx_chars(struct generic_raw_uart *raw_uart, unsigned 
 static void pl011_raw_uart_init_tx(struct generic_raw_uart *raw_uart);
 static void pl011_raw_uart_rx_chars(struct generic_raw_uart *raw_uart);
 static irqreturn_t pl011_raw_uart_irq_handle(int irq, void *context);
-static int pl011_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev);
+static int pl011_raw_uart_probe(struct platform_device *pdev);
 static int pl011_raw_uart_remove(struct platform_device *pdev);
 
 struct pl011_port_s
@@ -257,7 +257,7 @@ static struct raw_uart_driver pl011_raw_uart = {
     .tx_bulktransfer_size = 1,
 };
 
-static int pl011_raw_uart_probe(struct generic_raw_uart *raw_uart, struct platform_device *pdev)
+static int pl011_raw_uart_probe(struct platform_device *pdev)
 {
   int err;
   struct device *dev = &pdev->dev;
@@ -332,6 +332,6 @@ module_raw_uart_driver(MODULE_NAME, pl011_raw_uart, pl011_raw_uart_of_match);
 
 MODULE_ALIAS("platform:pl011-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.9");
+MODULE_VERSION("1.10");
 MODULE_DESCRIPTION("PL011 raw uart driver for communication of piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

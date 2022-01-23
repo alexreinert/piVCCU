@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2021 by Alexander Reinert
+ * Copyright (c) 2022 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -20,6 +20,8 @@
 #include <linux/module.h>
 
 #define BAUD 115200
+
+#define MAX_DEVICE_TYPE_LEN 64
 
 enum generic_raw_uart_rx_flags
 {
@@ -59,7 +61,7 @@ struct raw_uart_driver
   void (*stop_tx)(struct generic_raw_uart *raw_uart);
 
   int (*get_gpio_pin_number)(struct generic_raw_uart *raw_uart, enum generic_raw_uart_pin);
-  void (*reset_radio_module)(struct generic_raw_uart *raw_uart);
+  int (*reset_radio_module)(struct generic_raw_uart *raw_uart);
 
   int tx_chunk_size;
   int tx_bulktransfer_size;
@@ -92,6 +94,13 @@ extern bool generic_raw_uart_verify_dkey(struct device *dev, unsigned char *dkey
   static int __##__raw_uart_driver##_probe(struct platform_device *pdev)                  \
   {                                                                                       \
     struct device *dev = &pdev->dev;                                                      \
+    int err = __raw_uart_driver##_probe(pdev);                                            \
+                                                                                          \
+    if (err)                                                                              \
+    {                                                                                     \
+      dev_err(dev, "failed to initialize generic_raw_uart module");                       \
+      return err;                                                                         \
+    }                                                                                     \
                                                                                           \
     __raw_uart_driver##_raw_uart = generic_raw_uart_probe(dev, &__raw_uart_driver, NULL); \
     if (IS_ERR_OR_NULL(__raw_uart_driver##_raw_uart))                                     \
@@ -100,7 +109,7 @@ extern bool generic_raw_uart_verify_dkey(struct device *dev, unsigned char *dkey
       return PTR_ERR(__raw_uart_driver##_raw_uart);                                       \
     }                                                                                     \
                                                                                           \
-    return __raw_uart_driver##_probe(__raw_uart_driver##_raw_uart, pdev);                 \
+    return 0;                                                                             \
   }                                                                                       \
                                                                                           \
   static int __##__raw_uart_driver##_remove(struct platform_device *pdev)                 \

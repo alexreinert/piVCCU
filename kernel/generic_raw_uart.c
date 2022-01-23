@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2021 by Alexander Reinert
+ * Copyright (c) 2022 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -53,11 +53,12 @@
 #define CIRCBUF_SIZE 1024
 #define CON_DATA_TX_BUF_SIZE 4096
 #define PROC_DEBUG 1
-#define IOCTL_MAGIC 'u'
-#define IOCTL_MAXNR 2
 #define MAX_CONNECTIONS 3
+#define IOCTL_MAGIC 'u'
 #define IOCTL_IOCSPRIORITY _IOW(IOCTL_MAGIC, 1, uint32_t) /* Set the priority for the current channel */
 #define IOCTL_IOCGPRIORITY _IOR(IOCTL_MAGIC, 2, uint32_t) /* Get the priority for the current channel */
+#define IOCTL_IOCRESET_RADIO_MODULE _IO(IOCTL_MAGIC, 0x81) /* Reset the radio module */
+#define IOCTL_IOCGDEVINFO _IOW(IOCTL_MAGIC, 0x82, char[MAX_DEVICE_TYPE_LEN]) /* Get information about the raw uart device */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0))
 #define _access_ok(__type, __addr, __size) access_ok(__addr, __size)
@@ -123,36 +124,48 @@ static int generic_raw_uart_proc_show(struct seq_file *m, void *v);
 static int generic_raw_uart_proc_open(struct inode *inode, struct file *file);
 #endif /*PROC_DEBUG*/
 
+static int generic_raw_uart_get_device_type(struct generic_raw_uart_instance *instance, char *buf)
+{
+  if (instance->driver->get_device_type == 0)
+  {
+    return snprintf(buf, MAX_DEVICE_TYPE_LEN, "GPIO@%s", dev_name(instance->dev->parent));
+  }
+  else
+  {
+    return instance->driver->get_device_type(&instance->raw_uart, buf);
+  }
+}
+
 static struct file_operations generic_raw_uart_fops =
 {
-        .owner = THIS_MODULE,
-        .llseek = no_llseek,
-        .read = generic_raw_uart_read,
-        .write = generic_raw_uart_write,
-        .open = generic_raw_uart_open,
-        .release = generic_raw_uart_close,
-        .poll = generic_raw_uart_poll,
-        .unlocked_ioctl = generic_raw_uart_ioctl,
-        .compat_ioctl = generic_raw_uart_ioctl,
+  .owner = THIS_MODULE,
+  .llseek = no_llseek,
+  .read = generic_raw_uart_read,
+  .write = generic_raw_uart_write,
+  .open = generic_raw_uart_open,
+  .release = generic_raw_uart_close,
+  .poll = generic_raw_uart_poll,
+  .unlocked_ioctl = generic_raw_uart_ioctl,
+  .compat_ioctl = generic_raw_uart_ioctl,
 };
 
 #ifdef PROC_DEBUG
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0))
 static const struct proc_ops generic_raw_uart_proc_fops =
-    {
-        .proc_open = generic_raw_uart_proc_open,
-        .proc_read = seq_read,
-        .proc_lseek = seq_lseek,
-        .proc_release = single_release,
+{
+  .proc_open = generic_raw_uart_proc_open,
+  .proc_read = seq_read,
+  .proc_lseek = seq_lseek,
+  .proc_release = single_release,
 };
 #else
 static const struct file_operations generic_raw_uart_proc_fops =
-    {
-        .owner = THIS_MODULE,
-        .open = generic_raw_uart_proc_open,
-        .read = seq_read,
-        .llseek = seq_lseek,
-        .release = single_release,
+{
+  .owner = THIS_MODULE,
+  .open = generic_raw_uart_proc_open,
+  .read = seq_read,
+  .llseek = seq_lseek,
+  .release = single_release,
 };
 #endif
 #endif /*PROC_DEBUG*/
@@ -265,18 +278,24 @@ exit:
   return ret;
 }
 
-static int generic_raw_uart_reset_radio_module(struct generic_raw_uart_instance *instance)
+static int generic_raw_uart_reset_radio_module(struct generic_raw_uart_instance *instance, int max_open_count)
 {
+  int ret;
+
   if (down_interruptible(&instance->sem))
   {
-    return -ERESTARTSYS;
+    ret = -ERESTARTSYS;
+    goto exit;
   }
 
-  if (instance->open_count > 0)
+  if (instance->open_count > max_open_count)
   {
     up(&instance->sem);
-    return -EBUSY;
+    ret = -EBUSY;
+    goto exit_sem;
   }
+
+  dev_info(instance->dev, "Reset radio module");
 
   if (instance->driver->reset_radio_module == 0)
   {
@@ -289,15 +308,22 @@ static int generic_raw_uart_reset_radio_module(struct generic_raw_uart_instance 
       msleep(50);
       gpio_direction_input(instance->reset_pin);
       msleep(50);
+      ret = 0;
+    }
+    else
+    {
+      ret = -ENOSYS;
     }
   }
   else
   {
-    instance->driver->reset_radio_module(&instance->raw_uart);
+    ret = instance->driver->reset_radio_module(&instance->raw_uart);
   }
 
+exit_sem:
   up(&instance->sem);
 
+exit:
   return 0;
 }
 
@@ -429,39 +455,8 @@ static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigne
   struct generic_raw_uart_instance *instance = container_of(filep->f_inode->i_cdev, struct generic_raw_uart_instance, cdev);
   struct per_connection_data *conn = filep->private_data;
   long ret = 0;
-  int err = 0;
   unsigned long temp;
-
-  if (_IOC_TYPE(cmd) == IOCTL_MAGIC)
-  {
-    /*
-     * extract the type and number bitfields, and don't decode
-     * wrong cmds: return ENOTTY (inappropriate ioctl) before access_ok()
-     */
-    if (_IOC_NR(cmd) > IOCTL_MAXNR)
-    {
-      return -ENOTTY;
-    }
-
-    /*
-     * the direction is a bitmask, and VERIFY_WRITE catches R/W
-     * transfers. `Type' is user-oriented, while
-     * access_ok is kernel-oriented, so the concept of "read" and
-     * "write" is reversed
-     */
-    if (_IOC_DIR(cmd) & _IOC_READ)
-    {
-      err = !_access_ok(VERIFY_WRITE, (void __user *)arg, _IOC_SIZE(cmd));
-    }
-    else if (_IOC_DIR(cmd) & _IOC_WRITE)
-    {
-      err = !_access_ok(VERIFY_READ, (void __user *)arg, _IOC_SIZE(cmd));
-    }
-    if (err)
-    {
-      return -EFAULT;
-    }
-  }
+  char *buf;
 
   if (down_interruptible(&conn->sem))
   {
@@ -473,17 +468,56 @@ static long generic_raw_uart_ioctl(struct file *filep, unsigned int cmd, unsigne
 
   /* Set connection priority */
   case IOCTL_IOCSPRIORITY: /* Set: arg points to the value */
-    ret = __get_user(temp, (unsigned long __user *)arg);
-    if (ret)
+    if (_access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(unsigned long)))
     {
-      break;
+      ret = __get_user(temp, (unsigned long __user *)arg);
+      if (!ret)
+        conn->priority = temp;
     }
-    conn->priority = temp;
+    else
+    {
+      ret = -EFAULT;
+    }
     break;
 
     /* Get connection priority */
   case IOCTL_IOCGPRIORITY: /* Get: arg is pointer to result */
-    ret = __put_user(conn->priority, (unsigned long __user *)arg);
+    if (_access_ok(VERIFY_READ, (void __user *)arg, sizeof(unsigned long)))
+    {
+      ret = __put_user(conn->priority, (unsigned long __user *)arg);
+    }
+    else
+    {
+      ret = -EFAULT;
+    }
+    break;
+
+  case IOCTL_IOCRESET_RADIO_MODULE:
+    ret = generic_raw_uart_reset_radio_module(instance, 1);
+    break;
+
+  case IOCTL_IOCGDEVINFO:
+    if (_access_ok(VERIFY_READ, (void __user *)arg, MAX_DEVICE_TYPE_LEN))
+    {
+      buf = kmalloc(MAX_DEVICE_TYPE_LEN, GFP_KERNEL);
+      if (buf)
+      {
+        ret = generic_raw_uart_get_device_type(instance, buf);
+
+        if (ret > 0)
+          ret = copy_to_user((void __user *)arg, buf, MAX_DEVICE_TYPE_LEN);
+
+	kfree(buf);
+      }
+      else
+      {
+        ret  = -ENOMEM;
+      }
+    }
+    else
+    {
+      ret = -EFAULT;
+    }
     break;
 
     /* Emulated TTY ioctl: Get termios struct */
@@ -799,8 +833,7 @@ static ssize_t reset_radio_module_store(struct device *dev, struct device_attrib
 
   if (simple_strtol(strim((char *)buf), &endp, 0) == 1)
   {
-    dev_info(dev, "Reset radio module");
-    ret = generic_raw_uart_reset_radio_module(instance);
+    ret = generic_raw_uart_reset_radio_module(instance, 0);
     return ret == 0 ? count : ret;
   }
   else
@@ -832,14 +865,13 @@ static DEVICE_ATTR_RO(blue_gpio_pin);
 static ssize_t device_type_show(struct device *dev, struct device_attribute *attr, char *page)
 {
   struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
-  if (instance->driver->get_device_type == 0)
+  int ret = generic_raw_uart_get_device_type(instance, page);
+  if (ret > 0)
   {
-    return sprintf(page, "GPIO\n");
+    page[ret++] = '\n';
+    page[ret] = 0;
   }
-  else
-  {
-    return instance->driver->get_device_type(&instance->raw_uart, page);
-  }
+  return ret;
 }
 static DEVICE_ATTR_RO(device_type);
 
@@ -959,7 +991,7 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   struct generic_raw_uart_instance *instance;
   unsigned long flags;
   bool use_alt_reset_pin = false;
-
+  char buf[MAX_DEVICE_TYPE_LEN] = { 0 };
 
   err = generic_raw_uart_probe_rtc_device(dev, &use_alt_reset_pin);
   if (err != 0)
@@ -1015,9 +1047,9 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   }
 
   if (dev_no == 0)
-    instance->dev = device_create(class, NULL, instance->devid, NULL, DRIVER_NAME);
+    instance->dev = device_create(class, dev, instance->devid, NULL, DRIVER_NAME);
   else
-    instance->dev = device_create(class, NULL, instance->devid, NULL, DRIVER_NAME "%d", dev_no);
+    instance->dev = device_create(class, dev, instance->devid, NULL, DRIVER_NAME "%d", dev_no);
 
   if (IS_ERR(instance->dev))
   {
@@ -1061,7 +1093,10 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   proc_create_data(dev_name(instance->dev), 0444, NULL, &generic_raw_uart_proc_fops, instance);
 #endif
 
-  generic_raw_uart_reset_radio_module(instance);
+  generic_raw_uart_reset_radio_module(instance, 0);
+
+  generic_raw_uart_get_device_type(instance, buf);
+  dev_info(instance->dev, "Registered new raw-uart device using underlying device %s.", buf);
 
   return &instance->raw_uart;
 
@@ -1225,7 +1260,7 @@ EXPORT_SYMBOL(generic_raw_uart_verify_dkey);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.21");
+MODULE_VERSION("1.22");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

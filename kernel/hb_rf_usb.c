@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2021 by Alexander Reinert
+ * Copyright (c) 2022 by Alexander Reinert
  * Author: Alexander Reinert
  *
  * This program is free software; you can redistribute it and/or modify
@@ -413,7 +413,7 @@ static int hb_rf_usb_get_gpio_pin_number(struct generic_raw_uart *raw_uart, enum
   return 0;
 }
 
-static void hb_rf_usb_reset_radio_module(struct generic_raw_uart *raw_uart)
+static int hb_rf_usb_reset_radio_module(struct generic_raw_uart *raw_uart)
 {
   struct hb_rf_usb_port_s *port = raw_uart->driver_data;
   unsigned long lock_flags;
@@ -441,12 +441,14 @@ static void hb_rf_usb_reset_radio_module(struct generic_raw_uart *raw_uart)
   hb_rf_usb_set_gpio_on_device(port);
   spin_unlock_irqrestore(&port->gpio_lock, lock_flags);
   msleep(50);
+
+  return 0;
 }
 
 static int hb_rf_usb_get_device_type(struct generic_raw_uart *raw_uart, char *page)
 {
   struct hb_rf_usb_port_s *port = raw_uart->driver_data;
-  return sprintf(page, "%s@usb-%s-%s\n", port->udev->product, port->udev->bus->bus_name, port->udev->devpath);
+  return snprintf(page, MAX_DEVICE_TYPE_LEN, "%s@usb-%s-%s", port->udev->product, port->udev->bus->bus_name, port->udev->devpath);
 }
 
 static struct raw_uart_driver hb_rf_usb = {
@@ -637,6 +639,6 @@ module_init(hb_rf_usb_init);
 module_exit(hb_rf_usb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.12");
+MODULE_VERSION("1.13");
 MODULE_DESCRIPTION("HB-RF-USB raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
