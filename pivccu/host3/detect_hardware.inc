@@ -128,7 +128,7 @@ case "$PIVCCU_RF_MODE" in
         UART_DEV="raw-uart$dev_no"
       fi
 
-      if [ -e "/sys/devices/virtual/raw-uart/$UART_DEV" ]; then
+      if [ -e "/sys/class/raw-uart/$UART_DEV" ]; then
         if [ ! -e "/dev/$UART_DEV" ]; then
           mknod "/dev/$UART_DEV" c `cat /sys/devices/virtual/raw-uart/$UART_DEV/dev | tr ':' ' '`
         fi
