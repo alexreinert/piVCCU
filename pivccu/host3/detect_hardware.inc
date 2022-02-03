@@ -84,6 +84,7 @@ case "$PIVCCU_RF_MODE" in
     for syspath in $(find /sys/bus/usb/devices/); do
       if [ ! -e $syspath/idVendor ]; then
         continue
+	  fi
 
       USBID="`cat $syspath/idVendor`:`cat $syspath/idProduct`"
 
@@ -110,7 +111,6 @@ case "$PIVCCU_RF_MODE" in
             sleep 1
           done
         fi
-      fi
 
       for try in {0..30}; do
           if [ $(find $syspath/ -mindepth 2 -name driver | wc -l) -ne 0 ]; then
