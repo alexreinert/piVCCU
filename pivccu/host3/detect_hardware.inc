@@ -84,6 +84,7 @@ case "$PIVCCU_RF_MODE" in
     for syspath in $(find /sys/bus/usb/devices/); do
       if [ ! -e $syspath/idVendor ]; then
         continue
+      fi
 
       USBID="`cat $syspath/idVendor`:`cat $syspath/idProduct`"
 
@@ -103,20 +104,19 @@ case "$PIVCCU_RF_MODE" in
         modprobe -q $KMOD
 
         for try in {0..30}; do
-            lsmod | grep -q -w $KMOD && RC=$? || RC=$?
-            if [ $RC -eq 0 ]; then
-              break
-            fi
-            sleep 1
-          done
-        fi
-      fi
-
-      for try in {0..30}; do
-          if [ $(find $syspath/ -mindepth 2 -name driver | wc -l) -ne 0 ]; then
+          lsmod | grep -q -w $KMOD && RC=$? || RC=$?
+          if [ $RC -eq 0 ]; then
             break
           fi
           sleep 1
+        done
+      fi
+
+      for try in {0..30}; do
+        if [ $(find $syspath/ -mindepth 2 -name driver | wc -l) -ne 0 ]; then
+          break
+        fi
+        sleep 1
       done
     done
 
@@ -128,9 +128,9 @@ case "$PIVCCU_RF_MODE" in
         UART_DEV="raw-uart$dev_no"
       fi
 
-      if [ -e "/sys/devices/virtual/raw-uart/$UART_DEV" ]; then
+      if [ -e "/sys/class/raw-uart/$UART_DEV" ]; then
         if [ ! -e "/dev/$UART_DEV" ]; then
-          mknod "/dev/$UART_DEV" c `cat /sys/devices/virtual/raw-uart/$UART_DEV/dev | tr ':' ' '`
+          mknod "/dev/$UART_DEV" c `cat /sys/class/raw-uart/$UART_DEV/dev | tr ':' ' '`
         fi
 
         echo 1 > /sys/class/raw-uart/$UART_DEV/reset_radio_module

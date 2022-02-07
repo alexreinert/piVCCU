@@ -16,7 +16,7 @@ else
 fi
 echo "Kernel modules: $MODULE_STATE"
 
-if [ -e /sys/devices/virtual/raw-uart ] && [ "`/usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --state --no-humanize`" == "STOPPED" ]; then
+if [ "`/usr/bin/lxc-info --lxcpath /var/lib/piVCCU3/ --name lxc --state --no-humanize`" == "STOPPED" ]; then
   . /var/lib/piVCCU3/detect_hardware.inc
 else
   if [ -e /tmp/pivccu-var/pivccu/conf ]; then
@@ -24,7 +24,7 @@ else
   fi
 fi
 
-if [ -e /sys/devices/virtual/raw-uart ]; then
+if [ "$(echo /sys/class/raw-uart/raw-uart*)" != "/sys/class/raw-uart/raw-uart*" ]; then
   RAW_UART_STATE="Available"
 else
   RAW_UART_STATE="Not available"
