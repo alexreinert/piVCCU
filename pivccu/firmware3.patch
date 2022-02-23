@@ -1208,7 +1208,7 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S62HMServer fw.3.61.7.patch
 +
 +  cp /etc/crRFD.conf /var/etc/crRFD.conf
 +
-+  if [[ "${HM_HMIP_DEV}" != "RPI-RF-MOD" ]]; then
++  if [[ "${HM_HMIP_DEV}" != "RPI-RF-MOD" && "${HM_HMIP_DEV}" != "HMIP-RFUSB" ]]; then
 +    sed -i "s|^Lan\.Routing\.Enabled=.*$|Lan.Routing.Enabled=false|" /var/etc/crRFD.conf
 +  fi
  }
