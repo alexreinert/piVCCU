@@ -1,6 +1,6 @@
-diff -ruN --no-dereference fw.3.61.7.orig/bin/dhcp.script fw.3.61.7.patched/bin/dhcp.script
---- fw.3.61.7.orig/bin/dhcp.script
-+++ fw.3.61.7.patched/bin/dhcp.script
+diff -ruN --no-dereference fw.3.63.8.orig/bin/dhcp.script fw.3.63.8.patched/bin/dhcp.script
+--- fw.3.63.8.orig/bin/dhcp.script
++++ fw.3.63.8.patched/bin/dhcp.script
 @@ -4,19 +4,8 @@
  CONFIGURL=/var/configurl
  
@@ -64,9 +64,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/bin/dhcp.script fw.3.61.7.patched/bin/
  
    # add default routes
    if [[ -n "${router}" ]]; then
-diff -ruN --no-dereference fw.3.61.7.orig/etc/fstab fw.3.61.7.patched/etc/fstab
---- fw.3.61.7.orig/etc/fstab
-+++ fw.3.61.7.patched/etc/fstab
+diff -ruN --no-dereference fw.3.63.8.orig/etc/fstab fw.3.63.8.patched/etc/fstab
+--- fw.3.63.8.orig/etc/fstab
++++ fw.3.63.8.patched/etc/fstab
 @@ -1,15 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -83,9 +83,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/fstab fw.3.61.7.patched/etc/fstab
 -debugfs         /sys/kernel/debug debugfs noauto                                 0      0
 -LABEL=userfs    /usr/local     ext4     defaults,noatime,nodiratime,rw,data=journal,nofail         0      2
 -LABEL=bootfs    /mnt/boot_par  vfat     defaults,ro                              0      0
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S00watchdog fw.3.61.7.patched/etc/init.d/S00watchdog
---- fw.3.61.7.orig/etc/init.d/S00watchdog
-+++ fw.3.61.7.patched/etc/init.d/S00watchdog
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S00watchdog fw.3.63.8.patched/etc/init.d/S00watchdog
+--- fw.3.63.8.orig/etc/init.d/S00watchdog
++++ fw.3.63.8.patched/etc/init.d/S00watchdog
 @@ -1,20 +0,0 @@
 -#!/bin/sh
 -#
@@ -107,9 +107,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S00watchdog fw.3.61.7.patch
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S01InitHost fw.3.61.7.patched/etc/init.d/S01InitHost
---- fw.3.61.7.orig/etc/init.d/S01InitHost
-+++ fw.3.61.7.patched/etc/init.d/S01InitHost
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S01InitHost fw.3.63.8.patched/etc/init.d/S01InitHost
+--- fw.3.63.8.orig/etc/init.d/S01InitHost
++++ fw.3.63.8.patched/etc/init.d/S01InitHost
 @@ -1,135 +0,0 @@
 -#!/bin/sh
 -#
@@ -246,9 +246,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S01InitHost fw.3.61.7.patch
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S02InitRTC fw.3.61.7.patched/etc/init.d/S02InitRTC
---- fw.3.61.7.orig/etc/init.d/S02InitRTC
-+++ fw.3.61.7.patched/etc/init.d/S02InitRTC
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S02InitRTC fw.3.63.8.patched/etc/init.d/S02InitRTC
+--- fw.3.63.8.orig/etc/init.d/S02InitRTC
++++ fw.3.63.8.patched/etc/init.d/S02InitRTC
 @@ -1,163 +0,0 @@
 -#!/bin/sh
 -#
@@ -413,9 +413,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S02InitRTC fw.3.61.7.patche
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S03InitURandom fw.3.61.7.patched/etc/init.d/S03InitURandom
---- fw.3.61.7.orig/etc/init.d/S03InitURandom
-+++ fw.3.61.7.patched/etc/init.d/S03InitURandom
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S03InitURandom fw.3.63.8.patched/etc/init.d/S03InitURandom
+--- fw.3.63.8.orig/etc/init.d/S03InitURandom
++++ fw.3.63.8.patched/etc/init.d/S03InitURandom
 @@ -1,63 +0,0 @@
 -#!/bin/sh
 -#
@@ -480,9 +480,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S03InitURandom fw.3.61.7.pa
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S04CheckFactoryReset fw.3.61.7.patched/etc/init.d/S04CheckFactoryReset
---- fw.3.61.7.orig/etc/init.d/S04CheckFactoryReset
-+++ fw.3.61.7.patched/etc/init.d/S04CheckFactoryReset
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S04CheckFactoryReset fw.3.63.8.patched/etc/init.d/S04CheckFactoryReset
+--- fw.3.63.8.orig/etc/init.d/S04CheckFactoryReset
++++ fw.3.63.8.patched/etc/init.d/S04CheckFactoryReset
 @@ -13,38 +13,7 @@
      return 1
    fi
@@ -523,9 +523,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S04CheckFactoryReset fw.3.6
  
    #create file .doCoproFactoryReset which will trigger S11InitRFHardware to perform a copro factory reset
    touch /usr/local/.doCoproFactoryReset
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S04CheckResizeLocalFS fw.3.61.7.patched/etc/init.d/S04CheckResizeLocalFS
---- fw.3.61.7.orig/etc/init.d/S04CheckResizeLocalFS
-+++ fw.3.61.7.patched/etc/init.d/S04CheckResizeLocalFS
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S04CheckResizeLocalFS fw.3.63.8.patched/etc/init.d/S04CheckResizeLocalFS
+--- fw.3.63.8.orig/etc/init.d/S04CheckResizeLocalFS
++++ fw.3.63.8.patched/etc/init.d/S04CheckResizeLocalFS
 @@ -1,53 +0,0 @@
 -#!/bin/sh
 -#
@@ -580,9 +580,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S04CheckResizeLocalFS fw.3.
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S06InitSystem fw.3.61.7.patched/etc/init.d/S06InitSystem
---- fw.3.61.7.orig/etc/init.d/S06InitSystem
-+++ fw.3.61.7.patched/etc/init.d/S06InitSystem
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S06InitSystem fw.3.63.8.patched/etc/init.d/S06InitSystem
+--- fw.3.63.8.orig/etc/init.d/S06InitSystem
++++ fw.3.63.8.patched/etc/init.d/S06InitSystem
 @@ -80,14 +80,6 @@
    if [[ ! -s /etc/config/shadow ]] ; then
      cp -a ${CFG_TEMPLATE_DIR}/shadow /etc/config/
@@ -598,9 +598,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S06InitSystem fw.3.61.7.pat
  }
  
  start() {
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S07DisableHdmi fw.3.61.7.patched/etc/init.d/S07DisableHdmi
---- fw.3.61.7.orig/etc/init.d/S07DisableHdmi
-+++ fw.3.61.7.patched/etc/init.d/S07DisableHdmi
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S07DisableHdmi fw.3.63.8.patched/etc/init.d/S07DisableHdmi
+--- fw.3.63.8.orig/etc/init.d/S07DisableHdmi
++++ fw.3.63.8.patched/etc/init.d/S07DisableHdmi
 @@ -1,23 +0,0 @@
 -#!/bin/sh
 -#
@@ -625,9 +625,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S07DisableHdmi fw.3.61.7.pa
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S10udev fw.3.61.7.patched/etc/init.d/S10udev
---- fw.3.61.7.orig/etc/init.d/S10udev
-+++ fw.3.61.7.patched/etc/init.d/S10udev
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S10udev fw.3.63.8.patched/etc/init.d/S10udev
+--- fw.3.63.8.orig/etc/init.d/S10udev
++++ fw.3.63.8.patched/etc/init.d/S10udev
 @@ -1,46 +0,0 @@
 -#!/bin/sh
 -#
@@ -675,9 +675,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S10udev fw.3.61.7.patched/e
 -
 -
 -exit 0
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S11InitRFHardware fw.3.61.7.patched/etc/init.d/S11InitRFHardware
---- fw.3.61.7.orig/etc/init.d/S11InitRFHardware
-+++ fw.3.61.7.patched/etc/init.d/S11InitRFHardware
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S11InitRFHardware fw.3.63.8.patched/etc/init.d/S11InitRFHardware
+--- fw.3.63.8.orig/etc/init.d/S11InitRFHardware
++++ fw.3.63.8.patched/etc/init.d/S11InitRFHardware
 @@ -1,305 +0,0 @@
 -#!/bin/sh
 -#
@@ -984,9 +984,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S11InitRFHardware fw.3.61.7
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S12UpdateRFHardware fw.3.61.7.patched/etc/init.d/S12UpdateRFHardware
---- fw.3.61.7.orig/etc/init.d/S12UpdateRFHardware
-+++ fw.3.61.7.patched/etc/init.d/S12UpdateRFHardware
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S12UpdateRFHardware fw.3.63.8.patched/etc/init.d/S12UpdateRFHardware
+--- fw.3.63.8.orig/etc/init.d/S12UpdateRFHardware
++++ fw.3.63.8.patched/etc/init.d/S12UpdateRFHardware
 @@ -120,13 +120,13 @@
      fi
      echo -n "HMIP-RFUSB: "
@@ -1003,9 +1003,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S12UpdateRFHardware fw.3.61
  
        echo "${HM_HMIP_VERSION}" >/var/hmip_firmware_version
        if [[ -z "${HM_HMRF_DEV}" ]]; then
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S13irqbalance fw.3.61.7.patched/etc/init.d/S13irqbalance
---- fw.3.61.7.orig/etc/init.d/S13irqbalance
-+++ fw.3.61.7.patched/etc/init.d/S13irqbalance
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S13irqbalance fw.3.63.8.patched/etc/init.d/S13irqbalance
+--- fw.3.63.8.orig/etc/init.d/S13irqbalance
++++ fw.3.63.8.patched/etc/init.d/S13irqbalance
 @@ -1,34 +0,0 @@
 -#!/bin/sh
 -#
@@ -1041,9 +1041,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S13irqbalance fw.3.61.7.pat
 -	echo "Usage: $0 {start|stop|restart}"
 -	exit 1
 -esac
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S21rngd fw.3.61.7.patched/etc/init.d/S21rngd
---- fw.3.61.7.orig/etc/init.d/S21rngd
-+++ fw.3.61.7.patched/etc/init.d/S21rngd
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S21rngd fw.3.63.8.patched/etc/init.d/S21rngd
+--- fw.3.63.8.orig/etc/init.d/S21rngd
++++ fw.3.63.8.patched/etc/init.d/S21rngd
 @@ -1,51 +0,0 @@
 -#!/bin/sh
 -
@@ -1096,9 +1096,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S21rngd fw.3.61.7.patched/e
 -		exit 1
 -		;;
 -esac
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S31bluetooth fw.3.61.7.patched/etc/init.d/S31bluetooth
---- fw.3.61.7.orig/etc/init.d/S31bluetooth
-+++ fw.3.61.7.patched/etc/init.d/S31bluetooth
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S31bluetooth fw.3.63.8.patched/etc/init.d/S31bluetooth
+--- fw.3.63.8.orig/etc/init.d/S31bluetooth
++++ fw.3.63.8.patched/etc/init.d/S31bluetooth
 @@ -1,89 +0,0 @@
 -#!/bin/sh
 -#
@@ -1189,9 +1189,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S31bluetooth fw.3.61.7.patc
 -esac
 -
 -exit 0
-diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S62HMServer fw.3.61.7.patched/etc/init.d/S62HMServer
---- fw.3.61.7.orig/etc/init.d/S62HMServer
-+++ fw.3.61.7.patched/etc/init.d/S62HMServer
+diff -ruN --no-dereference fw.3.63.8.orig/etc/init.d/S62HMServer fw.3.63.8.patched/etc/init.d/S62HMServer
+--- fw.3.63.8.orig/etc/init.d/S62HMServer
++++ fw.3.63.8.patched/etc/init.d/S62HMServer
 @@ -14,6 +14,8 @@
    export JAVA_HOME=/opt/java/
    export PATH=${PATH}:${JAVA_HOME}/bin
@@ -1223,9 +1223,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/init.d/S62HMServer fw.3.61.7.patch
    echo -n "."
    waitStartupComplete
  }
-diff -ruN --no-dereference fw.3.61.7.orig/etc/inittab fw.3.61.7.patched/etc/inittab
---- fw.3.61.7.orig/etc/inittab
-+++ fw.3.61.7.patched/etc/inittab
+diff -ruN --no-dereference fw.3.63.8.orig/etc/inittab fw.3.63.8.patched/etc/inittab
+--- fw.3.63.8.orig/etc/inittab
++++ fw.3.63.8.patched/etc/inittab
 @@ -14,10 +14,10 @@
  # process   == program to run
  
@@ -1241,9 +1241,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/inittab fw.3.61.7.patched/etc/init
  tty2::sysinit:/bin/mount -a
  null::sysinit:/bin/hostname -F /etc/hostname
  null::sysinit:/usr/bin/psplash -n &
-diff -ruN --no-dereference fw.3.61.7.orig/etc/network/if-up.d/eQ3StartNetwork fw.3.61.7.patched/etc/network/if-up.d/eQ3StartNetwork
---- fw.3.61.7.orig/etc/network/if-up.d/eQ3StartNetwork
-+++ fw.3.61.7.patched/etc/network/if-up.d/eQ3StartNetwork
+diff -ruN --no-dereference fw.3.63.8.orig/etc/network/if-up.d/eQ3StartNetwork fw.3.63.8.patched/etc/network/if-up.d/eQ3StartNetwork
+--- fw.3.63.8.orig/etc/network/if-up.d/eQ3StartNetwork
++++ fw.3.63.8.patched/etc/network/if-up.d/eQ3StartNetwork
 @@ -109,20 +109,6 @@
  # restart syslogd to update hostname
  /etc/init.d/S07logging restart 2>/dev/null >/dev/null
@@ -1265,9 +1265,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/etc/network/if-up.d/eQ3StartNetwork fw
  # make sure no other udhcpc is running
  killall -q udhcpc
  
-diff -ruN --no-dereference fw.3.61.7.orig/www/config/cp_maintenance.cgi fw.3.61.7.patched/www/config/cp_maintenance.cgi
---- fw.3.61.7.orig/www/config/cp_maintenance.cgi
-+++ fw.3.61.7.patched/www/config/cp_maintenance.cgi
+diff -ruN --no-dereference fw.3.63.8.orig/www/config/cp_maintenance.cgi fw.3.63.8.patched/www/config/cp_maintenance.cgi
+--- fw.3.63.8.orig/www/config/cp_maintenance.cgi
++++ fw.3.63.8.patched/www/config/cp_maintenance.cgi
 @@ -366,129 +366,13 @@
                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                }
@@ -1412,9 +1412,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/www/config/cp_maintenance.cgi fw.3.61.
  
      # Hide all elements with class j_noForcedUpdate when an update is enforced
      puts "if (forceUpdate) {"
-diff -ruN --no-dereference fw.3.61.7.orig/www/config/cp_security.cgi fw.3.61.7.patched/www/config/cp_security.cgi
---- fw.3.61.7.orig/www/config/cp_security.cgi
-+++ fw.3.61.7.patched/www/config/cp_security.cgi
+diff -ruN --no-dereference fw.3.63.8.orig/www/config/cp_security.cgi fw.3.63.8.patched/www/config/cp_security.cgi
+--- fw.3.63.8.orig/www/config/cp_security.cgi
++++ fw.3.63.8.patched/www/config/cp_security.cgi
 @@ -297,7 +297,7 @@
      } else {
        exec touch /usr/local/.doFactoryReset
@@ -1433,9 +1433,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/www/config/cp_security.cgi fw.3.61.7.p
      division {class="popupTitle"} {
        puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
      }
-diff -ruN --no-dereference fw.3.61.7.orig/www/webui/js/lang/de/translate.lang.js fw.3.61.7.patched/www/webui/js/lang/de/translate.lang.js
---- fw.3.61.7.orig/www/webui/js/lang/de/translate.lang.js
-+++ fw.3.61.7.patched/www/webui/js/lang/de/translate.lang.js
+diff -ruN --no-dereference fw.3.63.8.orig/www/webui/js/lang/de/translate.lang.js fw.3.63.8.patched/www/webui/js/lang/de/translate.lang.js
+--- fw.3.63.8.orig/www/webui/js/lang/de/translate.lang.js
++++ fw.3.63.8.patched/www/webui/js/lang/de/translate.lang.js
 @@ -459,7 +459,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
@@ -1468,9 +1468,9 @@ diff -ruN --no-dereference fw.3.61.7.orig/www/webui/js/lang/de/translate.lang.js
      "optionLastValue" : "Letzter Wert",
      "optionNoModification" : "Keine %C4nderung",
      "optionNone" : "Keine",
-diff -ruN --no-dereference fw.3.61.7.orig/www/webui/js/lang/en/translate.lang.js fw.3.61.7.patched/www/webui/js/lang/en/translate.lang.js
---- fw.3.61.7.orig/www/webui/js/lang/en/translate.lang.js
-+++ fw.3.61.7.patched/www/webui/js/lang/en/translate.lang.js
+diff -ruN --no-dereference fw.3.63.8.orig/www/webui/js/lang/en/translate.lang.js fw.3.63.8.patched/www/webui/js/lang/en/translate.lang.js
+--- fw.3.63.8.orig/www/webui/js/lang/en/translate.lang.js
++++ fw.3.63.8.patched/www/webui/js/lang/en/translate.lang.js
 @@ -458,7 +458,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Shutdown",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
@@ -1503,10 +1503,10 @@ diff -ruN --no-dereference fw.3.61.7.orig/www/webui/js/lang/en/translate.lang.js
      "optionLastValue" : "Last value",
      "optionNoModification" : "No change",
      "optionNone" : "None",
-diff -ruN --no-dereference fw.3.61.7.orig/www/webui/webui.js fw.3.61.7.patched/www/webui/webui.js
---- fw.3.61.7.orig/www/webui/webui.js
-+++ fw.3.61.7.patched/www/webui/webui.js
-@@ -24410,7 +24410,7 @@
+diff -ruN --no-dereference fw.3.63.8.orig/www/webui/webui.js fw.3.63.8.patched/www/webui/webui.js
+--- fw.3.63.8.orig/www/webui/webui.js
++++ fw.3.63.8.patched/www/webui/webui.js
+@@ -24635,7 +24635,7 @@
      var script = document.createElement("script");
      script.id = "homematic_com_script";
      script.type = "text/javascript";
