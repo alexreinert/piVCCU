@@ -98,6 +98,12 @@ struct generic_raw_uart_instance
   struct cdev cdev;
   struct device *dev;
 
+  bool dump_traffic;
+  unsigned char dump_tx_prefix[32];
+  int dump_rxbuf_pos;
+  unsigned char dump_rxbuf[32];
+  unsigned char dump_rx_prefix[32];
+
   struct generic_raw_uart raw_uart;
 };
 
@@ -690,6 +696,16 @@ void generic_raw_uart_handle_rx_char(struct generic_raw_uart *raw_uart, enum gen
       instance->count_overrun++;
     }
 
+    if (instance->dump_traffic)
+    {
+      instance->dump_rxbuf[instance->dump_rxbuf_pos++] = data;
+      if (instance->dump_rxbuf_pos == sizeof(instance->dump_rxbuf))
+      {
+        print_hex_dump(KERN_INFO, instance->dump_rx_prefix, DUMP_PREFIX_NONE, 32, 1, instance->dump_rxbuf, sizeof(instance->dump_rxbuf), false);
+        instance->dump_rxbuf_pos = 0;
+      }
+    }
+
     if (CIRC_SPACE(instance->rxbuf.head, instance->rxbuf.tail, CIRCBUF_SIZE))
     {
       instance->rxbuf.buf[instance->rxbuf.head] = data;
@@ -711,6 +727,13 @@ EXPORT_SYMBOL(generic_raw_uart_handle_rx_char);
 void generic_raw_uart_rx_completed(struct generic_raw_uart *raw_uart)
 {
   struct generic_raw_uart_instance *instance = raw_uart->private;
+
+  if (instance->dump_traffic)
+  {
+    print_hex_dump(KERN_INFO, instance->dump_rx_prefix, DUMP_PREFIX_NONE, 32, 1, instance->dump_rxbuf, instance->dump_rxbuf_pos, false);
+    instance->dump_rxbuf_pos = 0;
+  }
+
   wake_up_interruptible(&instance->readq);
 }
 EXPORT_SYMBOL(generic_raw_uart_rx_completed);
@@ -734,6 +757,10 @@ static inline void generic_raw_uart_tx_queued_unlocked(struct generic_raw_uart_i
          (instance->tx_connection != NULL) && (instance->tx_connection->tx_buf_index < instance->tx_connection->tx_buf_length))
   {
     bulksize = min(instance->driver->tx_bulktransfer_size, (int)(instance->tx_connection->tx_buf_length - instance->tx_connection->tx_buf_index));
+
+    if (instance->dump_traffic)
+      print_hex_dump(KERN_INFO, instance->dump_tx_prefix, DUMP_PREFIX_NONE, 32, 1, &instance->tx_connection->txbuf[instance->tx_connection->tx_buf_index], bulksize, false);
+
     instance->driver->tx_chars(&instance->raw_uart, instance->tx_connection->txbuf, instance->tx_connection->tx_buf_index, bulksize);
     instance->tx_connection->tx_buf_index += bulksize;
     smp_wmb();
@@ -828,10 +855,10 @@ int generic_raw_uart_get_gpio_pin_number(struct generic_raw_uart_instance *insta
 static ssize_t reset_radio_module_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
   struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
-  char *endp;
+  bool val;
   int ret;
 
-  if (simple_strtol(strim((char *)buf), &endp, 0) == 1)
+  if (!kstrtobool(strim((char *)buf), &val) && val)
   {
     ret = generic_raw_uart_reset_radio_module(instance, 0);
     return ret == 0 ? count : ret;
@@ -875,6 +902,28 @@ static ssize_t device_type_show(struct device *dev, struct device_attribute *att
 }
 static DEVICE_ATTR_RO(device_type);
 
+static ssize_t dump_traffic_show(struct device *dev, struct device_attribute *attr, char *page)
+{
+  struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
+  return sprintf(page, instance->dump_traffic ? "on" : "off");
+}
+static ssize_t dump_traffic_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+  struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
+  bool val;
+
+  if (!kstrtobool(strim((char *)buf), &val))
+  {
+    instance->dump_traffic = val;
+    dev_info(instance->dev, val ? "Enabled traffic dumping to kernel log" : "Disabled traffic dumping to kernel log");
+    return count;
+  }
+  else
+  {
+    return -EINVAL;
+  }
+}
+static DEVICE_ATTR_RW(dump_traffic);
 
 static spinlock_t active_devices_lock;
 static bool active_devices[MAX_DEVICES] = {false};
@@ -1082,6 +1131,10 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
 
   err = sysfs_create_file(&instance->dev->kobj, &dev_attr_reset_radio_module.attr);
 
+  err = sysfs_create_file(&instance->dev->kobj, &dev_attr_dump_traffic.attr);
+  snprintf(instance->dump_tx_prefix, sizeof(instance->dump_tx_prefix), "%s %s: TX: ", dev_driver_string(instance->dev), dev_name(instance->dev));
+  snprintf(instance->dump_rx_prefix, sizeof(instance->dump_rx_prefix), "%s %s: RX: ", dev_driver_string(instance->dev), dev_name(instance->dev));
+
   sema_init(&instance->sem, 1);
   spin_lock_init(&instance->lock_tx);
   init_waitqueue_head(&instance->readq);
@@ -1097,7 +1150,6 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
 
   generic_raw_uart_get_device_type(instance, buf);
   dev_info(instance->dev, "Registered new raw-uart device using underlying device %s.", buf);
-
   return &instance->raw_uart;
 
 failed_device_create:
@@ -1127,6 +1179,8 @@ int generic_raw_uart_remove(struct generic_raw_uart *raw_uart, struct device *de
   sysfs_remove_file(&instance->dev->kobj, &dev_attr_blue_gpio_pin.attr);
 
   sysfs_remove_file(&instance->dev->kobj, &dev_attr_reset_radio_module.attr);
+
+  sysfs_remove_file(&instance->dev->kobj, &dev_attr_dump_traffic.attr);
 
   if (instance->reset_pin != 0)
   {
@@ -1172,11 +1226,9 @@ module_exit(generic_raw_uart_exit);
 
 static int generic_raw_uart_set_dummy_rx8130_loader(const char *val, const struct kernel_param *kp)
 {
-  int load, ret;
+  bool load;
 
-  ret = kstrtoint(val, 10, &load);
-
-  if (load != 1)
+  if (!kstrtobool(val, &load) && load)
   {
     return -EINVAL;
   }
@@ -1260,7 +1312,7 @@ EXPORT_SYMBOL(generic_raw_uart_verify_dkey);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.22");
+MODULE_VERSION("1.23");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
