@@ -616,6 +616,8 @@ static void hb_rf_usb_2_disconnect(struct usb_interface *interface)
     gpiochip_remove(&port->gc);
   }
 
+  generic_raw_uart_set_connection_state(port->raw_uart, false);
+
   kref_put(&port->kref, hb_rf_usb_2_delete);
 }
 
@@ -623,7 +625,7 @@ static void hb_rf_usb_2_delete(struct kref *kref)
 {
   struct hb_rf_usb_2_port_s *port = container_of(kref, struct hb_rf_usb_2_port_s, kref);
 
-  generic_raw_uart_remove(port->raw_uart, &port->udev->dev, &hb_rf_usb_2);
+  generic_raw_uart_remove(port->raw_uart);
 
   usb_free_urb(port->write_urb);
   kfree(port->write_buffer);
@@ -664,6 +666,6 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.12");
+MODULE_VERSION("1.13");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

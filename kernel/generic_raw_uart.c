@@ -77,6 +77,7 @@ struct generic_raw_uart_instance
   wait_queue_head_t writeq;                  /*wait queue for write operations*/
   struct circ_buf rxbuf;                     /*RX buffer*/
   int open_count;                            /*number of open connections*/
+  bool connection_state;
   struct per_connection_data *tx_connection; /*connection which is currently sending*/
   struct termios termios;                    /*dummy termios for emulating ttyp ioctls*/
 
@@ -364,6 +365,16 @@ static int generic_raw_uart_open(struct inode *inode, struct file *filep)
     up(&instance->sem);
 
     return -EMFILE;
+  }
+
+  if (!instance->connection_state)
+  {
+    dev_err(instance->dev, "generic_raw_uart_open(): Tried to open disconnected device.");
+
+    /*Release semaphore*/
+    up(&instance->sem);
+
+    return -ENODEV;
   }
 
   if (!instance->open_count) /*Enable HW for the first connection.*/
@@ -925,6 +936,20 @@ static ssize_t dump_traffic_store(struct device *dev, struct device_attribute *a
 }
 static DEVICE_ATTR_RW(dump_traffic);
 
+static ssize_t open_count_show(struct device *dev, struct device_attribute *attr, char *page)
+{
+  struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
+  return sprintf(page, "%d\n", instance->open_count);
+}
+static DEVICE_ATTR_RO(open_count);
+
+static ssize_t connection_state_show(struct device *dev, struct device_attribute *attr, char *page)
+{
+  struct generic_raw_uart_instance *instance = dev_get_drvdata(dev);
+  return sprintf(page, "%d\n", instance->connection_state);
+}
+static DEVICE_ATTR_RO(connection_state);
+
 static spinlock_t active_devices_lock;
 static bool active_devices[MAX_DEVICES] = {false};
 
@@ -1096,9 +1121,9 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   }
 
   if (dev_no == 0)
-    instance->dev = device_create(class, dev, instance->devid, NULL, DRIVER_NAME);
+    instance->dev = device_create(class, NULL, instance->devid, NULL, DRIVER_NAME);
   else
-    instance->dev = device_create(class, dev, instance->devid, NULL, DRIVER_NAME "%d", dev_no);
+    instance->dev = device_create(class, NULL, instance->devid, NULL, DRIVER_NAME "%d", dev_no);
 
   if (IS_ERR(instance->dev))
   {
@@ -1135,6 +1160,9 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   snprintf(instance->dump_tx_prefix, sizeof(instance->dump_tx_prefix), "%s %s: TX: ", dev_driver_string(instance->dev), dev_name(instance->dev));
   snprintf(instance->dump_rx_prefix, sizeof(instance->dump_rx_prefix), "%s %s: RX: ", dev_driver_string(instance->dev), dev_name(instance->dev));
 
+  err = sysfs_create_file(&instance->dev->kobj, &dev_attr_open_count.attr);
+  err = sysfs_create_file(&instance->dev->kobj, &dev_attr_connection_state.attr);
+
   sema_init(&instance->sem, 1);
   spin_lock_init(&instance->lock_tx);
   init_waitqueue_head(&instance->readq);
@@ -1150,6 +1178,9 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
 
   generic_raw_uart_get_device_type(instance, buf);
   dev_info(instance->dev, "Registered new raw-uart device using underlying device %s.", buf);
+
+  instance->connection_state = true;
+
   return &instance->raw_uart;
 
 failed_device_create:
@@ -1163,10 +1194,23 @@ failed_probe_rtc:
 }
 EXPORT_SYMBOL(generic_raw_uart_probe);
 
-int generic_raw_uart_remove(struct generic_raw_uart *raw_uart, struct device *dev, struct raw_uart_driver *drv)
+int generic_raw_uart_set_connection_state(struct generic_raw_uart *raw_uart, bool state)
+{
+  struct generic_raw_uart_instance *instance = raw_uart->private;
+
+  instance->connection_state = state;
+  sysfs_notify(&instance->dev->kobj, NULL, "connection_state");
+
+  return 0;
+}
+EXPORT_SYMBOL(generic_raw_uart_set_connection_state);
+
+int generic_raw_uart_remove(struct generic_raw_uart *raw_uart)
 {
   struct generic_raw_uart_instance *instance = raw_uart->private;
   unsigned long flags;
+
+  generic_raw_uart_set_connection_state(raw_uart, false);
 
 #ifdef PROC_DEBUG
   remove_proc_entry(dev_name(instance->dev), NULL);
@@ -1181,6 +1225,9 @@ int generic_raw_uart_remove(struct generic_raw_uart *raw_uart, struct device *de
   sysfs_remove_file(&instance->dev->kobj, &dev_attr_reset_radio_module.attr);
 
   sysfs_remove_file(&instance->dev->kobj, &dev_attr_dump_traffic.attr);
+
+  sysfs_remove_file(&instance->dev->kobj, &dev_attr_open_count.attr);
+  sysfs_remove_file(&instance->dev->kobj, &dev_attr_connection_state.attr);
 
   if (instance->reset_pin != 0)
   {
@@ -1312,7 +1359,7 @@ EXPORT_SYMBOL(generic_raw_uart_verify_dkey);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.23");
+MODULE_VERSION("1.24");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
