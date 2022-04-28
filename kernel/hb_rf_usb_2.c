@@ -669,3 +669,5 @@ MODULE_LICENSE("GPL");
 MODULE_VERSION("1.13");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
+MODULE_ALIAS("hb_rf_usb-2");
+
