@@ -800,7 +800,11 @@ static int generic_raw_uart_proc_show(struct seq_file *m, void *v)
 
 static int generic_raw_uart_proc_open(struct inode *inode, struct file *file)
 {
-  struct generic_raw_uart_instance *instance = PDE_DATA(inode);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 17, 0)
+	  struct generic_raw_uart_instance *instance = PDE_DATA(inode);
+#else
+	  struct generic_raw_uart_instance *instance = pde_data(inode);
+#endif
   return single_open(file, generic_raw_uart_proc_show, instance);
 }
 #endif /*PROC_DEBUG*/
