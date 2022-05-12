@@ -98,6 +98,7 @@ struct generic_raw_uart_instance
   dev_t devid;
   struct cdev cdev;
   struct device *dev;
+  struct device *parent;
 
   bool dump_traffic;
   unsigned char dump_tx_prefix[32];
@@ -135,7 +136,7 @@ static int generic_raw_uart_get_device_type(struct generic_raw_uart_instance *in
 {
   if (instance->driver->get_device_type == 0)
   {
-    return snprintf(buf, MAX_DEVICE_TYPE_LEN, "GPIO@%s", dev_name(instance->dev->parent));
+    return snprintf(buf, MAX_DEVICE_TYPE_LEN, "GPIO@%s", dev_name(instance->parent));
   }
   else
   {
@@ -811,7 +812,12 @@ static int generic_raw_uart_proc_show(struct seq_file *m, void *v)
 
 static int generic_raw_uart_proc_open(struct inode *inode, struct file *file)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0))
+  struct generic_raw_uart_instance *instance = pde_data(inode);
+#else
   struct generic_raw_uart_instance *instance = PDE_DATA(inode);
+#endif
+
   return single_open(file, generic_raw_uart_proc_show, instance);
 }
 #endif /*PROC_DEBUG*/
@@ -1133,6 +1139,8 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
 
   dev_set_drvdata(instance->dev, instance);
 
+  instance->parent = dev;
+
   instance->reset_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, use_alt_reset_pin ? GENERIC_RAW_UART_PIN_ALT_RESET : GENERIC_RAW_UART_PIN_RESET);
 
   if (instance->reset_pin != 0)
@@ -1359,7 +1367,7 @@ EXPORT_SYMBOL(generic_raw_uart_verify_dkey);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.24");
+MODULE_VERSION("1.25");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
