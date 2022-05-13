@@ -93,7 +93,7 @@ case "$PIVCCU_RF_MODE" in
           KMOD="hb_rf_usb"
           ;;
         "10c4:8c07" | "1b1f:c020")
-          KMOD="hb_rf_usb-2"
+          KMOD="hb_rf_usb_2"
           ;;
         *)
           continue

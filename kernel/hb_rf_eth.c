@@ -289,6 +289,7 @@ static int hb_rf_eth_try_connect(char endpointIdentifier)
 
   _sock = sock;
   sysfs_notify(&dev->kobj, NULL, "is_connected");
+  generic_raw_uart_set_connection_state(raw_uart, true);
   return 0;
 }
 
@@ -393,6 +394,7 @@ static int hb_rf_eth_recv_threadproc(void *data)
       sock_release(_sock);
       _sock = NULL;
       sysfs_notify(&dev->kobj, NULL, "is_connected");
+      generic_raw_uart_set_connection_state(raw_uart, false);
 
       if (autoreconnect)
       {
@@ -461,6 +463,7 @@ static int hb_rf_eth_connect(const char *ip)
     sock_release(_sock);
     _sock = NULL;
     sysfs_notify(&dev->kobj, NULL, "is_connected");
+    generic_raw_uart_set_connection_state(raw_uart, false);
     return err;
   }
   else
@@ -476,6 +479,7 @@ static int hb_rf_eth_connect(const char *ip)
       sock_release(_sock);
       _sock = NULL;
       sysfs_notify(&dev->kobj, NULL, "is_connected");
+      generic_raw_uart_set_connection_state(raw_uart, false);
       return err;
     }
   }
@@ -508,6 +512,7 @@ static void hb_rf_eth_disconnect(void)
     sock_release(_sock);
     _sock = NULL;
     sysfs_notify(&dev->kobj, NULL, "is_connected");
+    generic_raw_uart_set_connection_state(raw_uart, false);
   }
 }
 
@@ -765,6 +770,8 @@ static int __init hb_rf_eth_init(void)
     goto failed_raw_uart_probe;
   }
 
+  generic_raw_uart_set_connection_state(raw_uart, false);
+
   sysfs_create_file(&dev->kobj, &dev_attr_is_connected.attr);
   sysfs_create_file(&dev->kobj, &dev_attr_connect.attr);
 
@@ -783,7 +790,7 @@ failed_class_create:
 static void __exit hb_rf_eth_exit(void)
 {
   if (raw_uart)
-    generic_raw_uart_remove(raw_uart, dev, &hb_rf_eth);
+    generic_raw_uart_remove(raw_uart);
 
   sysfs_remove_file(&dev->kobj, &dev_attr_is_connected.attr);
   sysfs_remove_file(&dev->kobj, &dev_attr_connect.attr);
@@ -826,5 +833,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.18");
+MODULE_VERSION("1.19");
 MODULE_LICENSE("GPL");
