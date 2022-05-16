@@ -341,8 +341,6 @@ static int hb_rf_usb_2_start_connection(struct generic_raw_uart *raw_uart)
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), CP2102N_IFC_ENABLE, REQTYPE_HOST_TO_INTERFACE, UART_ENABLE, 0, NULL, 0, USB_CTRL_SET_TIMEOUT);
   // set embedded event char
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), CP2102N_EMBED_EVENTS, REQTYPE_HOST_TO_INTERFACE, EMBED_EVENT_CHAR, 0, NULL, 0, USB_CTRL_SET_TIMEOUT);
-  // set usb receiver timeout
-  usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), CP2102N_SET_USB_RECV_TIMEOUT, REQTYPE_HOST_TO_INTERFACE, 200, 0, NULL, 0, USB_CTRL_SET_TIMEOUT);
 
   usb_submit_urb(port->read_urb, GFP_KERNEL);
 
@@ -666,7 +664,7 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.13");
+MODULE_VERSION("1.14");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_ALIAS("hb_rf_usb-2");
