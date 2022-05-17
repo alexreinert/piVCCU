@@ -1283,7 +1283,7 @@ static int generic_raw_uart_set_dummy_rx8130_loader(const char *val, const struc
 {
   bool load;
 
-  if (!kstrtobool(val, &load) && load)
+  if (!kstrtobool(val, &load) && !load)
   {
     return -EINVAL;
   }
@@ -1367,7 +1367,7 @@ EXPORT_SYMBOL(generic_raw_uart_verify_dkey);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.25");
+MODULE_VERSION("1.26");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
