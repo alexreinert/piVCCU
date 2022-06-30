@@ -28,5 +28,9 @@
       enable-external-capacitor;
     };
   };
+
+  i2s@ff890000 {
+    status = "disabled";
+  };
 };
 
