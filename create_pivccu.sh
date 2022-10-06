@@ -92,7 +92,7 @@ done
 
 cd $WORK_DIR
 
-dpkg-deb --build pivccu-$PKG_VERSION
+dpkg-deb --build -Zxz pivccu-$PKG_VERSION
 
 cp pivccu-*.deb $CURRENT_DIR
 

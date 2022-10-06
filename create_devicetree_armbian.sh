@@ -36,7 +36,7 @@ done
 
 cd $WORK_DIR
 
-dpkg-deb --build pivccu-devicetree-armbian-$PKG_VERSION
+dpkg-deb --build -Zxz pivccu-devicetree-armbian-$PKG_VERSION
 
 cp pivccu-devicetree-armbian*.deb $CURRENT_DIR
 

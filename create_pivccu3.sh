@@ -5,7 +5,7 @@ CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/firmware/ccu3-firmware/ccu3-$CCU_VERSION.tgz"
 CCU_DOWNLOAD_URL="https://homematic-ip.com/sites/default/files/downloads/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=75
+PKG_BUILD=76
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -78,7 +78,7 @@ done
 
 cd $WORK_DIR
 
-dpkg-deb --build pivccu3-$PKG_VERSION
+dpkg-deb --build -Zxz pivccu3-$PKG_VERSION
 
 cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-armhf.deb
 
@@ -100,7 +100,7 @@ for file in $TARGET_DIR/DEBIAN/*; do
   sed -i "s/{PKG_ARCH}/arm64/g" $file
 done
 
-dpkg-deb --build pivccu3-$PKG_VERSION
+dpkg-deb --build -Zxz pivccu3-$PKG_VERSION
 
 cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-arm64.deb
 
