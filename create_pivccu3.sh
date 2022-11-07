@@ -27,7 +27,7 @@ tar xzf ccu3.tar.gz
 gunzip rootfs.ext4.gz
 
 mkdir $WORK_DIR/image
-mount -t ext4 -o loop,ro rootfs.ext4 $WORK_DIR/image
+fuse2fs -o ro,fakeroot rootfs.ext4 $WORK_DIR/image
 
 mkdir -p $CNT_ROOTFS
 

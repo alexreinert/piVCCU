@@ -220,8 +220,8 @@ sudo dpkg-reconfigure pivccu3
 
 ### Build packages by your own
 If you like to build the .deb package by yourself
-* Use Ubuntu 16.04 as build system
-* Install prequisites *__tbd__*
+* Use Debian Bullseye as build system
+* Install prequisites: device-tree-compiler build-essential crossbuild-essential-arm64 crossbuild-essential-armhf crossbuild-essential-i386 fuse2fs fuse
 * Clone source
 * create_*.sh are the scripts to build the deb packages
 * Deploy the .deb files to an apt repository e.g. using reprepro
