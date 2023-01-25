@@ -95,6 +95,7 @@ static struct usb_device_id usbid[] = {
   { HB_USB_DEVICE(0x10c4, 0x8c07, 0x60d01cf9ul, false, (0xd7cc3f44ul, 0xf50048a8ul, 0x3cf61d60ul, 0xae8460d1ul, 0x272a5876ul, 0x2dc161f5ul, 0x7737fbaeul, 0x88c996b2ul, 0xed521e88ul, 0xdd24b0acul, 0x4b7c49a4ul, 0xcc457acbul, 0xb2079847ul, 0x6745032aul, 0xaf25d41ful, 0xbecfb9f3ul)) },
   { HB_USB_DEVICE(0x1b1f, 0xc020, 0, false, (0)) },
   { HB_USB_DEVICE(0x10c4, 0x8d81, 0, true, (0x08b1480eul, 0x8f349c82ul, 0xe56ba2d8ul, 0x84fe66b7ul, 0x0f102855ul, 0x79bd41d5ul, 0x8d8905e0ul, 0xe9c16cc3ul, 0xbb188368ul, 0x4167f9bful, 0x05084458ul, 0x24a171daul, 0xfdbf5b3bul, 0xec31efeaul, 0x1653f3eful, 0x495f8104ul)) },
+  { HB_USB_DEVICE(0x10c4, 0x8d91, 0, true, (0x263fb637ul, 0x01f31c2cul, 0xf413b1f1ul, 0x9e1bfd39ul, 0x4d3bdd3bul, 0xc6f9859cul, 0xfd9a1fd8ul, 0xfe4dea4dul, 0x7d2777d8ul, 0x53be386dul, 0xfbf7255eul, 0x1c8a39feul, 0xbdf5be92ul, 0x535f9fc1ul, 0x56bb3a13ul, 0x752d919eul)) },
   { }
 };
 
@@ -341,8 +342,6 @@ static int hb_rf_usb_2_start_connection(struct generic_raw_uart *raw_uart)
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), CP2102N_IFC_ENABLE, REQTYPE_HOST_TO_INTERFACE, UART_ENABLE, 0, NULL, 0, USB_CTRL_SET_TIMEOUT);
   // set embedded event char
   usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), CP2102N_EMBED_EVENTS, REQTYPE_HOST_TO_INTERFACE, EMBED_EVENT_CHAR, 0, NULL, 0, USB_CTRL_SET_TIMEOUT);
-  // set usb receiver timeout
-  usb_control_msg(port->udev, usb_sndctrlpipe(port->udev, 0), CP2102N_SET_USB_RECV_TIMEOUT, REQTYPE_HOST_TO_INTERFACE, 200, 0, NULL, 0, USB_CTRL_SET_TIMEOUT);
 
   usb_submit_urb(port->read_urb, GFP_KERNEL);
 
@@ -666,7 +665,7 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.13");
+MODULE_VERSION("1.14");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_ALIAS("hb_rf_usb-2");

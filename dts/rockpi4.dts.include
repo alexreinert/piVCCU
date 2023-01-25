@@ -32,5 +32,9 @@
     stdout-path = "";
     bootargs = "";
   };
+
+  i2s@ff890000 {
+    status = "disabled";
+  };
 };
 

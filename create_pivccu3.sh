@@ -1,11 +1,11 @@
 #!/bin/bash
 
-CCU_VERSION=3.63.9
+CCU_VERSION=3.67.10
 CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/firmware/ccu3-firmware/ccu3-$CCU_VERSION.tgz"
 CCU_DOWNLOAD_URL="https://homematic-ip.com/sites/default/files/downloads/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=71
+PKG_BUILD=77
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -27,7 +27,7 @@ tar xzf ccu3.tar.gz
 gunzip rootfs.ext4.gz
 
 mkdir $WORK_DIR/image
-mount -t ext4 -o loop,ro rootfs.ext4 $WORK_DIR/image
+fuse2fs -o ro,fakeroot rootfs.ext4 $WORK_DIR/image
 
 mkdir -p $CNT_ROOTFS
 
@@ -46,7 +46,7 @@ wget -q -O $CNT_ROOTFS/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3 htt
 wget -q -O $CNT_ROOTFS/firmware/HM-MOD-UART/fwmap https://raw.githubusercontent.com/eq-3/occu/abc3d4c8ee7d0ba090407b6b4431aeca42aeb014/firmware/HM-MOD-UART/fwmap
 
 mkdir -p $CNT_ROOTFS/firmware/HmIP-RFUSB
-wget -q -P $CNT_ROOTFS/firmware/HmIP-RFUSB https://raw.githubusercontent.com/eq-3/occu/a2641df55cdde81239bbdbe7cf4dbcd4e3e62c5b/firmware/HmIP-RFUSB-Beta/dualcopro_update_blhmip-4.4.16.eq3
+wget -q -P $CNT_ROOTFS/firmware/HmIP-RFUSB https://raw.githubusercontent.com/eq-3/occu/77f5f55eb456e9974355d645e2005a1d355063af/firmware/HmIP-RFUSB/dualcopro_update_blhmip-4.4.18.eq3
 
 mkdir -p $CNT_ROOTFS/etc/piVCCU3
 cp -p $CURRENT_DIR/pivccu/container3/* $CNT_ROOTFS/etc/piVCCU3
@@ -78,12 +78,12 @@ done
 
 cd $WORK_DIR
 
-dpkg-deb --build pivccu3-$PKG_VERSION
+dpkg-deb --build -Zxz pivccu3-$PKG_VERSION
 
 cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-armhf.deb
 
-wget -O openjdk-8-jre.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u322-b06-1~deb9u1_armhf.deb
-wget -O openjdk-8-jre-headless.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre-headless_8u322-b06-1~deb9u1_armhf.deb
+wget -O openjdk-8-jre.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u332-ga-1~deb9u1_armhf.deb
+wget -O openjdk-8-jre-headless.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre-headless_8u332-ga-1~deb9u1_armhf.deb
 
 dpkg-deb -x openjdk-8-jre.deb .
 dpkg-deb -x openjdk-8-jre-headless.deb .
@@ -100,7 +100,7 @@ for file in $TARGET_DIR/DEBIAN/*; do
   sed -i "s/{PKG_ARCH}/arm64/g" $file
 done
 
-dpkg-deb --build pivccu3-$PKG_VERSION
+dpkg-deb --build -Zxz pivccu3-$PKG_VERSION
 
 cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-arm64.deb
 

@@ -36,7 +36,7 @@ do
 
   cd $WORK_DIR
 
-  dpkg-deb --build wait-sysfs-notify-$PKG_VERSION-$ARCH
+  dpkg-deb --build -Zxz wait-sysfs-notify-$PKG_VERSION-$ARCH
 done
 
 cp wait-sysfs-notify-*.deb $CURRENT_DIR

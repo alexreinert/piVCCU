@@ -18,7 +18,7 @@ done
 
 cd $WORK_DIR
 
-dpkg-deb --build hb-rf-eth-$PKG_VERSION
+dpkg-deb --build -Zxz hb-rf-eth-$PKG_VERSION
 
 cp hb-rf-eth-*.deb $CURRENT_DIR
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-PKG_BUILD=75
+PKG_BUILD=78
 
 PKG_VERSION=1.0.$PKG_BUILD
 
@@ -53,7 +53,7 @@ done
 
 cd $WORK_DIR
 
-dpkg-deb --build pivccu-modules-dkms-$PKG_VERSION
+dpkg-deb --build -Zxz pivccu-modules-dkms-$PKG_VERSION
 
 cp pivccu-modules-dkms-*.deb $CURRENT_DIR
 

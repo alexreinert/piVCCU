@@ -36,7 +36,7 @@ do
 
   cd $WORK_DIR
 
-  dpkg-deb --build detect-radio-module-$PKG_VERSION-$ARCH
+  dpkg-deb --build -Zxz detect-radio-module-$PKG_VERSION-$ARCH
 done
 
 cp detect-radio-module-*.deb $CURRENT_DIR
