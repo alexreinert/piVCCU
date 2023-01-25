@@ -820,7 +820,11 @@ errout:
 // Todo: - maybe change kzalloc to devm_kzalloc
 //       -
 //----------------------------------------------------------------------
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0))
+static int rx8130_remove(struct i2c_client *client)
+#else
 static void rx8130_remove(struct i2c_client *client)
+#endif
 {
 	struct rx8130_data *rx8130 = i2c_get_clientdata(client);
 	struct mutex *lock = &rx8130->rtc->ops_lock;
@@ -836,6 +840,9 @@ static void rx8130_remove(struct i2c_client *client)
 	}
 
 	kfree(rx8130);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0))
+	return 0;
+#endif
 }
 
 static struct i2c_driver rx8130_driver = {
