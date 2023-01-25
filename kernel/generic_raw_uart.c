@@ -848,7 +848,9 @@ int generic_raw_uart_get_gpio_pin_number(struct generic_raw_uart_instance *insta
   {
     struct fwnode_handle *fwnode = dev_fwnode(dev);
     const char *label = generic_raw_uart_get_pin_label(pin);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
+    struct gpio_desc *gpiod = gpiod_get_from_of_node(to_of_node(fwnode), label, 0, GPIOD_ASIS, label);
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0))
     struct gpio_desc *gpiod = fwnode_get_named_gpiod(fwnode, label, 0, GPIOD_ASIS, label);
 #else
     struct gpio_desc *gpiod = fwnode_get_named_gpiod(fwnode, label);

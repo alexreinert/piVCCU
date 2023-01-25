@@ -820,7 +820,7 @@ errout:
 // Todo: - maybe change kzalloc to devm_kzalloc
 //       -
 //----------------------------------------------------------------------
-static int rx8130_remove(struct i2c_client *client)
+static void rx8130_remove(struct i2c_client *client)
 {
 	struct rx8130_data *rx8130 = i2c_get_clientdata(client);
 	struct mutex *lock = &rx8130->rtc->ops_lock;
@@ -836,7 +836,6 @@ static int rx8130_remove(struct i2c_client *client)
 	}
 
 	kfree(rx8130);
-	return 0;
 }
 
 static struct i2c_driver rx8130_driver = {
