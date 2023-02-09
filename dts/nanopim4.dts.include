@@ -2,11 +2,8 @@
   serial@ff1a0000 {
     compatible = "pivccu,dw_apb";
     pinctrl-0 = <&pivccu_uart2b_xfer>;
-    pivccu,reset_pin = <&pivccu_gpio1 18 0>;
-    pivccu,alt_reset_pin = <&pivccu_gpio3 27 0>;
-    pivccu,red_pin = <&pivccu_gpio3 31 0>;
-    pivccu,green_pin = <&pivccu_gpio3 29 0>;
-    pivccu,blue_pin = <&pivccu_gpio3 30 0>;
+    pivccu,reset-gpios = <&pivccu_gpio1 18 0>, <&pivccu_gpio3 27 0>;
+    pivccu,led-gpios = <&pivccu_gpio3 31 0>, <&pivccu_gpio3 29 0>, <&pivccu_gpio3 30 0>;
     pivccu,rtc = <&rpi_rf_mod_rtc>;
   };
 

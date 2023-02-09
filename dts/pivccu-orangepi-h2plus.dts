@@ -11,7 +11,7 @@
       pinctrl-0 = <&uart1_pins>;
       status = "okay";
       compatible = "pivccu,dw_apb";
-      pivccu,reset_pin = <&pio 0 7 0>;
+      pivccu,reset-gpios = <&pio 0 7 0>;
       pivccu,rtc = <&rpi_rf_mod_rtc>;
     };
   };

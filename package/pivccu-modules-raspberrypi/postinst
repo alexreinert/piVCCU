@@ -20,11 +20,9 @@ case "$1" in
     systemctl enable pivccu-rpi-modules.service
 
     if [ ! -e /pivccu.createimage ]; then
-      if [ -z "$2" ]; then
-        db_fset pivccu/reboot_required seen false
-        db_input medium pivccu/reboot_required || true
-        db_go
-      fi
+      db_fset pivccu/reboot_required seen false
+      db_input medium pivccu/reboot_required || true
+      db_go
     fi
     ;;
 

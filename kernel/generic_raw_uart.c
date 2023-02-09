@@ -822,50 +822,30 @@ static int generic_raw_uart_proc_open(struct inode *inode, struct file *file)
 }
 #endif /*PROC_DEBUG*/
 
-const char *generic_raw_uart_get_pin_label(enum generic_raw_uart_pin pin)
-{
-  switch (pin)
-  {
-  case GENERIC_RAW_UART_PIN_BLUE:
-    return "pivccu,blue_pin";
-  case GENERIC_RAW_UART_PIN_GREEN:
-    return "pivccu,green_pin";
-  case GENERIC_RAW_UART_PIN_RED:
-    return "pivccu,red_pin";
-  case GENERIC_RAW_UART_PIN_RESET:
-    return "pivccu,reset_pin";
-  case GENERIC_RAW_UART_PIN_ALT_RESET:
-    return "pivccu,alt_reset_pin";
-  }
-  return 0;
-}
-
-int generic_raw_uart_get_gpio_pin_number(struct generic_raw_uart_instance *instance, struct device *dev, enum generic_raw_uart_pin pin)
+int generic_raw_uart_get_gpio_index(struct device *dev, char *con_id, unsigned int idx)
 {
   int res;
+  struct gpio_desc *gpiod = gpiod_get_index(dev, con_id, idx, GPIOD_ASIS);
 
-  if (instance->driver->get_gpio_pin_number == 0)
+  if (IS_ERR_OR_NULL(gpiod))
+    return 0;
+
+  res = desc_to_gpio(gpiod);
+
+  gpiod_put(gpiod);
+
+  return res;
+}
+
+int generic_raw_uart_get_led_gpio_index(struct generic_raw_uart_instance *instance, struct device *dev, enum generic_raw_uart_led led)
+{
+  if (instance->driver->get_led_gpio_index == 0)
   {
-    struct fwnode_handle *fwnode = dev_fwnode(dev);
-    const char *label = generic_raw_uart_get_pin_label(pin);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0))
-    struct gpio_desc *gpiod = fwnode_get_named_gpiod(fwnode, label, 0, GPIOD_ASIS, label);
-#else
-    struct gpio_desc *gpiod = fwnode_get_named_gpiod(fwnode, label);
-#endif
-
-    if (IS_ERR_OR_NULL(gpiod))
-      return 0;
-
-    res = desc_to_gpio(gpiod);
-
-    gpiod_put(gpiod);
-
-    return res;
+    return generic_raw_uart_get_gpio_index(dev, "pivccu,led", led);
   }
   else
   {
-    return instance->driver->get_gpio_pin_number(&instance->raw_uart, pin);
+    return instance->driver->get_led_gpio_index(&instance->raw_uart, led);
   }
 }
 
@@ -1141,20 +1121,23 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
 
   instance->parent = dev;
 
-  instance->reset_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, use_alt_reset_pin ? GENERIC_RAW_UART_PIN_ALT_RESET : GENERIC_RAW_UART_PIN_RESET);
-
-  if (instance->reset_pin != 0)
+  if (instance->driver->reset_radio_module == 0)
   {
-    gpio_request(instance->reset_pin, "pivccu:reset");
-  }
-  else if (instance->driver->reset_radio_module == 0)
-  {
-    dev_info(dev, "No valid reset pin configured");
+    instance->reset_pin = generic_raw_uart_get_gpio_index(dev, "pivccu,reset", use_alt_reset_pin ? 1 : 0);
+
+    if (instance->reset_pin != 0)
+    {
+      gpio_request(instance->reset_pin, "pivccu:reset");
+    }
+    else
+    {
+      dev_info(dev, "No valid reset pin configured");
+    }
   }
 
-  instance->red_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_RED);
-  instance->green_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_GREEN);
-  instance->blue_pin = generic_raw_uart_get_gpio_pin_number(instance, dev, GENERIC_RAW_UART_PIN_BLUE);
+  instance->red_pin = generic_raw_uart_get_led_gpio_index(instance, dev, GENERIC_RAW_UART_LED_RED);
+  instance->green_pin = generic_raw_uart_get_led_gpio_index(instance, dev, GENERIC_RAW_UART_LED_GREEN);
+  instance->blue_pin = generic_raw_uart_get_led_gpio_index(instance, dev, GENERIC_RAW_UART_LED_BLUE);
 
   err = sysfs_create_file(&instance->dev->kobj, &dev_attr_device_type.attr);
 
@@ -1367,7 +1350,7 @@ EXPORT_SYMBOL(generic_raw_uart_verify_dkey);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.26");
+MODULE_VERSION("1.27");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

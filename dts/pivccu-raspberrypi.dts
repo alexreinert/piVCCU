@@ -8,11 +8,8 @@
     target = <&uart0>;
     __overlay__ {
       compatible = "pivccu,pl011";
-      pivccu,reset_pin = <&gpio 18 0>;
-      pivccu,alt_reset_pin = <&gpio 19 0>;
-      pivccu,red_pin = <&gpio 16 0>;
-      pivccu,green_pin = <&gpio 20 0>;
-      pivccu,blue_pin = <&gpio 21 0>;
+      pivccu,reset-gpios = <&gpio 18 0>, <&gpio 19 0>;
+      pivccu,led-gpios = <&gpio 16 0>, <&gpio 20 0>, <&gpio 21 0>;
       pivccu,rtc = <&rpi_rf_mod_rtc>;
     };
   };

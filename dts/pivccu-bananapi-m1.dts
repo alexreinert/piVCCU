@@ -9,7 +9,7 @@
     __overlay__ {
       status = "okay";
       compatible = "pivccu,dw_apb";
-      pivccu,reset_pin = <&pio 7 2 0>;
+      pivccu,reset-gpios = <&pio 7 2 0>;
       pivccu,rtc = <&rpi_rf_mod_rtc>;
     };
   };
