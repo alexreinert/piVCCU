@@ -2,7 +2,7 @@ Package: pivccu3
 Version: {PKG_VERSION}
 Architecture: {PKG_ARCH}
 Maintainer: Alexander Reinert <alex@areinert.de>
-Pre-Depends: pivccu-modules-dkms (>= 1.0.10), detect-radio-module, wait-sysfs-notify, perl, lxc, bridge-utils, systemd, debconf (>= 0.5) | debconf-2.0
+Pre-Depends: pivccu-modules-dkms (>= 1.0.10), detect-radio-module, wait-sysfs-notify, perl, lxc, bridge-utils, net-tools, systemd, debconf (>= 0.5) | debconf-2.0
 Conflicts: pivccu, pivccu-modules-dkms (>= 2.0.0)
 Section: misc
 Priority: extra
