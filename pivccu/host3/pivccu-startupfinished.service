@@ -1,0 +1,12 @@
+[Unit]
+Description=piVCCU startup finished
+PartOf=pivccu.service
+After=pivccu.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/var/lib/piVCCU3/wait_for_startup.sh
+
+[Install]
+WantedBy=pivccu.service

@@ -11,11 +11,8 @@
       pinctrl-0 = <&uart3_pins>;
       status = "okay";
       compatible = "pivccu,dw_apb";
-      pivccu,reset_pin = <&pio 3 14 0>;
-      pivccu,alt_reset_pin = <&pio 0 10 0>;
-      pivccu,red_pin = <&pio 6 9 0>;
-      pivccu,green_pin = <&pio 6 6 0>;
-      pivccu,blue_pin = <&pio 6 7 0>;
+      pivccu,reset-gpios = <&pio 3 14 0>, <&pio 0 10 0>;
+      pivccu,led-gpios = <&pio 6 9 0>, <&pio 6 6 0>, <&pio 6 7 0>;
       pivccu,rtc = <&rpi_rf_mod_rtc>;
     };
   };

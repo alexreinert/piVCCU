@@ -17,8 +17,7 @@
         pinctrl-names = "default";
         status = "okay";
         compatible = "pivccu,meson";
-        pivccu,reset_pin = <&pivccu_gpio 81 0>;
-        pivccu,alt_reset_pin = <&pivccu_gpio 84 0>;
+        pivccu,reset-gpios = <&pivccu_gpio 81 0>, <&pivccu_gpio 84 0>;
         pivccu,rtc = <&rpi_rf_mod_rtc>;
       };
 

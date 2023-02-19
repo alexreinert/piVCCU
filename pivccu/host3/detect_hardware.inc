@@ -61,7 +61,7 @@ case "$PIVCCU_RF_MODE" in
       if [ ! -e /sys/module/hb_rf_eth/parameters/connect ]; then
         modprobe -q hb_rf_eth
 
-        /usr/share/debmatic/bin/wait_network_up.sh
+        /var/lib/piVCCU3/wait_network_up.sh
 
         for try in {0..30}; do
           if [ -e /sys/module/hb_rf_eth/parameters/connect ]; then

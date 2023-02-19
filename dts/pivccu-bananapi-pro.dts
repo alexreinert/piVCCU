@@ -9,11 +9,8 @@
     __overlay__ {
       status = "okay";
       compatible = "pivccu,dw_apb";
-      pivccu,reset_pin = <&pio 8 3 0>;
-      pivccu,alt_reset_pin = <&pio 1 7 0>;
-      pivccu,red_pin = <&pio 1 6 0>;
-      pivccu,green_pin = <&pio 1 12 0>;
-      pivccu,blue_pin = <&pio 1 8 0>;
+      pivccu,reset-gpios = <&pio 8 3 0>, <&pio 1 7 0>;
+      pivccu,led-gpios = <&pio 1 6 0>, <&pio 1 12 0>, <&pio 1 8 0>;
       pivccu,rtc = <&rpi_rf_mod_rtc>;
     };
   };

@@ -1,4 +1,4 @@
 Template: pivccu/reboot_required
-Type: note
+Type: error
 Description: WARNING: A reboot is required to enable the modules.
 Description-DE: WARNUNG: Ein Neustart ist erforderlich um die Module zu aktivieren.

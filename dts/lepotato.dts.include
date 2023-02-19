@@ -38,11 +38,8 @@
         pinctrl-0 = <&pivccu_uart_a_pins>;
         status = "okay";
         compatible = "pivccu,meson";
-        pivccu,reset_pin = <&pivccu_gpio_ao 6 0>;
-        pivccu,alt_reset_pin = <&pivccu_gpio 86 0>;
-        pivccu,red_pin = <&pivccu_gpio 81 0>;
-        pivccu,green_pin = <&pivccu_gpio 82 0>;
-        pivccu,blue_pin = <&pivccu_gpio 83 0>;
+        pivccu,reset-gpios = <&pivccu_gpio_ao 6 0>, <&pivccu_gpio 86 0>;
+        pivccu,led-gpios = <&pivccu_gpio 81 0>, <&pivccu_gpio 82 0>, <&pivccu_gpio 83 0>;
         pivccu,rtc = <&rpi_rf_mod_rtc>;
       };
     };

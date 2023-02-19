@@ -32,13 +32,11 @@ enum generic_raw_uart_rx_flags
   GENERIC_RAW_UART_RX_STATE_OVERRUN = 8,
 };
 
-enum generic_raw_uart_pin
+enum generic_raw_uart_led
 {
-  GENERIC_RAW_UART_PIN_BLUE = 0,
-  GENERIC_RAW_UART_PIN_GREEN = 1,
-  GENERIC_RAW_UART_PIN_RED = 2,
-  GENERIC_RAW_UART_PIN_RESET = 3,
-  GENERIC_RAW_UART_PIN_ALT_RESET = 4,
+  GENERIC_RAW_UART_LED_RED = 0,
+  GENERIC_RAW_UART_LED_GREEN = 1,
+  GENERIC_RAW_UART_LED_BLUE = 2,
 };
 
 struct generic_raw_uart
@@ -60,7 +58,7 @@ struct raw_uart_driver
   void (*tx_chars)(struct generic_raw_uart *raw_uart, unsigned char *chr, int index, int len);
   void (*stop_tx)(struct generic_raw_uart *raw_uart);
 
-  int (*get_gpio_pin_number)(struct generic_raw_uart *raw_uart, enum generic_raw_uart_pin);
+  int (*get_led_gpio_index)(struct generic_raw_uart *raw_uart, enum generic_raw_uart_led);
   int (*reset_radio_module)(struct generic_raw_uart *raw_uart);
 
   int tx_chunk_size;

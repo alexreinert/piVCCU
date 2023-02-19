@@ -6,6 +6,7 @@ case "$1" in
   remove|upgrade|deconfigure)
     systemctl stop pivccu.service
     systemctl disable monitor-hb-rf-eth.service
+    systemctl disable pivccu-startupfinished.service
     systemctl disable pivccu.service
 
     rm -f /usr/sbin/pivccu-attach

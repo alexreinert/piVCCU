@@ -1,7 +1,7 @@
 / {
   serial@ff130000 {
     compatible = "pivccu,dw_apb";
-    pivccu,reset_pin = <&pivccu_gpio2 3 0>;
+    pivccu,reset-gpios = <&pivccu_gpio2 3 0>;
     pivccu,rtc = <&rpi_rf_mod_rtc>;
   };
 

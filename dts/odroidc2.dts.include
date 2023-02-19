@@ -15,8 +15,7 @@
         pinctrl-0 = <&pivccu_uart_a_pins>;
         status = "okay";
         compatible = "pivccu,meson";
-        pivccu,reset_pin = <&pivccu_gpio 102 0>;
-        pivccu,alt_reset_pin = <&pivccu_gpio 78 0>;
+        pivccu,reset-gpios = <&pivccu_gpio 102 0>, <&pivccu_gpio 78 0>;
         pivccu,rtc = <&rpi_rf_mod_rtc>;
       };
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+. /usr/share/debconf/confmodule
 
 set -e
 
@@ -7,10 +8,15 @@ case "$1" in
     if [ ! -e /pivccu.createimage ]; then
       /var/lib/piVCCU/dts/patch_dts.sh
     fi
+
+    if [ ! -e /pivccu.createimage ]; then
+      db_fset pivccu/reboot_required seen false
+      db_input medium pivccu/reboot_required || true
+      db_go
+    fi
     ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)
     ;;
 esac
-
 

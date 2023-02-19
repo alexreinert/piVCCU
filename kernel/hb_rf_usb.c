@@ -394,21 +394,18 @@ static void hb_rf_usb_init_tx(struct generic_raw_uart *raw_uart)
   // nothing to do
 }
 
-static int hb_rf_usb_get_gpio_pin_number(struct generic_raw_uart *raw_uart, enum generic_raw_uart_pin pin)
+static int hb_rf_usb_get_led_gpio_index(struct generic_raw_uart *raw_uart, enum generic_raw_uart_led led)
 {
   struct hb_rf_usb_port_s *port = raw_uart->driver_data;
 
-  switch (pin)
+  switch (led)
   {
-  case GENERIC_RAW_UART_PIN_BLUE:
-    return port->gc.base;
-  case GENERIC_RAW_UART_PIN_GREEN:
-    return port->gc.base + 1;
-  case GENERIC_RAW_UART_PIN_RED:
+  case GENERIC_RAW_UART_LED_RED:
     return port->gc.base + 2;
-  case GENERIC_RAW_UART_PIN_RESET:
-  case GENERIC_RAW_UART_PIN_ALT_RESET:
-    return 0;
+  case GENERIC_RAW_UART_LED_GREEN:
+    return port->gc.base + 1;
+  case GENERIC_RAW_UART_LED_BLUE:
+    return port->gc.base;
   }
   return 0;
 }
@@ -453,7 +450,7 @@ static int hb_rf_usb_get_device_type(struct generic_raw_uart *raw_uart, char *pa
 
 static struct raw_uart_driver hb_rf_usb = {
     .owner = THIS_MODULE,
-    .get_gpio_pin_number = hb_rf_usb_get_gpio_pin_number,
+    .get_led_gpio_index = hb_rf_usb_get_led_gpio_index,
     .reset_radio_module = hb_rf_usb_reset_radio_module,
     .start_connection = hb_rf_usb_start_connection,
     .stop_connection = hb_rf_usb_stop_connection,
@@ -465,6 +462,8 @@ static struct raw_uart_driver hb_rf_usb = {
     .tx_chunk_size = TX_CHUNK_SIZE,
     .tx_bulktransfer_size = TX_CHUNK_SIZE,
 };
+
+static const char *hb_rf_usb_gpio_names[3] = { "HB-RF-USB B_LED", "HB-RF-USB G_LED", "HB-RF-USB R_LED" };
 
 static int hb_rf_usb_probe(struct usb_interface *interface, const struct usb_device_id *id)
 {
@@ -550,6 +549,7 @@ static int hb_rf_usb_probe(struct usb_interface *interface, const struct usb_dev
 
   port->gc.label = "hb-rf-usb-gpio";
   port->gc.ngpio = 3;
+  port->gc.names = hb_rf_usb_gpio_names;
   port->gc.request = hb_rf_usb_gpio_request;
   port->gc.free = hb_rf_usb_gpio_free;
   port->gc.get_direction = hb_rf_usb_gpio_direction_get;
@@ -641,6 +641,6 @@ module_init(hb_rf_usb_init);
 module_exit(hb_rf_usb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.14");
+MODULE_VERSION("1.15");
 MODULE_DESCRIPTION("HB-RF-USB raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

@@ -141,6 +141,7 @@ case "$1" in
     db_stop
 
     systemctl enable pivccu.service
+    systemctl enable pivccu-startupfinished.service
     systemctl enable monitor-hb-rf-eth.service
 
     if [ ! -e /pivccu.createimage ]; then

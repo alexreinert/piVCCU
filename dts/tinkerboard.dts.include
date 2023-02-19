@@ -9,11 +9,8 @@
   serial@ff190000 {
     compatible = "pivccu,dw_apb";
     status = "okay";
-    pivccu,reset_pin = <&pivccu_gpio6 0 0>;
-    pivccu,alt_reset_pin = <&pivccu_gpio6 1 0>;
-    pivccu,red_pin = <&pivccu_gpio7 7 0>;
-    pivccu,green_pin = <&pivccu_gpio6 3 0>;
-    pivccu,blue_pin = <&pivccu_gpio6 4 0>;
+    pivccu,reset-gpios = <&pivccu_gpio6 0 0>, <&pivccu_gpio6 1 0>;
+    pivccu,led-gpios = <&pivccu_gpio7 7 0>, <&pivccu_gpio6 3 0>, <&pivccu_gpio6 4 0>;
     pivccu,rtc = <&rpi_rf_mod_rtc>;
   };
 

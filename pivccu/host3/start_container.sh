@@ -41,6 +41,7 @@ if [ "$HM_HMIP_DEV" == "RPI-RF-MOD" ]; then
 fi
 
 modprobe ledtrig-timer || modprobe led_trigger_timer || true
+modprobe ledtrig-default-on || true
 modprobe rpi_rf_mod_led red_gpio_pin=$RED_PIN green_gpio_pin=$GREEN_PIN blue_gpio_pin=$BLUE_PIN || true
 
 mkdir -p /var/lib/piVCCU3/lxc
