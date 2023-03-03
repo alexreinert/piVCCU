@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2020 by Alexander Reinert
+ * Copyright (c) 2023 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -19,10 +19,17 @@
  *---------------------------------------------------------------------------*/
 enum hm_dst
 {
+  HM_DST_SYSTEM = 0x00,
   HM_DST_TRX = 0x01,
   HM_DST_HMIP = 0x02,
   HM_DST_LLMAC = 0x03,
   HM_DST_COMMON = 0xfe,
+};
+
+enum hm_system_cmd
+{
+  HM_SYSTEM_IDENTIFY = 0x00,
+  HM_SYSTEM_START_APP = 0x03,
 };
 
 enum hm_trx_cmd
@@ -44,12 +51,14 @@ enum hm_llmac_cmd
 enum hm_common_cmd
 {
   HM_COMMON_IDENTIFY = 0x01,
+  HM_COMMON_START_BL = 0x02,
   HM_COMMON_GET_SGTIN = 0x04,
 };
 
 enum hm_hmip_cmd
 {
   HM_HMIP_SET_RADIO_ADDR = 0x00,
+  HM_HMIP_GET_DEFAULT_RF_ADDR = 0x01,
   HM_HMIP_SEND = 0x03,
   HM_HMIP_ADD_LINK_PARTNER = 0x04,
   HM_HMIP_GET_SECURITY_COUNTER = 0x0a,
