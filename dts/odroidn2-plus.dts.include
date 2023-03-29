@@ -1,0 +1,38 @@
+/ {
+  soc {
+    bus@ff600000 {
+      bus@34400 {
+        pinctrl@40 {
+          pivccu_gpio: bank@40 {
+          };
+          pivccu_uart_a_pins: uart-a {
+          };
+        };
+      };
+    };
+
+    bus@ffd00000 {
+      serial@24000 {
+        pinctrl-0 = <&pivccu_uart_a_pins>;
+        pinctrl-names = "default";
+        status = "okay";
+        compatible = "pivccu,meson";
+        pivccu,reset-gpios = <&pivccu_gpio 81 0>, <&pivccu_gpio 84 0>;
+        pivccu,rtc = <&rpi_rf_mod_rtc>;
+      };
+
+      i2c@1d000 {
+        status = "okay";
+
+        rpi_rf_mod_rtc: rx8130@32 {
+          compatible = "epson,rx8130-legacy";
+          reg = <0x32>;
+          status = "okay";
+          aux-voltage-chargeable = <1>;
+          enable-external-capacitor;
+        };
+      };
+    };
+  };
+};
+

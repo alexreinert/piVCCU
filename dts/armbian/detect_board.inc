@@ -62,6 +62,12 @@ if [ ! -z "$DEV_TREE_COMPATIBLE" ]; then
         FDT_FILE='amlogic/meson-sm1-odroid-c4.dtb'
         break
         ;;
+      hardkernel,odroid-n2-plus)
+        OVERLAY_MODE='patch'
+        INCLUDE_FILE='/var/lib/piVCCU/dts/odroidn2-plus.dts.include'
+        FDT_FILE='amlogic/meson-g12b-odroid-n2-plus.dtb'
+        break
+        ;;
       libretech,cc|libretech,aml-s905x-cc)
         OVERLAY_MODE='patch'
         INCLUDE_FILE='/var/lib/piVCCU/dts/lepotato.dts.include'
