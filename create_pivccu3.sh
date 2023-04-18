@@ -1,11 +1,11 @@
 #!/bin/bash
 
-CCU_VERSION=3.69.6
+CCU_VERSION=3.69.7
 CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/firmware/ccu3-firmware/ccu3-$CCU_VERSION.tgz"
 CCU_DOWNLOAD_URL="https://homematic-ip.com/sites/default/files/downloads/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=79
+PKG_BUILD=80
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
