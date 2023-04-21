@@ -1,15 +1,53 @@
 #!/bin/bash
 . /usr/share/debconf/confmodule
 
-set -e
+function throw {
+  echo $1
+  exit 1
+}
+
+function run {
+  echo -n "$1 ... "
+  shift
+  ERR=`$* 2>&1` && RC=$? || RC=$?
+  if [ $RC -eq 0 ]; then
+    echo -e "\033[0;32mDone\033[0;0m"
+  else
+    echo -e "\033[1;91mFAILED\033[0;0m"
+    echo "$ERR"
+    exit 1
+  fi
+}
+
+function ensure_raspberry_non_mixed_kernel {
+  if [ "`dpkg --print-architecture`" == "armhf" ]; then
+    for file in /boot/firmware/config.txt /boot/config.txt
+    do
+      if [ -e $file ]; then
+        grep -q "^arm_64bit=" $file
+        if [ $? -ne 0 ]; then
+          [ -n "$(tail -1 $file)" ] && echo >> $file
+          echo "arm_64bit=0" >> $file
+        fi
+      fi
+    done
+  fi
+}
 
 case "$1" in
   configure)
     if [ ! -e /pivccu.createimage ]; then
-      /var/lib/piVCCU/dkms/ensure_modules.sh
+      if [ -e /proc/device-tree/model ]; then
+        grep -q "Raspberry Pi" /proc/device-tree/model
+        if [ $? -eq 0 ]; then
+          run "Ensure non mixed processor architecure" ensure_raspberry_non_mixed_kernel
+        fi
+      fi
+
+      (run "Create kernel modules" . /var/lib/piVCCU/dkms/ensure_modules.sh) || true
     fi
 
-    systemctl enable pivccu-dkms.service
+    run "Enable DKMS service" systemctl enable pivccu-dkms.service
 
     if [ ! -e /pivccu.createimage ]; then
       db_fset pivccu/reboot_required seen false
