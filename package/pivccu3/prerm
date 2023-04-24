@@ -1,17 +1,40 @@
 #!/bin/bash
 
-set -e
+function throw {
+  echo $1
+  exit 1
+}
+
+function run {
+  echo -n "$1 ... "
+  shift
+  ERR=`$* 2>&1` && RC=$? || RC=$?
+  if [ $RC -eq 0 ]; then
+    echo -e "\033[0;32mDone\033[0;0m"
+  else
+    echo -e "\033[1;91mFAILED\033[0;0m"
+    echo "$ERR"
+    exit 1
+  fi
+}
+
+function disable_services {
+  run "Disable monitor-hb-rf-eth.service" systemctl disable monitor-hb-rf-eth.service
+  run "Disable pivccu-startupfinished.service" systemctl disable pivccu-startupfinished.service
+  run "Disable pivccu.service" systemctl disable pivccu.service
+}
+
+function remove_symlinks {
+  run "Remove pivccu-attach" rm -f /usr/sbin/pivccu-attach
+  run "Remove pivccu-info" rm -f /usr/sbin/pivccu-info
+  run "Remove pivccu-backup" rm -f /usr/sbin/pivccu-backup
+}
 
 case "$1" in
   remove|upgrade|deconfigure)
-    systemctl stop pivccu.service
-    systemctl disable monitor-hb-rf-eth.service
-    systemctl disable pivccu-startupfinished.service
-    systemctl disable pivccu.service
-
-    rm -f /usr/sbin/pivccu-attach
-    rm -f /usr/sbin/pivccu-info
-    rm -f /usr/sbin/pivccu-backup
+    run "Stop piVCCU" systemctl stop pivccu.service
+    run "Disable services" disable_services
+    run "Remove symlinks" remove_symlinks
     ;;
 
   failed-upgrade)

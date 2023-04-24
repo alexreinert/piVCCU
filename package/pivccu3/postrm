@@ -1,15 +1,31 @@
 #!/bin/bash
 . /usr/share/debconf/confmodule
 
-set -e
+function throw {
+  echo $1
+  exit 1
+}
+
+function run {
+  echo -n "$1 ... "
+  shift
+  ERR=`$* 2>&1` && RC=$? || RC=$?
+  if [ $RC -eq 0 ]; then
+    echo -e "\033[0;32mDone\033[0;0m"
+  else
+    echo -e "\033[1;91mFAILED\033[0;0m"
+    echo "$ERR"
+    exit 1
+  fi
+}
 
 case "$1" in
   purge)
-    db_purge
-    rm -f /etc/default/pivccu3
-    rm -rf /etc/piVCCU
-    rm -rf /var/lib/piVCCU3/rootfs
-    rm -rf /var/lib/piVCCU3/userfs
+    run "Cleanup confdb" db_purge
+    run "Remove /etc/default/pivccu3" rm -f /etc/default/pivccu3
+    run "Remove /etc/piVCCU" rm -rf /etc/piVCCU
+    run "Remove obsolete container root fs" rm -rf /var/lib/piVCCU3/rootfs
+    run "Remove obsolete container user fs" rm -rf /var/lib/piVCCU3/userfs
     ;;
 
   remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)

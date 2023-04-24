@@ -1,7 +1,7 @@
 ### Prequisites
 
 * Raspberry Pi 2B/3B/3B+/4B
-* Raspberry Pi OS Buster or Bullseye (32 bit image or 64 bit image; the mixed mode 32 bit image with 64 bit kernel is not supported)
+* Raspberry Pi OS Bullseye (32 bit image or 64 bit image; the mixed mode 32 bit image with 64 bit kernel is not supported)
 
 ### Installation
 0. Create full backup of your SD card
