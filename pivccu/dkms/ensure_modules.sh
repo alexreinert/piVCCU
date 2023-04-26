@@ -45,22 +45,19 @@ function prepare_headers {
 }
 
 function reload_udev {
-  modinfo generic_raw_uart &> /dev/null && RC=$? || RC=$?
-  if [ $RC -eq 0 ]; then
-    if [ -e /etc/default/hb_rf_eth ]; then
-      . /etc/default/hb_rf_eth
-    fi
-    if [ -z "$HB_RF_ETH_ADDRESS" ]; then
-      for i in {1..12}; do
-        if [ -e /dev/raw-uart ]; then
-          break
-        fi
-        udevadm settle -t 5 -E /dev/raw-uart || true
-        udevadm trigger -c add || true
-        udevadm trigger || true
-        sleep 5
-      done
-    fi
+  if [ -e /etc/default/hb_rf_eth ]; then
+    . /etc/default/hb_rf_eth
+  fi
+  if [ -z "$HB_RF_ETH_ADDRESS" ]; then
+    for i in {1..12}; do
+      if [ -e /dev/raw-uart ]; then
+        break
+      fi
+      udevadm settle -t 5 -E /dev/raw-uart || true
+      udevadm trigger -c add || true
+      udevadm trigger || true
+      sleep 5
+    done
   fi
 }
 
@@ -78,5 +75,9 @@ if [ ! $RC -eq 0 ]; then
   run "Prepare kernel headers" prepare_headers
 
   run "Install DKMS package" dkms install -m pivccu -v $PKG_VER -k $KERNEL_VER
+
+  run "Try to load fresh build modules" modprobe generic_raw_uart
+
+  run "Reload udev" reload_udev
 fi
 

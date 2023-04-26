@@ -8,7 +8,16 @@ fi
 
 . /etc/default/pivccu3
 
-modprobe -a eq3_char_loop &> /dev/null && RC=$? || RC=$?
+if [ -e /etc/os-release ]; then
+  PRETTY_NAME=$(grep '^PRETTY_NAME=' /etc/os-release | cut -d '=' -f2 | sed 's/^\"//' | sed 's/\"$//')
+fi
+if [ -z "$PRETTY_NAME" ]; then
+  PRETTY_NAME="Unknown"
+fi
+echo "OS:             $PRETTY_NAME"
+echo "Kernel:         `uname -r -m`"
+
+modprobe -q generic_raw_uart && RC=$? || RC=$?
 if [ $RC -eq 0 ]; then
   MODULE_STATE="Available"
 else

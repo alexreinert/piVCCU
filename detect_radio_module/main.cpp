@@ -1,5 +1,5 @@
 /*
- *  Copyright 2021 Alexander Reinert
+ *  Copyright 2023 Alexander Reinert
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,15 +16,23 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <chrono>
 #include <ctime>
 #include <sstream>
 #include <iomanip>
+#include <sys/ioctl.h>
 #include "radiomoduleconnector.h"
 #include "radiomoduledetector.h"
 
+#define MAX_DEVICE_TYPE_LEN 64
+#define IOCTL_MAGIC 'u'
+#define IOCTL_IOCRESET_RADIO_MODULE _IO(IOCTL_MAGIC, 0x81)
+#define IOCTL_IOCGDEVINFO _IOW(IOCTL_MAGIC, 0x82, char[MAX_DEVICE_TYPE_LEN])
+
 void handleFrame(unsigned char *buffer, uint16_t len);
 void readThreadProc(int fd, StreamParser *sp);
+void log(const char *text, ...);
 
 int _fd;
 
@@ -53,11 +61,56 @@ int main(int argc, char *argv[])
     return -1;
   }
 
+  unsigned char deviceType[MAX_DEVICE_TYPE_LEN];
+  if (!ioctl(fd, IOCTL_IOCGDEVINFO, deviceType))
+  {
+    log("Raw UART device: %s", deviceType);
+  }
+  else
+  {
+    switch (errno)
+    {
+    case ENOTTY:
+      // current generic_raw_uart kernel module does not support getting device type
+      break;
+    default:
+      log("Raw UART device: unknown");
+      break;
+    }
+  }
+
+  if (ioctl(fd, IOCTL_IOCRESET_RADIO_MODULE))
+  {
+    switch (errno)
+    {
+    case EBUSY:
+      close(fd);
+      printf("Raw UART device is in use, aborting.\n");
+      return -1;
+    case ENOTTY:
+      log("Resetting radio module via current device is not supported.");
+      break;
+    case ENOSYS:
+      log("Resetting radio module is not supported.");
+      break;
+    default:
+      log("Reset of radio module failed (%d).", errno);
+      break;
+    }
+  }
+  else
+  {
+    log("Sucessfully resetted radio module.");
+  }
+
   RadioModuleConnector connector(fd);
   connector.start();
 
   RadioModuleDetector detector;
   detector.detectRadioModule(&connector);
+
+  if (!ioctl(fd, IOCTL_IOCRESET_RADIO_MODULE))
+    log("Sucessfully resetted radio module.");
 
   close(fd);
 
@@ -67,7 +120,7 @@ int main(int argc, char *argv[])
   switch (detector.getRadioModuleType())
   {
   case RADIO_MODULE_HMIP_RFUSB:
-    moduleType = (strstr(sgtin, "3014F5") == sgtin) ? "HMIP-RFUSB-TK" : "HMIP-RFUSB";
+    moduleType = (strstr(sgtin, "3014F5AC") == sgtin) ? "HMIP-RFUSB-TK" : "HMIP-RFUSB";
     break;
   case RADIO_MODULE_HM_MOD_RPI_PCB:
     moduleType = "HM-MOD-RPI-PCB";
@@ -116,6 +169,21 @@ std::string timestamp()
     std::ostringstream stream;
     stream << std::put_time (&now_local, "%T") << "." << std::setw(6) << std::setfill ('0') << msec;
     return stream.str();
+}
+
+void log(const char *text, ...)
+{
+  if (!debug)
+    return;
+
+  std::cout << timestamp() << " ";
+
+  va_list args;
+  va_start (args, text);
+  vprintf (text, args);
+  va_end (args);
+
+  puts("");
 }
 
 void log_frame(const char *text, unsigned char buffer[], uint16_t len)

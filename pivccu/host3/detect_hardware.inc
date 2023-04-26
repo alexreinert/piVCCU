@@ -27,7 +27,7 @@ HM_HMIP_MINOR=3
 
 case "$PIVCCU_RF_MODE" in
   "Fake")
-    modprobe -a fake_hmrf &> /dev/null
+    modprobe -q fake_hmrf
     if [ -e /sys/module/fake_hmrf ]; then
       HM_RAW_UART_MAJOR=`cat /sys/devices/virtual/fake-hmrf/fake-hmrf/dev | cut -d: -f1`
       HM_RAW_UART_MINOR=`cat /sys/devices/virtual/fake-hmrf/fake-hmrf/dev | cut -d: -f2`
@@ -71,14 +71,16 @@ case "$PIVCCU_RF_MODE" in
         done
       fi
 
-      for try in {0..30}; do
-        if [ -e /sys/class/hb-rf-eth/hb-rf-eth/connect ]; then
-          echo "$HB_RF_ETH_ADDRESS" > /sys/class/hb-rf-eth/hb-rf-eth/connect && break
-        else
-          echo "$HB_RF_ETH_ADDRESS" > /sys/module/hb_rf_eth/parameters/connect && break
-        fi
-        sleep 2
-      done
+      if [ -e /sys/module/hb_rf_eth/parameters/connect ]; then
+        for try in {0..30}; do
+          if [ -e /sys/class/hb-rf-eth/hb-rf-eth/connect ]; then
+            echo "$HB_RF_ETH_ADDRESS" > /sys/class/hb-rf-eth/hb-rf-eth/connect && break
+          else
+            echo "$HB_RF_ETH_ADDRESS" > /sys/module/hb_rf_eth/parameters/connect && break
+          fi
+          sleep 2
+        done
+      fi
     fi
 
     for syspath in $(find /sys/bus/usb/devices/); do
@@ -133,8 +135,6 @@ case "$PIVCCU_RF_MODE" in
           mknod "/dev/$UART_DEV" c `cat /sys/class/raw-uart/$UART_DEV/dev | tr ':' ' '`
         fi
 
-        echo 1 > /sys/class/raw-uart/$UART_DEV/reset_radio_module
-
         MODULE_INFO=`detect_radio_module /dev/$UART_DEV` && RC=$? || RC=$?
         if [ $RC -eq 0 ]; then
           DEV_TYPE=`echo $MODULE_INFO | cut -d' ' -f1`
@@ -158,7 +158,7 @@ case "$PIVCCU_RF_MODE" in
             HM_HMRF_ADDRESS="$PIVCCU_FAKE_RADIO_MAC"
             HM_HMRF_DEVTYPE="FAKE"
 
-            modprobe -a fake_hmrf &> /dev/null
+            modprobe -q fake_hmrf
             if [ -e /sys/module/fake_hmrf ]; then
               echo -n "$PIVCCU_FAKE_SERIAL" > /sys/module/fake_hmrf/parameters/board_serial
               echo -n "$PIVCCU_FAKE_RADIO_MAC" > /sys/module/fake_hmrf/parameters/radio_mac
