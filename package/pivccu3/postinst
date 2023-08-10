@@ -41,12 +41,14 @@ function enable_services {
 
 function update_apt_repo {
   wget -q -O - https://apt.pivccu.de/piVCCU/public.key | sudo tee /usr/share/keyrings/pivccu.asc > /dev/null || throw "Error downloading piVCCU APT key"
-  for file in /etc/apt/sources.list `ls /etc/apt/sources.list.d/*.list`
+  for file in /etc/apt/sources.list /etc/apt/sources.list.d/*.list
   do
-    for repo in https://www.debmatic.de/debmatic https://www.pivccu.de/piVCCU
-    do
-      sed -i "s|deb $repo |deb [signed-by=/usr/share/keyrings/pivccu.asc] https://apt.pivccu.de/piVCCU |g" $file || throw "Error updating repo $repo in $file"
-    done
+    if [ -f $file ]; then
+      for repo in https://www.debmatic.de/debmatic https://www.pivccu.de/piVCCU
+      do
+        sed -i "s|deb $repo |deb [signed-by=/usr/share/keyrings/pivccu.asc] https://apt.pivccu.de/piVCCU |g" $file || throw "Error updating repo $repo in $file"
+      done
+    fi
   done
   apt-key --keyring /etc/apt/trusted.gpg del "2EE7 5239 FB96 1829 848D  0AA0 5412 30BA 05C3 8BC4" || throw "Could not remove old APT key"
 }

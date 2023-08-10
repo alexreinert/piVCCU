@@ -5,7 +5,7 @@ CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/firmware/ccu3-firmware/ccu3-$CCU_VERSION.tgz"
 CCU_DOWNLOAD_URL="https://homematic-ip.com/sites/default/files/downloads/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=84
+PKG_BUILD=85
 
 function throw {
   echo $1
@@ -115,8 +115,8 @@ run "Build armhf package" dpkg-deb --build -Zxz pivccu3-$PKG_VERSION
 run "Copy armhf package to local directory" cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-armhf.deb
 
 function add_openjdk {
-  run "Download openjdk-8-jre.deb" wget -O openjdk-8-jre.deb http://ftp.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jre_8u382-ga-2_armhf.deb
-  run "Download openjdk-8-jre-headless.deb" wget -O openjdk-8-jre-headless.deb http://ftp.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jre-headless_8u382-ga-2_armhf.deb
+  run "Download openjdk-8-jre.deb" wget -O openjdk-8-jre.deb http://archive.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u332-ga-1~deb9u1_armhf.deb
+  run "Download openjdk-8-jre-headless.deb" wget -O openjdk-8-jre-headless.deb http://archive.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre-headless_8u332-ga-1~deb9u1_armhf.deb
 
   run "Extract openjdk-8-jre.deb" dpkg-deb -x openjdk-8-jre.deb .
   run "Extract openjdk-8-jre-headless.deb" dpkg-deb -x openjdk-8-jre-headless.deb .
