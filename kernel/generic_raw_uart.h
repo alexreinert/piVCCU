@@ -23,6 +23,11 @@
 
 #define MAX_DEVICE_TYPE_LEN 64
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0))
+  #define class_create(__owner, __class) class_create(__class)
+  #define of_modalias_node(__node, __alias, __len) of_alias_from_compatible(__node, __alias, __len)
+#endif
+
 enum generic_raw_uart_rx_flags
 {
   GENERIC_RAW_UART_RX_STATE_NONE = 0,

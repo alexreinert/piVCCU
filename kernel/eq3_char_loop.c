@@ -70,6 +70,10 @@
   #define _access_ok(__type, __addr, __size) access_ok(__type, __addr, __size)
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0))
+  #define class_create(__owner, __class) class_create(__class)
+#endif
+
 struct eq3loop_channel_data
 {
 	struct circ_buf master2slave_buf;

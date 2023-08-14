@@ -46,6 +46,10 @@
 
 #define RX_BUF_SIZE 1024
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0))
+  #define class_create(__owner, __class) class_create(__class)
+#endif
+
 static ssize_t fake_hmrf_read(struct file *filep, char __user *buf, size_t count, loff_t *offset);
 static ssize_t fake_hmrf_write(struct file *filep, const char __user *buf, size_t count, loff_t *offset);
 static int fake_hmrf_open(struct inode *inode, struct file *filep);
@@ -584,6 +588,6 @@ module_init(fake_hmrf_init);
 module_exit(fake_hmrf_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.6");
+MODULE_VERSION("1.7");
 MODULE_DESCRIPTION("Fake HM-MOD-RPI-PCB driver");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
