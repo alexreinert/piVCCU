@@ -1004,7 +1004,11 @@ int generic_raw_uart_probe_rtc_device(struct device *dev, bool *rtc_detected)
           {
             dev_info(dev, "Missing I2C driver of rtc device, trying to load");
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+            if (of_alias_from_compatible(rtc_of_node, rtc_module_alias + 4, sizeof(rtc_module_alias) - 4) == 0)
+#else
             if (of_modalias_node(rtc_of_node, rtc_module_alias + 4, sizeof(rtc_module_alias) - 4) == 0)
+#endif
             {
               dev_info(dev, "Requesting module %s", rtc_module_alias);
               request_module(rtc_module_alias);
@@ -1245,7 +1249,11 @@ static int __init generic_raw_uart_init(void)
   if (err != 0)
     return err;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+  class = class_create(DRIVER_NAME);
+#else
   class = class_create(THIS_MODULE, DRIVER_NAME);
+#endif
   if (IS_ERR(class))
     return PTR_ERR(class);
 
