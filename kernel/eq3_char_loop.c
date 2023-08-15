@@ -70,6 +70,12 @@
   #define _access_ok(__type, __addr, __size) access_ok(__type, __addr, __size)
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0))
+  #define _class_create(__owner, __name) class_create(__name)
+#else
+  #define _class_create(__owner, __name) class_create(__owner, __name)
+#endif
+
 struct eq3loop_channel_data
 {
 	struct circ_buf master2slave_buf;
@@ -952,7 +958,7 @@ static int __init eq3loop_init(void)
 		printk(KERN_ERR EQ3LOOP_DRIVER_NAME ": Unable to add driver\n");
 		goto out_unregister_chrdev_region;
 	}
-	control_data->class=class_create(THIS_MODULE, EQ3LOOP_DRIVER_NAME);
+	control_data->class=_class_create(THIS_MODULE, EQ3LOOP_DRIVER_NAME);
 	if(IS_ERR(control_data->class)){
 		ret = -EIO;
 		printk(KERN_ERR EQ3LOOP_DRIVER_NAME ": Unable to register driver class\n");

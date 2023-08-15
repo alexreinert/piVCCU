@@ -46,6 +46,12 @@
 
 #define BUFFER_SIZE 1500
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0))
+  #define _class_create(__owner, __name) class_create(__name)
+#else
+  #define _class_create(__owner, __name) class_create(__owner, __name)
+#endif
+
 static short int autoreconnect = 1;
 
 static struct gpio_chip gc = {0};
@@ -724,7 +730,7 @@ static int __init hb_rf_eth_init(void)
   send_msg_queue = kzalloc(sizeof(struct send_msg_queue_t), GFP_KERNEL);
   send_msg_queue->entries = kcalloc(QUEUE_LENGTH, sizeof(struct send_msg_queue_entry), GFP_KERNEL);
 
-  class = class_create(THIS_MODULE, "hb-rf-eth");
+  class = _class_create(THIS_MODULE, "hb-rf-eth");
   if (IS_ERR(class))
   {
     err = PTR_ERR(class);
