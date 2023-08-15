@@ -66,6 +66,14 @@
 #define _access_ok(__type, __addr, __size) access_ok(__type, __addr, __size)
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0))
+  #define _class_create(__owner, __name) class_create(__name)
+  #define _get_module_alias(__node, __alias, __len) of_alias_from_compatible(__node, __alias, __len)
+#else
+  #define _class_create(__owner, __name) class_create(__owner, __name)
+  #define _get_module_alias(__node, __alias, __len) of_modalias_node(__node, __alias, __len)
+#endif
+
 static dev_t devid;
 static struct class *class;
 
@@ -1004,7 +1012,7 @@ int generic_raw_uart_probe_rtc_device(struct device *dev, bool *rtc_detected)
           {
             dev_info(dev, "Missing I2C driver of rtc device, trying to load");
 
-            if (of_modalias_node(rtc_of_node, rtc_module_alias + 4, sizeof(rtc_module_alias) - 4) == 0)
+            if (_get_module_alias(rtc_of_node, rtc_module_alias + 4, sizeof(rtc_module_alias) - 4) == 0)
             {
               dev_info(dev, "Requesting module %s", rtc_module_alias);
               request_module(rtc_module_alias);
@@ -1245,7 +1253,7 @@ static int __init generic_raw_uart_init(void)
   if (err != 0)
     return err;
 
-  class = class_create(THIS_MODULE, DRIVER_NAME);
+  class = _class_create(THIS_MODULE, DRIVER_NAME);
   if (IS_ERR(class))
     return PTR_ERR(class);
 

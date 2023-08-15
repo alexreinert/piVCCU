@@ -46,6 +46,12 @@
 
 #define RX_BUF_SIZE 1024
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0))
+  #define _class_create(__owner, __name) class_create(__name)
+#else
+  #define _class_create(__owner, __name) class_create(__owner, __name)
+#endif
+
 static ssize_t fake_hmrf_read(struct file *filep, char __user *buf, size_t count, loff_t *offset);
 static ssize_t fake_hmrf_write(struct file *filep, const char __user *buf, size_t count, loff_t *offset);
 static int fake_hmrf_open(struct inode *inode, struct file *filep);
@@ -543,7 +549,7 @@ static int __init fake_hmrf_init(void)
     goto failed_cdev_add;
   }
 
-  fake_hmrf_class = class_create(THIS_MODULE, DRIVER_NAME);
+  fake_hmrf_class = _class_create(THIS_MODULE, DRIVER_NAME);
   ptr_err = fake_hmrf_class;
   if (IS_ERR(ptr_err))
     goto failed_class_create;
