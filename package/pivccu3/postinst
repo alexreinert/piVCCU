@@ -3,21 +3,61 @@ CONFIGFILE=/etc/default/pivccu3
 
 . /usr/share/debconf/confmodule
 
-set -e
+function throw {
+  echo $1
+  exit 1
+}
+
+function run {
+  echo -n "$1 ... "
+  shift
+  ERR=`$* 2>&1` && RC=$? || RC=$?
+  if [ $RC -eq 0 ]; then
+    echo -e "\033[0;32mDone\033[0;0m"
+  else
+    echo -e "\033[1;91mFAILED\033[0;0m"
+    echo "$ERR"
+    exit 1
+  fi
+}
+
+function add_symlinks {
+  if [ ! -e /usr/sbin/pivccu-attach ]; then
+    run "Create pivccu-attach symlink" ln -s /var/lib/piVCCU3/pivccu-attach.sh /usr/sbin/pivccu-attach
+  fi
+  if [ ! -e /usr/sbin/pivccu-info ]; then
+    run "Create pivccu-info symlink" ln -s /var/lib/piVCCU3/pivccu-info.sh /usr/sbin/pivccu-info
+  fi
+  if [ ! -e /usr/sbin/pivccu-backup ]; then
+    run "Create pivccu-backup symlink" ln -s /var/lib/piVCCU3/pivccu-backup.sh /usr/sbin/pivccu-backup
+  fi
+}
+
+function enable_services {
+  run "Enable pivccu.service" systemctl enable pivccu.service
+  run "Enable pivccu-startupfinished.service" systemctl enable pivccu-startupfinished.service
+  run "Enable monitor-hb-rf-eth.service" systemctl enable monitor-hb-rf-eth.service
+}
+
+function update_apt_repo {
+  wget -q -O - https://apt.pivccu.de/piVCCU/public.key | sudo tee /usr/share/keyrings/pivccu.asc > /dev/null || throw "Error downloading piVCCU APT key"
+  for file in /etc/apt/sources.list /etc/apt/sources.list.d/*.list
+  do
+    if [ -f $file ]; then
+      for repo in https://www.debmatic.de/debmatic https://www.pivccu.de/piVCCU
+      do
+        sed -i "s|deb $repo |deb [signed-by=/usr/share/keyrings/pivccu.asc] https://apt.pivccu.de/piVCCU |g" $file || throw "Error updating repo $repo in $file"
+      done
+    fi
+  done
+  apt-key --keyring /etc/apt/trusted.gpg del "2EE7 5239 FB96 1829 848D  0AA0 5412 30BA 05C3 8BC4" || throw "Could not remove old APT key"
+}
 
 case "$1" in
   configure|reconfigure|abort-upgrade)
-    udevadm control --reload-rules && udevadm trigger
+    run "Reload udev rules" udevadm control --reload-rules && udevadm trigger
 
-    if [ ! -e /usr/sbin/pivccu-attach ]; then
-      ln -s /var/lib/piVCCU3/pivccu-attach.sh /usr/sbin/pivccu-attach
-    fi
-    if [ ! -e /usr/sbin/pivccu-info ]; then
-      ln -s /var/lib/piVCCU3/pivccu-info.sh /usr/sbin/pivccu-info
-    fi
-    if [ ! -e /usr/sbin/pivccu-backup ]; then
-      ln -s /var/lib/piVCCU3/pivccu-backup.sh /usr/sbin/pivccu-backup
-    fi
+    run "Create symlinks" add_symlinks
 
     if [ "$1" = "reconfigure" ] || [ "${DEBCONF_RECONFIGURE}" = "1" ]; then
       db_fset pivccu/rf_mode seen false
@@ -52,7 +92,7 @@ case "$1" in
     if [ ! -e /pivccu.createimage ]; then 
       if [ -z "$2" ]; then
         if [ "$PIVCCU_RF_MODE" != "Fake" ]; then
-          . /var/lib/piVCCU3/detect_hardware.inc
+          run "Dectect radio hardware" . /var/lib/piVCCU3/detect_hardware.inc
           if [ ! -e /sys/devices/virtual/raw-uart ]; then
             db_input critical pivccu/warn_raw_uart_not_found || true
           elif [ -z "$HM_HMRF_DEV" ] && [ -z "$HM_HMIP_DEV" ]; then
@@ -140,12 +180,12 @@ case "$1" in
 
     db_stop
 
-    systemctl enable pivccu.service
-    systemctl enable pivccu-startupfinished.service
-    systemctl enable monitor-hb-rf-eth.service
+    run "Enable services" enable_services
+
+    run "Update APT repository config" update_apt_repo
 
     if [ ! -e /pivccu.createimage ]; then
-      systemctl start pivccu.service || true
+      (run "Start piVCCU" systemctl start pivccu.service) || true
     fi
   ;;
 

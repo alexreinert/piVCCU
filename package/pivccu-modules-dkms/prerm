@@ -1,15 +1,31 @@
 #!/bin/bash
 
-set -e
+function throw {
+  echo $1
+  exit 1
+}
+
+function run {
+  echo -n "$1 ... "
+  shift
+  ERR=`$* 2>&1` && RC=$? || RC=$?
+  if [ $RC -eq 0 ]; then
+    echo -e "\033[0;32mDone\033[0;0m"
+  else
+    echo -e "\033[1;91mFAILED\033[0;0m"
+    echo "$ERR"
+    exit 1
+  fi
+}
 
 DKMS_VERSION={PKG_VERSION}
 
 case "$1" in
   remove|upgrade|deconfigure)
-    systemctl disable pivccu-dkms.service
+    run "Disabled DKMS service" systemctl disable pivccu-dkms.service
 
     if [  "$(dkms status -m pivccu -v $DKMS_VERSION)" ]; then
-      dkms remove -m pivccu -v $DKMS_VERSION --all
+      run "Remove obsolete kernel modules" dkms remove -m pivccu -v $DKMS_VERSION --all
     fi
     ;;
 

@@ -2,6 +2,24 @@
 
 . /usr/share/debconf/confmodule
 
+function throw {
+  echo $1
+  exit 1
+}
+
+function run {
+  echo -n "$1 ... "
+  shift
+  ERR=`$* 2>&1` && RC=$? || RC=$?
+  if [ $RC -eq 0 ]; then
+    echo -e "\033[0;32mDone\033[0;0m"
+  else
+    echo -e "\033[1;91mFAILED\033[0;0m"
+    echo "$ERR"
+    exit 1
+  fi
+}
+
 case "$1" in
   install|upgrade)
     if [ ! -z "$2" ]; then
@@ -21,7 +39,7 @@ case "$1" in
       fi
     fi
 
-    rm -rf /var/lib/piVCCU3/rootfs/*
+    run "Clear container root" rm -rf /var/lib/piVCCU3/rootfs/*
     ;;
 
   abort-upgrade)

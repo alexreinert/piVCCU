@@ -1,6 +1,6 @@
-diff -ruN --no-dereference fw.3.67.10.orig/bin/dhcp.script fw.3.67.10.patched/bin/dhcp.script
---- fw.3.67.10.orig/bin/dhcp.script
-+++ fw.3.67.10.patched/bin/dhcp.script
+diff -ruN --no-dereference fw.3.71.12.orig/bin/dhcp.script fw.3.71.12.patched/bin/dhcp.script
+--- fw.3.71.12.orig/bin/dhcp.script
++++ fw.3.71.12.patched/bin/dhcp.script
 @@ -4,19 +4,8 @@
  CONFIGURL=/var/configurl
  
@@ -64,9 +64,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/bin/dhcp.script fw.3.67.10.patched/bi
  
    # add default routes
    if [[ -n "${router}" ]]; then
-diff -ruN --no-dereference fw.3.67.10.orig/etc/fstab fw.3.67.10.patched/etc/fstab
---- fw.3.67.10.orig/etc/fstab
-+++ fw.3.67.10.patched/etc/fstab
+diff -ruN --no-dereference fw.3.71.12.orig/etc/fstab fw.3.71.12.patched/etc/fstab
+--- fw.3.71.12.orig/etc/fstab
++++ fw.3.71.12.patched/etc/fstab
 @@ -1,15 +1,3 @@
  # /etc/fstab: static file system information.
  #
@@ -83,9 +83,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/fstab fw.3.67.10.patched/etc/fsta
 -debugfs         /sys/kernel/debug debugfs noauto                                 0      0
 -LABEL=userfs    /usr/local     ext4     defaults,noatime,nodiratime,rw,data=journal,nofail         0      2
 -LABEL=bootfs    /mnt/boot_par  vfat     defaults,ro                              0      0
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S00watchdog fw.3.67.10.patched/etc/init.d/S00watchdog
---- fw.3.67.10.orig/etc/init.d/S00watchdog
-+++ fw.3.67.10.patched/etc/init.d/S00watchdog
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S00watchdog fw.3.71.12.patched/etc/init.d/S00watchdog
+--- fw.3.71.12.orig/etc/init.d/S00watchdog
++++ fw.3.71.12.patched/etc/init.d/S00watchdog
 @@ -1,20 +0,0 @@
 -#!/bin/sh
 -#
@@ -107,9 +107,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S00watchdog fw.3.67.10.pat
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S01InitHost fw.3.67.10.patched/etc/init.d/S01InitHost
---- fw.3.67.10.orig/etc/init.d/S01InitHost
-+++ fw.3.67.10.patched/etc/init.d/S01InitHost
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S01InitHost fw.3.71.12.patched/etc/init.d/S01InitHost
+--- fw.3.71.12.orig/etc/init.d/S01InitHost
++++ fw.3.71.12.patched/etc/init.d/S01InitHost
 @@ -1,135 +0,0 @@
 -#!/bin/sh
 -#
@@ -246,9 +246,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S01InitHost fw.3.67.10.pat
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S02InitRTC fw.3.67.10.patched/etc/init.d/S02InitRTC
---- fw.3.67.10.orig/etc/init.d/S02InitRTC
-+++ fw.3.67.10.patched/etc/init.d/S02InitRTC
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S02InitRTC fw.3.71.12.patched/etc/init.d/S02InitRTC
+--- fw.3.71.12.orig/etc/init.d/S02InitRTC
++++ fw.3.71.12.patched/etc/init.d/S02InitRTC
 @@ -1,163 +0,0 @@
 -#!/bin/sh
 -#
@@ -413,9 +413,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S02InitRTC fw.3.67.10.patc
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S03InitURandom fw.3.67.10.patched/etc/init.d/S03InitURandom
---- fw.3.67.10.orig/etc/init.d/S03InitURandom
-+++ fw.3.67.10.patched/etc/init.d/S03InitURandom
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S03InitURandom fw.3.71.12.patched/etc/init.d/S03InitURandom
+--- fw.3.71.12.orig/etc/init.d/S03InitURandom
++++ fw.3.71.12.patched/etc/init.d/S03InitURandom
 @@ -1,63 +0,0 @@
 -#!/bin/sh
 -#
@@ -480,9 +480,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S03InitURandom fw.3.67.10.
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S04CheckFactoryReset fw.3.67.10.patched/etc/init.d/S04CheckFactoryReset
---- fw.3.67.10.orig/etc/init.d/S04CheckFactoryReset
-+++ fw.3.67.10.patched/etc/init.d/S04CheckFactoryReset
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S04CheckFactoryReset fw.3.71.12.patched/etc/init.d/S04CheckFactoryReset
+--- fw.3.71.12.orig/etc/init.d/S04CheckFactoryReset
++++ fw.3.71.12.patched/etc/init.d/S04CheckFactoryReset
 @@ -13,38 +13,7 @@
      return 1
    fi
@@ -523,9 +523,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S04CheckFactoryReset fw.3.
  
    #create file .doCoproFactoryReset which will trigger S11InitRFHardware to perform a copro factory reset
    touch /usr/local/.doCoproFactoryReset
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S04CheckResizeLocalFS fw.3.67.10.patched/etc/init.d/S04CheckResizeLocalFS
---- fw.3.67.10.orig/etc/init.d/S04CheckResizeLocalFS
-+++ fw.3.67.10.patched/etc/init.d/S04CheckResizeLocalFS
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S04CheckResizeLocalFS fw.3.71.12.patched/etc/init.d/S04CheckResizeLocalFS
+--- fw.3.71.12.orig/etc/init.d/S04CheckResizeLocalFS
++++ fw.3.71.12.patched/etc/init.d/S04CheckResizeLocalFS
 @@ -1,53 +0,0 @@
 -#!/bin/sh
 -#
@@ -580,9 +580,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S04CheckResizeLocalFS fw.3
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S06InitSystem fw.3.67.10.patched/etc/init.d/S06InitSystem
---- fw.3.67.10.orig/etc/init.d/S06InitSystem
-+++ fw.3.67.10.patched/etc/init.d/S06InitSystem
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S06InitSystem fw.3.71.12.patched/etc/init.d/S06InitSystem
+--- fw.3.71.12.orig/etc/init.d/S06InitSystem
++++ fw.3.71.12.patched/etc/init.d/S06InitSystem
 @@ -85,14 +85,6 @@
    if [[ $SHADOWSTAT != "640" ]]; then
  	chmod 640 /etc/config/shadow || /bin/true
@@ -598,9 +598,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S06InitSystem fw.3.67.10.p
  }
  
  start() {
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S07DisableHdmi fw.3.67.10.patched/etc/init.d/S07DisableHdmi
---- fw.3.67.10.orig/etc/init.d/S07DisableHdmi
-+++ fw.3.67.10.patched/etc/init.d/S07DisableHdmi
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S07DisableHdmi fw.3.71.12.patched/etc/init.d/S07DisableHdmi
+--- fw.3.71.12.orig/etc/init.d/S07DisableHdmi
++++ fw.3.71.12.patched/etc/init.d/S07DisableHdmi
 @@ -1,23 +0,0 @@
 -#!/bin/sh
 -#
@@ -625,9 +625,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S07DisableHdmi fw.3.67.10.
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S10udev fw.3.67.10.patched/etc/init.d/S10udev
---- fw.3.67.10.orig/etc/init.d/S10udev
-+++ fw.3.67.10.patched/etc/init.d/S10udev
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S10udev fw.3.71.12.patched/etc/init.d/S10udev
+--- fw.3.71.12.orig/etc/init.d/S10udev
++++ fw.3.71.12.patched/etc/init.d/S10udev
 @@ -1,46 +0,0 @@
 -#!/bin/sh
 -#
@@ -675,9 +675,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S10udev fw.3.67.10.patched
 -
 -
 -exit 0
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S11InitRFHardware fw.3.67.10.patched/etc/init.d/S11InitRFHardware
---- fw.3.67.10.orig/etc/init.d/S11InitRFHardware
-+++ fw.3.67.10.patched/etc/init.d/S11InitRFHardware
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S11InitRFHardware fw.3.71.12.patched/etc/init.d/S11InitRFHardware
+--- fw.3.71.12.orig/etc/init.d/S11InitRFHardware
++++ fw.3.71.12.patched/etc/init.d/S11InitRFHardware
 @@ -1,305 +0,0 @@
 -#!/bin/sh
 -#
@@ -984,9 +984,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S11InitRFHardware fw.3.67.
 -esac
 -
 -exit $?
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S12UpdateRFHardware fw.3.67.10.patched/etc/init.d/S12UpdateRFHardware
---- fw.3.67.10.orig/etc/init.d/S12UpdateRFHardware
-+++ fw.3.67.10.patched/etc/init.d/S12UpdateRFHardware
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S12UpdateRFHardware fw.3.71.12.patched/etc/init.d/S12UpdateRFHardware
+--- fw.3.71.12.orig/etc/init.d/S12UpdateRFHardware
++++ fw.3.71.12.patched/etc/init.d/S12UpdateRFHardware
 @@ -120,13 +120,13 @@
      fi
      echo -n "HMIP-RFUSB: "
@@ -1003,9 +1003,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S12UpdateRFHardware fw.3.6
  
        echo "${HM_HMIP_VERSION}" >/var/hmip_firmware_version
        if [[ -z "${HM_HMRF_DEV}" ]]; then
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S13irqbalance fw.3.67.10.patched/etc/init.d/S13irqbalance
---- fw.3.67.10.orig/etc/init.d/S13irqbalance
-+++ fw.3.67.10.patched/etc/init.d/S13irqbalance
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S13irqbalance fw.3.71.12.patched/etc/init.d/S13irqbalance
+--- fw.3.71.12.orig/etc/init.d/S13irqbalance
++++ fw.3.71.12.patched/etc/init.d/S13irqbalance
 @@ -1,34 +0,0 @@
 -#!/bin/sh
 -#
@@ -1041,9 +1041,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S13irqbalance fw.3.67.10.p
 -	echo "Usage: $0 {start|stop|restart}"
 -	exit 1
 -esac
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S21rngd fw.3.67.10.patched/etc/init.d/S21rngd
---- fw.3.67.10.orig/etc/init.d/S21rngd
-+++ fw.3.67.10.patched/etc/init.d/S21rngd
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S21rngd fw.3.71.12.patched/etc/init.d/S21rngd
+--- fw.3.71.12.orig/etc/init.d/S21rngd
++++ fw.3.71.12.patched/etc/init.d/S21rngd
 @@ -1,51 +0,0 @@
 -#!/bin/sh
 -
@@ -1096,9 +1096,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S21rngd fw.3.67.10.patched
 -		exit 1
 -		;;
 -esac
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S31bluetooth fw.3.67.10.patched/etc/init.d/S31bluetooth
---- fw.3.67.10.orig/etc/init.d/S31bluetooth
-+++ fw.3.67.10.patched/etc/init.d/S31bluetooth
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S31bluetooth fw.3.71.12.patched/etc/init.d/S31bluetooth
+--- fw.3.71.12.orig/etc/init.d/S31bluetooth
++++ fw.3.71.12.patched/etc/init.d/S31bluetooth
 @@ -1,89 +0,0 @@
 -#!/bin/sh
 -#
@@ -1189,9 +1189,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S31bluetooth fw.3.67.10.pa
 -esac
 -
 -exit 0
-diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S62HMServer fw.3.67.10.patched/etc/init.d/S62HMServer
---- fw.3.67.10.orig/etc/init.d/S62HMServer
-+++ fw.3.67.10.patched/etc/init.d/S62HMServer
+diff -ruN --no-dereference fw.3.71.12.orig/etc/init.d/S62HMServer fw.3.71.12.patched/etc/init.d/S62HMServer
+--- fw.3.71.12.orig/etc/init.d/S62HMServer
++++ fw.3.71.12.patched/etc/init.d/S62HMServer
 @@ -14,6 +14,8 @@
    export JAVA_HOME=/opt/java/
    export PATH=${PATH}:${JAVA_HOME}/bin
@@ -1223,9 +1223,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/init.d/S62HMServer fw.3.67.10.pat
    echo -n "."
    waitStartupComplete
  }
-diff -ruN --no-dereference fw.3.67.10.orig/etc/inittab fw.3.67.10.patched/etc/inittab
---- fw.3.67.10.orig/etc/inittab
-+++ fw.3.67.10.patched/etc/inittab
+diff -ruN --no-dereference fw.3.71.12.orig/etc/inittab fw.3.71.12.patched/etc/inittab
+--- fw.3.71.12.orig/etc/inittab
++++ fw.3.71.12.patched/etc/inittab
 @@ -14,10 +14,10 @@
  # process   == program to run
  
@@ -1241,9 +1241,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/inittab fw.3.67.10.patched/etc/in
  tty2::sysinit:/bin/mount -a
  null::sysinit:/bin/hostname -F /etc/hostname
  null::sysinit:/usr/bin/psplash -n &
-diff -ruN --no-dereference fw.3.67.10.orig/etc/network/if-up.d/eQ3StartNetwork fw.3.67.10.patched/etc/network/if-up.d/eQ3StartNetwork
---- fw.3.67.10.orig/etc/network/if-up.d/eQ3StartNetwork
-+++ fw.3.67.10.patched/etc/network/if-up.d/eQ3StartNetwork
+diff -ruN --no-dereference fw.3.71.12.orig/etc/network/if-up.d/eQ3StartNetwork fw.3.71.12.patched/etc/network/if-up.d/eQ3StartNetwork
+--- fw.3.71.12.orig/etc/network/if-up.d/eQ3StartNetwork
++++ fw.3.71.12.patched/etc/network/if-up.d/eQ3StartNetwork
 @@ -109,20 +109,6 @@
  # restart syslogd to update hostname
  /etc/init.d/S07logging restart 2>/dev/null >/dev/null
@@ -1265,9 +1265,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/etc/network/if-up.d/eQ3StartNetwork f
  # make sure no other udhcpc is running
  killall -q udhcpc
  
-diff -ruN --no-dereference fw.3.67.10.orig/www/config/cp_maintenance.cgi fw.3.67.10.patched/www/config/cp_maintenance.cgi
---- fw.3.67.10.orig/www/config/cp_maintenance.cgi
-+++ fw.3.67.10.patched/www/config/cp_maintenance.cgi
+diff -ruN --no-dereference fw.3.71.12.orig/www/config/cp_maintenance.cgi fw.3.71.12.patched/www/config/cp_maintenance.cgi
+--- fw.3.71.12.orig/www/config/cp_maintenance.cgi
++++ fw.3.71.12.patched/www/config/cp_maintenance.cgi
 @@ -366,129 +366,13 @@
                  puts "\${dialogSettingsCMLblActualSoftwareVersion}"
                }
@@ -1412,9 +1412,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/www/config/cp_maintenance.cgi fw.3.67
  
      # Hide all elements with class j_noForcedUpdate when an update is enforced
      puts "if (forceUpdate) {"
-diff -ruN --no-dereference fw.3.67.10.orig/www/config/cp_security.cgi fw.3.67.10.patched/www/config/cp_security.cgi
---- fw.3.67.10.orig/www/config/cp_security.cgi
-+++ fw.3.67.10.patched/www/config/cp_security.cgi
+diff -ruN --no-dereference fw.3.71.12.orig/www/config/cp_security.cgi fw.3.71.12.patched/www/config/cp_security.cgi
+--- fw.3.71.12.orig/www/config/cp_security.cgi
++++ fw.3.71.12.patched/www/config/cp_security.cgi
 @@ -297,7 +297,7 @@
      } else {
        exec touch /usr/local/.doFactoryReset
@@ -1433,9 +1433,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/www/config/cp_security.cgi fw.3.67.10
      division {class="popupTitle"} {
        puts "\${dialogSettingsSecurityMessageSysBackupRestartSystemTitle}"
      }
-diff -ruN --no-dereference fw.3.67.10.orig/www/webui/js/lang/de/translate.lang.js fw.3.67.10.patched/www/webui/js/lang/de/translate.lang.js
---- fw.3.67.10.orig/www/webui/js/lang/de/translate.lang.js
-+++ fw.3.67.10.patched/www/webui/js/lang/de/translate.lang.js
+diff -ruN --no-dereference fw.3.71.12.orig/www/webui/js/lang/de/translate.lang.js fw.3.71.12.patched/www/webui/js/lang/de/translate.lang.js
+--- fw.3.71.12.orig/www/webui/js/lang/de/translate.lang.js
++++ fw.3.71.12.patched/www/webui/js/lang/de/translate.lang.js
 @@ -459,7 +459,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Herunterfahren",
      "dialogSettingsCMTDCCUSafeMode" : "Abgesicherter<br/>Modus",
@@ -1457,7 +1457,7 @@ diff -ruN --no-dereference fw.3.67.10.orig/www/webui/js/lang/de/translate.lang.j
      "dialogSettingsCMHintRestartSafeMode" : "Homematic Zentrale einmalig im abgesicherten Modus starten. Im abgesicherten Modus wird die installierte Zusatzsoftware nicht gestartet. Ver%E4nderte Einstellungen werden vorher gespeichert.",
      "dialogSettingsCMHintErrorLog" : "Stellen Sie die Anzahl der Logmeldungen ein, die von der Zentrale generiert werden sollen.<br>Sie k%F6nnen zus%E4tzlich einen Rechner angeben, dem die Zentrale ihre Logmeldungen per Syslog schickt. Auf diesem Rechner mu%DF entsprechende Software installiert sein, die die Meldungen entgegennimmt.<br>Zu Diagnosezwecken k%F6nnen die aktuellen Logmeldungen der Zentrale in einer Textdatei heruntergeladen werden.",
      "dialogSettingsCMLogLevel0" : "Alles loggen",
-@@ -1003,6 +1004,10 @@
+@@ -992,6 +993,10 @@
      "USA" : "USA",
      "dummy" : "dummy",
  
@@ -1468,9 +1468,9 @@ diff -ruN --no-dereference fw.3.67.10.orig/www/webui/js/lang/de/translate.lang.j
      "optionLastValue" : "Letzter Wert",
      "optionNoModification" : "Keine %C4nderung",
      "optionNone" : "Keine",
-diff -ruN --no-dereference fw.3.67.10.orig/www/webui/js/lang/en/translate.lang.js fw.3.67.10.patched/www/webui/js/lang/en/translate.lang.js
---- fw.3.67.10.orig/www/webui/js/lang/en/translate.lang.js
-+++ fw.3.67.10.patched/www/webui/js/lang/en/translate.lang.js
+diff -ruN --no-dereference fw.3.71.12.orig/www/webui/js/lang/en/translate.lang.js fw.3.71.12.patched/www/webui/js/lang/en/translate.lang.js
+--- fw.3.71.12.orig/www/webui/js/lang/en/translate.lang.js
++++ fw.3.71.12.patched/www/webui/js/lang/en/translate.lang.js
 @@ -458,7 +458,8 @@
      "dialogSettingsCMTDCCUShutdown" : "Shutdown",
      "dialogSettingsCMTDCCUSafeMode" : "Safe<br/>mode",
@@ -1492,7 +1492,7 @@ diff -ruN --no-dereference fw.3.67.10.orig/www/webui/js/lang/en/translate.lang.j
      "dialogSettingsCMHintRestartSafeMode" : "Start Homematic Central Control Unit in safe mode once. In safe mode, the installed additional software will not be started. The changed settings will be saved before.",
      "dialogSettingsCMHintErrorLog" : "Please set the number of log messages to be generated by the CCU.<br>You can also specify a computer that will receive the log messages from the CCU via syslog. An additional software that will be able to receive this messages has to be installed on the computer.<br>To analyse the results, the current log messages of the CCU can be downloaded in a text file.",
      "dialogSettingsCMLogLevel0" : "Log all",
-@@ -1079,6 +1080,10 @@
+@@ -1068,6 +1069,10 @@
      "USA" : "USA",
      "dummy" : "dummy",
  
@@ -1503,15 +1503,15 @@ diff -ruN --no-dereference fw.3.67.10.orig/www/webui/js/lang/en/translate.lang.j
      "optionLastValue" : "Last value",
      "optionNoModification" : "No change",
      "optionNone" : "None",
-diff -ruN --no-dereference fw.3.67.10.orig/www/webui/webui.js fw.3.67.10.patched/www/webui/webui.js
---- fw.3.67.10.orig/www/webui/webui.js
-+++ fw.3.67.10.patched/www/webui/webui.js
-@@ -26314,7 +26314,7 @@
+diff -ruN --no-dereference fw.3.71.12.orig/www/webui/webui.js fw.3.71.12.patched/www/webui/webui.js
+--- fw.3.71.12.orig/www/webui/webui.js
++++ fw.3.71.12.patched/www/webui/webui.js
+@@ -26903,7 +26903,7 @@
      var script = document.createElement("script");
      script.id = "homematic_com_script";
      script.type = "text/javascript";
--    script.src = this.m_URLServer + "/firmware/download?cmd=js_check_version&version="+WEBUI_VERSION+"&product="+this.m_product+"&serial=" + serial;
-+    script.src = "https://www.pivccu.de/latestVersion?version=@@@pivccu_version@@@&product="+this.m_product+"&serial=" + serial;
+-    script.src = this.m_URLServer + "/firmware/download?cmd=js_check_version&version="+WEBUI_VERSION+"&product="+this.m_product+"&serial=" + this.serial;
++    script.src = script.src = "https://www.pivccu.de/latestVersion?version=@@@pivccu_version@@@&product="+this.m_product+"&serial=" + this.serial;
      $("body").appendChild(script);
    },
  

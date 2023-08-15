@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2022 by Alexander Reinert
+ * Copyright (c) 2023 by Alexander Reinert
  * Author: Alexander Reinert
  *
  * This program is free software; you can redistribute it and/or modify
@@ -772,8 +772,12 @@ static int __init hb_rf_eth_init(void)
 
   generic_raw_uart_set_connection_state(raw_uart, false);
 
-  sysfs_create_file(&dev->kobj, &dev_attr_is_connected.attr);
-  sysfs_create_file(&dev->kobj, &dev_attr_connect.attr);
+  err = sysfs_create_file(&dev->kobj, &dev_attr_is_connected.attr);
+  if (err)
+    dev_info(dev, "failed creating is_connected sysfs file: %d\n", err);
+
+  err = sysfs_create_file(&dev->kobj, &dev_attr_connect.attr);
+    dev_info(dev, "failed creating connect sysfs file: %d\n", err);
 
   return 0;
 
@@ -833,5 +837,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.20");
+MODULE_VERSION("1.21");
 MODULE_LICENSE("GPL");

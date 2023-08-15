@@ -8,12 +8,12 @@
 0. Create full backup of your SD card
 1. Add the public key of the repository
    ```bash
-   wget -q -O - https://www.pivccu.de/piVCCU/public.key | sudo apt-key add -
+   wget -q -O - https://apt.pivccu.de/piVCCU/public.key | sudo tee /usr/share/keyrings/pivccu.asc
    ```
 
 2. Add the package repository
    ```bash
-   sudo bash -c 'echo "deb https://www.pivccu.de/piVCCU stable main" > /etc/apt/sources.list.d/pivccu.list'
+   echo "deb [signed-by=/usr/share/keyrings/pivccu.asc] https://apt.pivccu.de/piVCCU stable main" | sudo tee /etc/apt/sources.list.d/pivccu.list
    sudo apt update
    ```
    Instead of `stable` you can also use the `testing` tree, but be aware testing sometimes means not that stable.

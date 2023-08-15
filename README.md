@@ -30,7 +30,7 @@ Keeping this project running is very expensive, e.g. I have to buy a lot of diff
 
 ### Prequisites for HM-MOD-RPI-PCB and RPI-RF-MOD on GPIO header
 * Supported Single Board Computer
-  * Raspberry Pi 2B/3B/3B+/4B running Raspberry Pi OS Buster or Bullseye
+  * Raspberry Pi 2B/3B/3B+/4B running Raspberry Pi OS Bullseye
   * Asus Tinkerboard running Armbian with Mainline kernel
   * Asus Tinkerboard S running Armbian with Mainline kernel
   * Banana Pi M1 running Armbian with Mainline kernel (LEDs of RPI-RF-MOD not supported due to incompatible GPIO pin header)

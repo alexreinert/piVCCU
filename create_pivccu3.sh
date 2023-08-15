@@ -1,11 +1,29 @@
 #!/bin/bash
 
-CCU_VERSION=3.67.10
+CCU_VERSION=3.71.12
 CCU_DOWNLOAD_SPLASH_URL="https://www.eq-3.de/service/downloads.html"
 CCU_DOWNLOAD_URL="https://www.eq-3.de/downloads/software/firmware/ccu3-firmware/ccu3-$CCU_VERSION.tgz"
 CCU_DOWNLOAD_URL="https://homematic-ip.com/sites/default/files/downloads/ccu3-$CCU_VERSION.tgz"
 
-PKG_BUILD=78
+PKG_BUILD=85
+
+function throw {
+  echo $1
+  exit 1
+}
+
+function run {
+  echo -n "$1 ... "
+  shift
+  ERR=`$* 2>&1` && RC=$? || RC=$?
+  if [ $RC -eq 0 ]; then
+    echo -e "\033[0;32mDone\033[0;0m"
+  else
+    echo -e "\033[1;91mFAILED\033[0;0m"
+    echo "$ERR"
+    exit 1
+  fi
+}
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -18,55 +36,69 @@ CNT_ROOTFS=$CNT_ROOT/rootfs
 
 cd $WORK_DIR
 
-# download firmware image
-wget -O /dev/null --save-cookies=cookies.txt --keep-session-cookies $CCU_DOWNLOAD_SPLASH_URL
-wget -O ccu3.tar.gz --load-cookies=cookies.txt --referer=$CCU_DOWNLOAD_SPLASH_URL $CCU_DOWNLOAD_URL
+function download_ccu3_firmware {
+  run "Get splash page" wget -O /dev/null --save-cookies=cookies.txt --keep-session-cookies $CCU_DOWNLOAD_SPLASH_URL
+  run "Download package" wget -O ccu3.tar.gz --load-cookies=cookies.txt --referer=$CCU_DOWNLOAD_SPLASH_URL $CCU_DOWNLOAD_URL
+}
+run "Download CCU3 firmware" download_ccu3_firmware
 
-tar xzf ccu3.tar.gz
+function extract_ccu3_firmware {
+  run "Extract CCU3 firmware" tar xzf ccu3.tar.gz
+  run "Extract root fs" gunzip rootfs.ext4.gz
 
-gunzip rootfs.ext4.gz
+  mkdir $WORK_DIR/image
+  run "Mount root fs" fuse2fs -o ro,fakeroot rootfs.ext4 $WORK_DIR/image
 
-mkdir $WORK_DIR/image
-fuse2fs -o ro,fakeroot rootfs.ext4 $WORK_DIR/image
+  mkdir -p $CNT_ROOTFS
 
-mkdir -p $CNT_ROOTFS
+  run "Copy root fs files" cp -p -P -R $WORK_DIR/image/* $CNT_ROOTFS
 
-cp -p -P -R $WORK_DIR/image/* $CNT_ROOTFS
-
-umount $WORK_DIR/image
+  run "Umount root fs" umount $WORK_DIR/image
+}
+run "Extract CCU3 firmware" extract_ccu3_firmware
 
 cd $CNT_ROOTFS
 
-patch -E -l -p1 < $CURRENT_DIR/pivccu/firmware3.patch
-sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/config/cp_maintenance.cgi
-sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/webui/webui.js
+run "Patch CCU3 firmware" patch -E -l -p1 < $CURRENT_DIR/pivccu/firmware3.patch
 
-mkdir -p $CNT_ROOTFS/firmware/HM-MOD-UART
-wget -q -O $CNT_ROOTFS/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3 https://raw.githubusercontent.com/eq-3/occu/abc3d4c8ee7d0ba090407b6b4431aeca42aeb014/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3
-wget -q -O $CNT_ROOTFS/firmware/HM-MOD-UART/fwmap https://raw.githubusercontent.com/eq-3/occu/abc3d4c8ee7d0ba090407b6b4431aeca42aeb014/firmware/HM-MOD-UART/fwmap
+function patch_version {
+  sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/config/cp_maintenance.cgi || throw "Could not patch cp_maintenance.cgi"
+  sed -i "s/@@@pivccu_version@@@/$PKG_VERSION/g" $CNT_ROOTFS/www/webui/webui.js || throw "Could not patch webui.js"
+}
+run "Patch version numbers" patch_version
+
+function add_hm_mod_rpi_pcb_firmware {
+  mkdir -p $CNT_ROOTFS/firmware/HM-MOD-UART
+  run "Download firmware" wget -q -O $CNT_ROOTFS/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3 https://raw.githubusercontent.com/eq-3/occu/abc3d4c8ee7d0ba090407b6b4431aeca42aeb014/firmware/HM-MOD-UART/dualcopro_si1002_update_blhm.eq3
+  run "Download fwmap" wget -q -O $CNT_ROOTFS/firmware/HM-MOD-UART/fwmap https://raw.githubusercontent.com/eq-3/occu/abc3d4c8ee7d0ba090407b6b4431aeca42aeb014/firmware/HM-MOD-UART/fwmap
+}
+run "Add HM-MOD-RPI-PCB firmware" add_hm_mod_rpi_pcb_firmware
 
 mkdir -p $CNT_ROOTFS/firmware/HmIP-RFUSB
-wget -q -P $CNT_ROOTFS/firmware/HmIP-RFUSB https://raw.githubusercontent.com/eq-3/occu/77f5f55eb456e9974355d645e2005a1d355063af/firmware/HmIP-RFUSB/dualcopro_update_blhmip-4.4.18.eq3
+run "Add HmIP-RFUSB firmware" wget -q -P $CNT_ROOTFS/firmware/HmIP-RFUSB https://raw.githubusercontent.com/eq-3/occu/77f5f55eb456e9974355d645e2005a1d355063af/firmware/HmIP-RFUSB/dualcopro_update_blhmip-4.4.18.eq3
 
 mkdir -p $CNT_ROOTFS/etc/piVCCU3
-cp -p $CURRENT_DIR/pivccu/container3/* $CNT_ROOTFS/etc/piVCCU3
+run "Add piVCCU container files" cp -p $CURRENT_DIR/pivccu/container3/* $CNT_ROOTFS/etc/piVCCU3
 
 mkdir -p $CNT_ROOT/userfs
 
 mkdir -p $TARGET_DIR/etc/piVCCU3
-cp -p $CURRENT_DIR/pivccu/host3/lxc.config $TARGET_DIR/etc/piVCCU3
+run "Add lxc.config" cp -p $CURRENT_DIR/pivccu/host3/lxc.config $TARGET_DIR/etc/piVCCU3
 
 mkdir -p $TARGET_DIR/etc/default
-cp -p $CURRENT_DIR/pivccu/host3/default.config $TARGET_DIR/etc/default/pivccu3
+run "Add /etc/default/pivccu3" cp -p $CURRENT_DIR/pivccu/host3/default.config $TARGET_DIR/etc/default/pivccu3
 
 mkdir -p $TARGET_DIR/etc/udev/rules.d
-cp -p $CURRENT_DIR/pivccu/host3/*.rules $TARGET_DIR/etc/udev/rules.d
+run "Add udev rules" cp -p $CURRENT_DIR/pivccu/host3/*.rules $TARGET_DIR/etc/udev/rules.d
 
-cp -p $CURRENT_DIR/pivccu/host3/*.sh $CNT_ROOT
-cp -p $CURRENT_DIR/pivccu/host3/*.inc $CNT_ROOT
+function copy_host_binaries {
+  cp -p $CURRENT_DIR/pivccu/host3/*.sh $CNT_ROOT || throw "Could not copy .sh files"
+  cp -p $CURRENT_DIR/pivccu/host3/*.inc $CNT_ROOT || throw "Could not copy .inc files"
+}
+run "Add piVCCU host binaries" copy_host_binaries
 
 mkdir -p $TARGET_DIR/lib/systemd/system/
-cp -p $CURRENT_DIR/pivccu/host3/*.service $TARGET_DIR/lib/systemd/system/
+run "Add systemd service files" cp -p $CURRENT_DIR/pivccu/host3/*.service $TARGET_DIR/lib/systemd/system/
 
 mkdir -p $TARGET_DIR/DEBIAN
 cp -p $CURRENT_DIR/package/pivccu3/* $TARGET_DIR/DEBIAN
@@ -78,19 +110,22 @@ done
 
 cd $WORK_DIR
 
-dpkg-deb --build -Zxz pivccu3-$PKG_VERSION
+run "Build armhf package" dpkg-deb --build -Zxz pivccu3-$PKG_VERSION
 
-cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-armhf.deb
+run "Copy armhf package to local directory" cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-armhf.deb
 
-wget -O openjdk-8-jre.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u332-ga-1~deb9u1_armhf.deb
-wget -O openjdk-8-jre-headless.deb http://security.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre-headless_8u332-ga-1~deb9u1_armhf.deb
+function add_openjdk {
+  run "Download openjdk-8-jre.deb" wget -O openjdk-8-jre.deb http://archive.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre_8u332-ga-1~deb9u1_armhf.deb
+  run "Download openjdk-8-jre-headless.deb" wget -O openjdk-8-jre-headless.deb http://archive.debian.org/debian-security/pool/updates/main/o/openjdk-8/openjdk-8-jre-headless_8u332-ga-1~deb9u1_armhf.deb
 
-dpkg-deb -x openjdk-8-jre.deb .
-dpkg-deb -x openjdk-8-jre-headless.deb .
+  run "Extract openjdk-8-jre.deb" dpkg-deb -x openjdk-8-jre.deb .
+  run "Extract openjdk-8-jre-headless.deb" dpkg-deb -x openjdk-8-jre-headless.deb .
 
-mv usr/lib/jvm/java-8-openjdk-armhf/jre $CNT_ROOTFS/opt/openjdk
-rm -f $CNT_ROOTFS/opt/java
-ln -s /opt/openjdk $CNT_ROOTFS/opt/java
+  run "Copy openjdk files" mv usr/lib/jvm/java-8-openjdk-armhf/jre $CNT_ROOTFS/opt/openjdk
+  run "Remove old jdk files" rm -f $CNT_ROOTFS/opt/java
+  run "Create java symlink" ln -s /opt/openjdk $CNT_ROOTFS/opt/java
+}
+run "Add compatible openjdk package for arm64" add_openjdk
 
 rm -rf $TARGET_DIR/DEBIAN/*
 cp -p $CURRENT_DIR/package/pivccu3/* $TARGET_DIR/DEBIAN
@@ -100,8 +135,9 @@ for file in $TARGET_DIR/DEBIAN/*; do
   sed -i "s/{PKG_ARCH}/arm64/g" $file
 done
 
-dpkg-deb --build -Zxz pivccu3-$PKG_VERSION
+run "Build arm64 package" dpkg-deb --build -Zxz pivccu3-$PKG_VERSION
 
-cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-arm64.deb
+run "Copy arm64 package to local directory" cp pivccu3-$PKG_VERSION.deb $CURRENT_DIR/pivccu3-$PKG_VERSION-arm64.deb
 
-echo "Please clean-up the work dir temp folder $WORK_DIR, e.g. by doing rm -R $WORK_DIR"
+run "Remove temporary files" rm -rf $WORK_DIR
+

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2020 by Alexander Reinert
+ * Copyright (c) 2023 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -76,6 +76,8 @@ static struct circ_buf fake_hmrf_rxbuf;
 static wait_queue_head_t fake_hmrf_readq;
 static spinlock_t fake_hmrf_writel;
 
+static bool is_in_bl = false;
+
 static ssize_t fake_hmrf_read(struct file *filep, char __user *buf, size_t count, loff_t *offset)
 {
   int ret = 0;
@@ -114,7 +116,11 @@ exit:
   return ret;
 }
 
+static char system_identify_response[] = {0x04, 0x02, 0x43, 0x6F, 0x5F, 0x43, 0x50, 0x55, 0x5F, 0x42, 0x4C};
+static char system_start_app_response[] = {0x04, 0x01};
+
 static char common_identify_response[] = {0x05, 0x01, 0x44, 0x75, 0x61, 0x6C, 0x43, 0x6F, 0x50, 0x72, 0x6F, 0x5F, 0x41, 0x70, 0x70};
+static char common_start_bl_response[] = {0x05, 0x01};
 static char common_get_sgtin_response[] = {0x05, 0x01, 0x30, 0x14, 0xF7, 0x11, 0xA0, 0x61, 0xA7, 0xD5, 0x69, 0x9D, 0xAB, 0x52};
 
 static char trx_get_version_response[] = {0x04, 0x01, 0x02, 0x08, 0x06, 0x01, 0x00, 0x03, 0x01, 0x14, 0x03};
@@ -128,6 +134,7 @@ static char llmac_get_timestamp_response[] = {0x01, 0x01, 0x2D, 0xEA};
 static char llmac_rfd_init_response[] = {0x01, 0x01, 0x12, 0x34};
 
 static char hmip_set_radio_address_response[] = {0x06, 0x01};
+static char hmip_get_default_rf_address_response[] = {0x06, 0x01, 0x4F, 0x68, 0xF1};
 static char hmip_get_security_counter_response[] = {0x06, 0x01, 0x0C, 0xFF, 0xFF, 0xFF};
 static char hmip_set_security_counter_response[] = {0x06, 0x01};
 static char hmip_set_max_sent_attemps_response[] = {0x06, 0x01};
@@ -138,30 +145,35 @@ static char hmip_set_nwkey_response[] = {0x06, 0x01};
 static char hmip_add_linkpartner_response[] = {0x06, 0x01};
 static char hmip_send_response[] = {0x06, 0x01};
 
+#define BUF_SIZE 1024
+
 #define fake_hmrf_respond_to_frame(__frame, __response, __frame_buf, __raw_buf, __wcount) \
   __frame.cmd = __response;                                                               \
   __frame.cmdlen = sizeof(__response);                                                    \
-  __wcount = encodeFrame(__frame_buf, sizeof(__frame_buf), &__frame);                     \
+  __wcount = encodeFrame(__frame_buf, BUF_SIZE, &__frame);                     \
   __wcount = encodeFrameBuffer(__frame_buf, __raw_buf, __wcount);                         \
   fake_hmrf_add_to_buffer(__raw_buf, __wcount);
 
 static ssize_t fake_hmrf_write(struct file *filep, const __user char *buf, size_t count, loff_t *offset)
 {
-  char raw_buf[1024] = {0};
-  char frame_buf[1024] = {0};
+  int err = 0;
+  char *raw_buf = kzalloc(BUF_SIZE, GFP_KERNEL);
+  char *frame_buf = kzalloc(BUF_SIZE, GFP_KERNEL);
   struct hm_frame frame;
   size_t raw_frame_len;
 
   size_t wcount = 0;
 
-  if (count > sizeof(raw_buf))
+  if (count > BUF_SIZE)
   {
-    return -EMSGSIZE;
+    err = -EMSGSIZE;
+    goto error;
   }
 
   if (copy_from_user(raw_buf, buf, count))
   {
-    return -EFAULT;
+    err = -EFAULT;
+    goto error;
   }
 
   raw_frame_len = decodeFrameBuffer(raw_buf, frame_buf, count);
@@ -169,16 +181,40 @@ static ssize_t fake_hmrf_write(struct file *filep, const __user char *buf, size_
   if (!tryParseFrame(frame_buf, raw_frame_len, &frame))
   {
     print_hex_dump(KERN_INFO, "fake_hmrf invalid frame: ", DUMP_PREFIX_NONE, 32, 1, raw_buf, count, false);
-    return -EFAULT;
+    err = -EFAULT;
+    goto error;
   }
 
   switch (frame.dst)
   {
+  case HM_DST_SYSTEM:
+    switch (frame.cmd[0])
+    {
+    case HM_SYSTEM_IDENTIFY:
+      if (is_in_bl)
+      {
+        fake_hmrf_respond_to_frame(frame, system_identify_response, frame_buf, raw_buf, wcount);
+      }
+      break;
+    case HM_SYSTEM_START_APP:
+      is_in_bl = false;
+      fake_hmrf_respond_to_frame(frame, system_start_app_response, frame_buf, raw_buf, wcount);
+      break;
+    }
+    break;
+
   case HM_DST_COMMON:
     switch (frame.cmd[0])
     {
     case HM_COMMON_IDENTIFY:
-      fake_hmrf_respond_to_frame(frame, common_identify_response, frame_buf, raw_buf, wcount);
+      if (!is_in_bl)
+      {
+        fake_hmrf_respond_to_frame(frame, common_identify_response, frame_buf, raw_buf, wcount);
+      }
+      break;
+    case HM_COMMON_START_BL:
+      is_in_bl = true;
+      fake_hmrf_respond_to_frame(frame, common_start_bl_response, frame_buf, raw_buf, wcount);
       break;
     case HM_COMMON_GET_SGTIN:
       fake_hmrf_respond_to_frame(frame, common_get_sgtin_response, frame_buf, raw_buf, wcount);
@@ -228,6 +264,9 @@ static ssize_t fake_hmrf_write(struct file *filep, const __user char *buf, size_
     case HM_HMIP_SET_RADIO_ADDR:
       fake_hmrf_respond_to_frame(frame, hmip_set_radio_address_response, frame_buf, raw_buf, wcount);
       break;
+    case HM_HMIP_GET_DEFAULT_RF_ADDR:
+      fake_hmrf_respond_to_frame(frame, hmip_get_default_rf_address_response, frame_buf, raw_buf, wcount);
+      break;
     case HM_HMIP_GET_SECURITY_COUNTER:
       fake_hmrf_respond_to_frame(frame, hmip_get_security_counter_response, frame_buf, raw_buf, wcount);
       break;
@@ -265,6 +304,11 @@ static ssize_t fake_hmrf_write(struct file *filep, const __user char *buf, size_
   }
 
   return count;
+
+error:
+  kfree(raw_buf);
+  kfree(frame_buf);
+  return err;
 }
 
 static int fake_hmrf_open(struct inode *inode, struct file *filep)
@@ -415,7 +459,7 @@ static int fake_hmrf_set_radio_mac(const char *val, const struct kernel_param *k
   }
 
   memcpy(&(llmac_get_default_rf_address_response[2]), parsed_mac, 3);
-
+  memcpy(&(hmip_get_default_rf_address_response[2]), parsed_mac, 3);
   return 8;
 }
 
@@ -540,6 +584,6 @@ module_init(fake_hmrf_init);
 module_exit(fake_hmrf_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.5");
+MODULE_VERSION("1.6");
 MODULE_DESCRIPTION("Fake HM-MOD-RPI-PCB driver");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");

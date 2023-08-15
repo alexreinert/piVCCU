@@ -1,7 +1,25 @@
 #!/bin/bash
-PKG_BUILD=6
+PKG_BUILD=7
 
 PKG_VERSION=1.0-$PKG_BUILD
+
+function throw {
+  echo $1
+  exit 1
+}
+
+function run {
+  echo -n "$1 ... "
+  shift
+  ERR=`$* 2>&1` && RC=$? || RC=$?
+  if [ $RC -eq 0 ]; then
+    echo -e "\033[0;32mDone\033[0;0m"
+  else
+    echo -e "\033[1;91mFAILED\033[0;0m"
+    echo "$ERR"
+    exit 1
+  fi
+}
 
 CURRENT_DIR=$(pwd)
 WORK_DIR=$(mktemp -d)
@@ -13,15 +31,15 @@ mkdir -p $SRC_DIR
 
 cp -p $CURRENT_DIR/detect_radio_module/* $SRC_DIR
 
-declare -A architectures=(["armhf"]="arm-linux-gnueabihf-g++" ["arm64"]="aarch64-linux-gnu-g++" ["i386"]="i686-linux-gnu-g++" ["amd64"]="g++")
-for ARCH in "${!architectures[@]}"
-do
-  ARCH_COMP=${architectures[$ARCH]}
+function build_binaries {
+  ARCH=$1
 
   cd $SRC_DIR
-  make clean
-  make CXX=$ARCH_COMP
+  run "make clean" make clean
+  run "make ($ARCH)" make CXX=$ARCH_COMP
+}
 
+function build_package {
   TARGET_DIR=$WORK_DIR/detect-radio-module-$PKG_VERSION-$ARCH
   mkdir -p $TARGET_DIR/bin
 
@@ -36,10 +54,20 @@ do
 
   cd $WORK_DIR
 
-  dpkg-deb --build -Zxz detect-radio-module-$PKG_VERSION-$ARCH
+  dpkg-deb --build -Zxz detect-radio-module-$PKG_VERSION-$ARCH || throw "Error on dpkg-deb"
+}
+
+declare -A architectures=(["armhf"]="arm-linux-gnueabihf-g++" ["arm64"]="aarch64-linux-gnu-g++" ["i386"]="i686-linux-gnu-g++" ["amd64"]="g++")
+for ARCH in "${!architectures[@]}"
+do
+  ARCH_COMP=${architectures[$ARCH]}
+
+  run "Build binaries for $ARCH" build_binaries $ARCH
+  run "Build package for $ARCH" build_package $ARCH
 done
 
-cp detect-radio-module-*.deb $CURRENT_DIR
+cd $WORK_DIR
 
-echo "Please clean-up the work dir temp folder $WORK_DIR, e.g. by doing rm -R $WORK_DIR"
+run "Copy package to local directory" cp detect-radio-module-*.deb $CURRENT_DIR
+run "Cleanup temporary files" rm -rf $WORK_DIR
 

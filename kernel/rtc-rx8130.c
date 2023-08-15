@@ -13,6 +13,8 @@
 // <http://lists.lm-sensors.org/mailman/listinfo/lm-sensors>
 // 2006.11
 //
+// Modified by Alexander Reinert to support Homematic IP RPI-RF-MOD radio module
+//
 // Code cleanup by Sergei Poselenov, <sposelenov@emcraft.com>
 // Converted to new style by Wolfgang Grandegger <wg@grandegger.com>
 // Alarm and periodic interrupt added by Dmitry Rakhchev <rda@emcraft.com>
@@ -737,7 +739,11 @@ static struct rtc_class_ops rx8130_rtc_ops = {
 // Todo: - maybe change kzalloc to use devm_kzalloc
 //       -
 //----------------------------------------------------------------------
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0))
+static int rx8130_probe(struct i2c_client *client)
+#else
 static int rx8130_probe(struct i2c_client *client, const struct i2c_device_id *id)
+#endif
 {
 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
 	struct rx8130_data *rx8130;
@@ -863,4 +869,4 @@ module_i2c_driver(rx8130_driver);
 MODULE_AUTHOR("Val Krutov <vkrutov@eea.epson.com>");
 MODULE_DESCRIPTION("RX8130CE RTC driver");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.6");
+MODULE_VERSION("1.7");

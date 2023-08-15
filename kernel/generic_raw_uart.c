@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2022 by Alexander Reinert
+ * Copyright (c) 2023 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -298,7 +298,6 @@ static int generic_raw_uart_reset_radio_module(struct generic_raw_uart_instance 
 
   if (instance->open_count > max_open_count)
   {
-    up(&instance->sem);
     ret = -EBUSY;
     goto exit_sem;
   }
@@ -332,7 +331,7 @@ exit_sem:
   up(&instance->sem);
 
 exit:
-  return 0;
+  return ret;
 }
 
 static int generic_raw_uart_open(struct inode *inode, struct file *filep)
@@ -939,6 +938,7 @@ static DEVICE_ATTR_RO(connection_state);
 static spinlock_t active_devices_lock;
 static bool active_devices[MAX_DEVICES] = {false};
 
+#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0))
 static int __match_i2c_client_by_address(struct device *dev, void *addrp)
 {
   struct i2c_client *client = i2c_verify_client(dev);
@@ -959,6 +959,7 @@ static struct i2c_client *i2c_find_client(struct i2c_adapter *adapter, int addr)
 
   return NULL;
 }
+#endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 5, 0))
 static inline bool i2c_client_has_driver(struct i2c_client *client)
@@ -1350,7 +1351,7 @@ EXPORT_SYMBOL(generic_raw_uart_verify_dkey);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.27");
+MODULE_VERSION("1.29");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
