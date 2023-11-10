@@ -8,6 +8,7 @@
     target = <&uart0>;
     __overlay__ {
       compatible = "pivccu,pl011";
+      status = "okay";
       pivccu,reset-gpios = <&gpio 18 0>, <&gpio 19 0>;
       pivccu,led-gpios = <&gpio 16 0>, <&gpio 20 0>, <&gpio 21 0>;
       pivccu,rtc = <&rpi_rf_mod_rtc>;
