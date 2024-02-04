@@ -36,7 +36,7 @@
 6. Enable UART GPIO pins (not required on Raspberry Pi 2) (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
    * Option 1: Disabled bluetooth (prefered)
       ```bash
-      sudo bash -c 'cat << EOT >> /boot/config.txt
+      sudo bash -c 'cat << EOT >> /boot/firmware/config.txt
       dtoverlay=pi3-disable-bt
       EOT'
       sudo systemctl disable hciuart.service
@@ -44,7 +44,7 @@
 
    * Option 2: Bluetooth attached to mini uart
       ```bash
-      sudo bash -c 'cat << EOT >> /boot/config.txt
+      sudo bash -c 'cat << EOT >> /boot/firmware/config.txt
       dtoverlay=pi3-miniuart-bt
       enable_uart=1
       force_turbo=1
@@ -54,8 +54,8 @@
 
 7. Disable serial console in command line (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, for the HB-RF-USB this step is not neccessary)
    ```bash
-   sudo sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
-   sudo sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
+   sudo sed -i /boot/firmware/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
+   sudo sed -i /boot/firmware/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
    ```
 
 8. Add network bridge (if you are using wifi please refer to the debian documentation how to configure the network and the bridge)
