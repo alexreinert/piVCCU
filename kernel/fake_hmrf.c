@@ -547,7 +547,11 @@ static int __init fake_hmrf_init(void)
     goto failed_cdev_add;
   }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+  fake_hmrf_class = class_create(DRIVER_NAME);
+#else
   fake_hmrf_class = class_create(THIS_MODULE, DRIVER_NAME);
+#endif
   ptr_err = fake_hmrf_class;
   if (IS_ERR(ptr_err))
     goto failed_class_create;

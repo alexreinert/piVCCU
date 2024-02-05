@@ -724,7 +724,11 @@ static int __init hb_rf_eth_init(void)
   send_msg_queue = kzalloc(sizeof(struct send_msg_queue_t), GFP_KERNEL);
   send_msg_queue->entries = kcalloc(QUEUE_LENGTH, sizeof(struct send_msg_queue_entry), GFP_KERNEL);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+  class = class_create("hb-rf-eth");
+#else
   class = class_create(THIS_MODULE, "hb-rf-eth");
+#endif
   if (IS_ERR(class))
   {
     err = PTR_ERR(class);
