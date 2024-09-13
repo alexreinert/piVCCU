@@ -10,7 +10,7 @@ piVCCU is a project to install the original Homematic CCU3 firmware inside a vir
 * Support for backup/restore between piVCCU and original CCU3 without modification
 * Easy to install and update with apt
 * Support not only on Raspberry
-* Support for 
+* Support for
   * HM-MOD-RPI-PCB (HmRF+HmIP),
   * RPI-RF-MOD (HmRF+HmIP, Pushbutton is not supported)
   * HmIP-RFUSB (HmRF+HmIP)
@@ -62,7 +62,7 @@ Login to Armbian based images using user 'root' and password '1234'.
 
 ### Manual installation
 * [Raspberry Pi](docs/setup/raspberrypi.md)
-* [Armbian](docs/setup/armbian.md)
+* [Armbian](docs/setup/armbian.md) / [DietPi](docs/setup/dietpi.md)
 * [Other OS](docs/setup/otheros.md)
 
 ### Updating piVCCU to latest version
@@ -123,7 +123,7 @@ To restore a backup file use the WebUI of the CCU.
 * Original CCU3
   You can only migrate to piVCCU3.
   Just restore a normal system backup using the CCU web interface.
-   
+
 * RaspberryMatic
    1. Restore a normal system backup using the CCU web interface
    2. Reinstall all addons using the CCU web interface
@@ -211,7 +211,7 @@ To restore a backup file use the WebUI of the CCU.
          ```
       8. As the CCU3 firmware does a cherry picking of files beeing restored, you maybe need to restore some files by yourself (e.g. CUxD settings files).
       9. If you used YAHM without radio module, you should check your interface assignments of the LAN Gateways in the control panel
-      
+
 ### Using USB devices inside container (e.g. for CUxD)
 You can configure the USB devices using the installer. You can change it later using
 ```bash
@@ -233,4 +233,3 @@ The generated CCU container .deb files (pivccu) are containing the original CCU3
 
 ### Acknowledgement
 The base idea of piVCCU is inspired by [YAHM](https://github.com/leonsio/YAHM/) and [lxccu](https://www.lxccu.com/).
-
