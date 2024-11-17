@@ -176,7 +176,7 @@ fi
 
 OS_RELEASE=${OS_ID}_${VERSION_CODENAME}
 
-wget -O /dev/null -q --timeout=5 "https://www.pivccu.de/latestVersion?version=$PIVCCU_VERSION&product=HM-CCU3&serial=$HM_HMIP_SERIAL&os=$OS_RELEASE&board=$BOARD_TYPE" || true
+wget -O /dev/null -q --timeout=5 --tries=1 "https://www.pivccu.de/latestVersion?version=$PIVCCU_VERSION&product=HM-CCU3&serial=$HM_HMIP_SERIAL&os=$OS_RELEASE&board=$BOARD_TYPE" || true
 
 sysctl -w kernel.sched_rt_runtime_us=-1
 
