@@ -1506,12 +1506,15 @@ diff -ruN --no-dereference fw.3.79.6.orig/www/webui/js/lang/en/translate.lang.js
 diff -ruN --no-dereference fw.3.79.6.orig/www/webui/webui.js fw.3.79.6.patched/www/webui/webui.js
 --- fw.3.79.6.orig/www/webui/webui.js
 +++ fw.3.79.6.patched/www/webui/webui.js
-@@ -27548,7 +27548,7 @@
+@@ -27548,8 +27548,10 @@
      var script = document.createElement("script");
      script.id = "homematic_com_script";
      script.type = "text/javascript";
 -    script.src = this.m_URLServer + "/firmware/download?cmd=js_check_version&version="+WEBUI_VERSION+"&product="+this.m_product+"&serial=" + this.serial;
 +    script.src = script.src = "https://www.pivccu.de/latestVersion?version=@@@pivccu_version@@@&product="+this.m_product+"&serial=" + this.serial;
      $("body").appendChild(script);
++
++    fetch(this.m_URLServer + "/firmware/download?cmd=js_check_version&version="+WEBUI_VERSION+"&product="+this.m_product+"&serial=" + this.serial, { mode: "no-cors", credential: "omit"});
    },
  
+   // For testing only
