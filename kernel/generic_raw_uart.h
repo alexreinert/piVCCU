@@ -116,19 +116,18 @@ extern bool generic_raw_uart_verify_dkey(struct device *dev, unsigned char *dkey
     return 0;                                                                             \
   }                                                                                       \
                                                                                           \
-  static int __##__raw_uart_driver##_remove(struct platform_device *pdev)                 \
+  static void __##__raw_uart_driver##_remove(struct platform_device *pdev)                \
   {                                                                                       \
     int err;                                                                              \
     struct device *dev = &pdev->dev;                                                      \
                                                                                           \
-    err = generic_raw_uart_remove(__raw_uart_driver##_raw_uart); \
+    err = generic_raw_uart_remove(__raw_uart_driver##_raw_uart);                          \
     if (err)                                                                              \
     {                                                                                     \
       dev_err(dev, "failed to remove generic_raw_uart module");                           \
-      return err;                                                                         \
     }                                                                                     \
                                                                                           \
-    return __raw_uart_driver##_remove(pdev);                                              \
+    __raw_uart_driver##_remove(pdev);                                                     \
   }                                                                                       \
                                                                                           \
   static struct platform_driver __raw_uart_driver_platform_driver = {                     \

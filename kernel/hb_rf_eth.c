@@ -759,7 +759,7 @@ static int __init hb_rf_eth_init(void)
   gc.base = -1;
   gc.can_sleep = false;
 
-  err = gpiochip_add(&gc);
+  err = gpiochip_add_data(&gc, NULL);
   if (err)
     goto failed_gc_create;
 
