@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2023 by Alexander Reinert
+ * Copyright (c) 2025 by Alexander Reinert
  * Author: Alexander Reinert
  *
  * This program is free software; you can redistribute it and/or modify
@@ -759,7 +759,11 @@ static int __init hb_rf_eth_init(void)
   gc.base = -1;
   gc.can_sleep = false;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0))
+  err = gpiochip_add_data(&gc, NULL);
+#else
   err = gpiochip_add(&gc);
+#endif
   if (err)
     goto failed_gc_create;
 
@@ -837,5 +841,5 @@ module_exit(hb_rf_eth_exit);
 
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_DESCRIPTION("HB-RF-ETH raw uart driver");
-MODULE_VERSION("1.22");
+MODULE_VERSION("1.23");
 MODULE_LICENSE("GPL");

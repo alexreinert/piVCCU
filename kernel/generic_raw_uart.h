@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2023 by Alexander Reinert
+ * Copyright (c) 2025 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -93,7 +93,14 @@ extern void generic_raw_uart_rx_completed(struct generic_raw_uart *raw_uart);
 
 extern bool generic_raw_uart_verify_dkey(struct device *dev, unsigned char *dkey, int dkey_len, unsigned char *skey, uint32_t *pkey, int bytes);
 
-#define module_raw_uart_driver(__module_name, __raw_uart_driver, __of_match)              \
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0))
+#define module_raw_uart_driver(__module_name, __raw_uart_driver, __of_match)  module_raw_uart_driver_int(__module_name, __raw_uart_driver, __of_match, ge611)
+#else
+#define module_raw_uart_driver(__module_name, __raw_uart_driver, __of_match)  module_raw_uart_driver_int(__module_name, __raw_uart_driver, __of_match, le610)
+#endif
+
+#define module_raw_uart_driver_int(__module_name, __raw_uart_driver, __of_match, __remove_variant) \
   static struct generic_raw_uart *__raw_uart_driver##_raw_uart;                           \
   static int __##__raw_uart_driver##_probe(struct platform_device *pdev)                  \
   {                                                                                       \
@@ -116,7 +123,7 @@ extern bool generic_raw_uart_verify_dkey(struct device *dev, unsigned char *dkey
     return 0;                                                                             \
   }                                                                                       \
                                                                                           \
-  static int __##__raw_uart_driver##_remove(struct platform_device *pdev)                 \
+  static int __##__raw_uart_driver##_remove_le610(struct platform_device *pdev)           \
   {                                                                                       \
     int err;                                                                              \
     struct device *dev = &pdev->dev;                                                      \
@@ -131,9 +138,14 @@ extern bool generic_raw_uart_verify_dkey(struct device *dev, unsigned char *dkey
     return __raw_uart_driver##_remove(pdev);                                              \
   }                                                                                       \
                                                                                           \
+  static void __##__raw_uart_driver##_remove_ge611(struct platform_device *pdev)          \
+  {                                                                                       \
+    __##__raw_uart_driver##_remove_le610(pdev);                                                 \
+  }                                                                                       \
+                                                                                          \
   static struct platform_driver __raw_uart_driver_platform_driver = {                     \
       .probe = __##__raw_uart_driver##_probe,                                             \
-      .remove = __##__raw_uart_driver##_remove,                                           \
+      .remove = __##__raw_uart_driver##_remove_##__remove_variant,                         \
       .driver = {                                                                         \
           .owner = THIS_MODULE,                                                           \
           .name = __module_name,                                                          \

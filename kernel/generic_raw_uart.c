@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2023 by Alexander Reinert
+ * Copyright (c) 2025 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -147,7 +147,11 @@ static int generic_raw_uart_get_device_type(struct generic_raw_uart_instance *in
 static struct file_operations generic_raw_uart_fops =
 {
   .owner = THIS_MODULE,
-  .llseek = no_llseek,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
+        .llseek         = noop_llseek,
+#else
+        .llseek         = no_llseek,
+#endif
   .read = generic_raw_uart_read,
   .write = generic_raw_uart_write,
   .open = generic_raw_uart_open,
@@ -1351,7 +1355,7 @@ EXPORT_SYMBOL(generic_raw_uart_verify_dkey);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.30");
+MODULE_VERSION("1.31");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 

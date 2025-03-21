@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
- * Copyright (c) 2023 by Alexander Reinert
+ * Copyright (c) 2025 by Alexander Reinert
  * Author: Alexander Reinert
  * Uses parts of bcm2835_raw_uart.c. (c) 2015 by eQ-3 Entwicklung GmbH
  *
@@ -61,7 +61,11 @@ static void fake_hmrf_add_to_buffer(char *buf, size_t len);
 static struct file_operations fake_hmrf_fops =
     {
         .owner = THIS_MODULE,
-        .llseek = no_llseek,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
+        .llseek         = noop_llseek,
+#else
+        .llseek         = no_llseek,
+#endif
         .read = fake_hmrf_read,
         .write = fake_hmrf_write,
         .open = fake_hmrf_open,
