@@ -943,10 +943,10 @@ static spinlock_t active_devices_lock;
 static bool active_devices[MAX_DEVICES] = {false};
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0))
-static int __match_i2c_client_by_address(struct device *dev, void *addrp)
+static int __match_i2c_client_by_address(struct device *dev, const void *addrp)
 {
   struct i2c_client *client = i2c_verify_client(dev);
-  int addr = *(int *)addrp;
+  int addr = *(const int *)addrp;
   return (client && client->addr == addr) ? 1 : 0;
 }
 
