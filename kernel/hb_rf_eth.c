@@ -134,7 +134,7 @@ static void hb_rf_eth_queue_msg(char cmd, char *buffer, size_t len)
   }
   else
   {
-    dev_err(dev, "No free send buffers\n");
+    dev_err_ratelimited(dev, "No free send buffers\n");
   }
 
   spin_unlock(&queue_write_lock);
@@ -158,18 +158,18 @@ static int hb_rf_eth_recv_packet(struct socket *sock, char *buffer, size_t buffe
   {
     if (len < 4)
     {
-      dev_err(dev, "Received to small UDP packet\n");
+      dev_err_ratelimited(dev, "Received to small UDP packet\n");
       return -EPROTO;
     }
     if (*((uint16_t *)(buffer + len - 2)) != (uint16_t)(htons(hb_rf_eth_calc_crc(buffer, len - 2))))
     {
-      dev_err(dev, "Received UDP packet with invalid checksum\n");
+      dev_err_ratelimited(dev, "Received UDP packet with invalid checksum\n");
       return -EPROTO;
     }
   }
   else if (len != 0 && len != -EAGAIN)
   {
-    dev_err(dev, "Error %d on receiving packet\n", len);
+    dev_err_ratelimited(dev, "Error %d on receiving packet\n", len);
   }
 
   return len;
@@ -228,7 +228,7 @@ static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
   }
   else
   {
-    dev_err(dev, "Error sending packet, not connected\n");
+    dev_err_ratelimited(dev, "Error sending packet, not connected\n");
   }
 }
 
