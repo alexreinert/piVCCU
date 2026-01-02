@@ -1,14 +1,17 @@
 [Unit]
 Description=piVCCU
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
+Environment=PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin
 ExecStart=/var/lib/piVCCU3/start_container.sh
 ExecStop=/var/lib/piVCCU3/stop_container.sh
 Type=forking
-PIDFile=/var/run/pivccu3.pid
+PIDFile=/run/pivccu3.pid
 TimeoutSec=300s
+Restart=always
+RestartSec=10s
 
 [Install]
 WantedBy=multi-user.target
-
