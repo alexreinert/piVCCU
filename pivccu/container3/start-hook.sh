@@ -2,18 +2,18 @@
 
 . /var/pivccu/conf
 
-find /var/* -maxdepth 0 ! -name pivccu -exec rm -rf {} \;
-rm -rf /tmp/*
+/bin/find /var/* -maxdepth 0 ! -name pivccu -exec  /bin/rm -rf {} \;
+/bin/rm -rf /tmp/*
 
-rm -f /dev/eq3loop
-rm -f /dev/mmd_bidcos
-rm -f /dev/mmd_hmip
-rm -f /dev/raw-uart
+/bin/rm -f /dev/eq3loop
+/bin/rm -f /dev/mmd_bidcos
+/bin/rm -f /dev/mmd_hmip
+/bin/rm -f /dev/raw-uart
 
-mknod -m 666 /dev/eq3loop c $HM_EQ3LOOP_MAJOR 0
-mknod -m 666 /dev/mmd_hmip c $HM_HMIP_MAJOR $HM_HMIP_MINOR
-mknod -m 666 /dev/mmd_bidcos c $HM_EQ3LOOP_MAJOR 2
-mknod -m 666 /dev/raw-uart c $HM_RAW_UART_MAJOR $HM_RAW_UART_MINOR
+/bin/mknod -m 666 /dev/eq3loop c $HM_EQ3LOOP_MAJOR 0
+/bin/mknod -m 666 /dev/mmd_hmip c $HM_HMIP_MAJOR $HM_HMIP_MINOR
+/bin/mknod -m 666 /dev/mmd_bidcos c $HM_EQ3LOOP_MAJOR 2
+/bin/mknod -m 666 /dev/raw-uart c $HM_RAW_UART_MAJOR $HM_RAW_UART_MINOR
 
 mkdir -p /dev/net
 if [ ! -e /dev/net/tun ]; then
