@@ -40,6 +40,7 @@
 #include <asm/termbits.h>
 #include <asm/termios.h>
 #include <asm/ioctls.h>
+#include <linux/serial.h>
 #include <linux/version.h>
 
 #include "stack_protector.include"
@@ -512,7 +513,7 @@ static long eq3loop_ioctl_slave(struct eq3loop_channel_data* channel, struct fil
 	switch(cmd) {
 
 	case TCGETS:
-		if( _access_ok(VERIFY_READ, (void *)arg, sizeof(struct termios) ) )
+		if( _access_ok(VERIFY_WRITE, (void *)arg, sizeof(struct termios) ) )
 		{
 			ret = copy_to_user( (void*)arg, &channel->termios, sizeof(struct termios) );
 		} else {
@@ -520,13 +521,68 @@ static long eq3loop_ioctl_slave(struct eq3loop_channel_data* channel, struct fil
 		}
 		break;
 	case TCSETS:
-		if( _access_ok(VERIFY_WRITE, (void *)arg, sizeof(struct termios) ) )
+	case TCSETSW:
+	case TCSETSF:
+		if( _access_ok(VERIFY_READ, (void *)arg, sizeof(struct termios) ) )
 		{
 			ret = copy_from_user( &channel->termios, (void*)arg, sizeof(struct termios) );
 		} else {
 			ret = -EFAULT;
 		}
 		break;
+#ifdef TCGETS2
+	case TCGETS2:
+	{
+		struct termios2 t2;
+	
+		memset(&t2, 0, sizeof(t2));
+		t2.c_iflag = channel->termios.c_iflag;
+		t2.c_oflag = channel->termios.c_oflag;
+		t2.c_cflag = channel->termios.c_cflag;
+		t2.c_lflag = channel->termios.c_lflag;
+		t2.c_line  = channel->termios.c_line;
+		memcpy(t2.c_cc, channel->termios.c_cc, NCCS);
+		t2.c_ispeed = 0;
+		t2.c_ospeed = 0;
+	
+		if( _access_ok(VERIFY_WRITE, (void *)arg, sizeof(struct termios2) ) )
+		{
+			ret = copy_to_user( (void*)arg, &t2, sizeof(struct termios2) );
+		} else {
+			ret = -EFAULT;
+		}
+		break;
+	}
+#endif
+#ifdef TCSETS2
+	case TCSETS2:
+#ifdef TCSETSW2
+	case TCSETSW2:
+#endif
+#ifdef TCSETSF2
+	case TCSETSF2:
+#endif
+	{
+		struct termios2 t2;
+	
+		if( _access_ok(VERIFY_READ, (void *)arg, sizeof(struct termios2) ) )
+		{
+			ret = copy_from_user( &t2, (void*)arg, sizeof(struct termios2) );
+			if( !ret )
+			{
+				channel->termios.c_iflag = t2.c_iflag;
+				channel->termios.c_oflag = t2.c_oflag;
+				channel->termios.c_cflag = t2.c_cflag;
+				channel->termios.c_lflag = t2.c_lflag;
+				channel->termios.c_line  = t2.c_line;
+				memcpy(channel->termios.c_cc, t2.c_cc, NCCS);
+			}
+		} else {
+			ret = -EFAULT;
+		}
+		break;
+	}
+#endif
 	case TIOCINQ:
 		temp = CIRC_CNT( channel->master2slave_buf.head, channel->master2slave_buf.tail, BUFSIZE);
 		ret = __put_user( temp, (int*)arg );
@@ -546,10 +602,20 @@ static long eq3loop_ioctl_slave(struct eq3loop_channel_data* channel, struct fil
 	case TIOCMSET:
 		break;
 	case TIOCSERGETLSR:
-		ret = -ENOIOCTLCMD;
+		temp = TIOCSER_TEMT;
+		ret = __put_user( temp, (int*)arg );
 		break;
 	case TIOCGICOUNT:
-		ret = -ENOIOCTLCMD;
+		{
+			struct serial_icounter_struct icount;
+			memset(&icount, 0, sizeof(icount));
+			if( _access_ok(VERIFY_WRITE, (void *)arg, sizeof(struct serial_icounter_struct) ) )
+			{
+				ret = copy_to_user( (void*)arg, &icount, sizeof(struct serial_icounter_struct) );
+			} else {
+				ret = -EFAULT;
+			}
+		}
 		break;
 	default:
 		ret = -ENOTTY;
@@ -559,7 +625,6 @@ static long eq3loop_ioctl_slave(struct eq3loop_channel_data* channel, struct fil
 	if( ret == -ENOTTY )
 	{
 		printk( KERN_NOTICE EQ3LOOP_DRIVER_NAME ": eq3loop_ioctl_slave() %s: unhandled ioctl 0x%04X\n", channel->name, cmd );
-		ret = -ENOIOCTLCMD;
 	}
 	return ret;
 }
@@ -1010,4 +1075,4 @@ module_init(eq3loop_init);
 module_exit(eq3loop_exit);
 MODULE_DESCRIPTION("eQ-3 IPC loopback char driver");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.2");
+MODULE_VERSION("1.3");
