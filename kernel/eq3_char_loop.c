@@ -960,7 +960,14 @@ static int __init eq3loop_init(void)
 		printk(KERN_ERR EQ3LOOP_DRIVER_NAME ": Unable to add driver\n");
 		goto out_unregister_chrdev_region;
 	}
+/* Linux changed signature of class_create in 6.4+
+ * see: https://lore.kernel.org/all/20230324100132.1633647-1-gregkh@linuxfoundation.org/
+*/
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
 	control_data->class=class_create(THIS_MODULE, EQ3LOOP_DRIVER_NAME);
+#else
+	control_data->class=class_create(EQ3LOOP_DRIVER_NAME);
+#endif
 	if(IS_ERR(control_data->class)){
 		ret = -EIO;
 		printk(KERN_ERR EQ3LOOP_DRIVER_NAME ": Unable to register driver class\n");
