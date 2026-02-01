@@ -166,7 +166,11 @@ static int hb_rf_usb_2_gpio_get(struct gpio_chip *gc, unsigned int gpio)
   return port->gpio_value & BIT(gpio);
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,17,0)
+static int hb_rf_usb_2_gpio_set(struct gpio_chip *gc, unsigned int gpio, int value)
+#else
 static void hb_rf_usb_2_gpio_set(struct gpio_chip *gc, unsigned int gpio, int value)
+#endif
 {
   struct hb_rf_usb_2_port_s *port = container_of(gc, struct hb_rf_usb_2_port_s, gc);
   unsigned long lock_flags;
@@ -181,6 +185,10 @@ static void hb_rf_usb_2_gpio_set(struct gpio_chip *gc, unsigned int gpio, int va
   hb_rf_usb_2_set_gpio_on_device(port, LED_GPIO_MASK, port->gpio_value << 1);
 
   spin_unlock_irqrestore(&port->gpio_lock, lock_flags);
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,17,0)
+  return 0;
+#endif
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
@@ -194,7 +202,11 @@ static int hb_rf_usb_2_gpio_get_multiple(struct gpio_chip *gc, unsigned long *ma
 }
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,17,0)
+static int hb_rf_usb_2_gpio_set_multiple(struct gpio_chip *gc, unsigned long *mask, unsigned long *bits)
+#else
 static void hb_rf_usb_2_gpio_set_multiple(struct gpio_chip *gc, unsigned long *mask, unsigned long *bits)
+#endif
 {
   struct hb_rf_usb_2_port_s *port = container_of(gc, struct hb_rf_usb_2_port_s, gc);
   unsigned long lock_flags;
@@ -207,6 +219,10 @@ static void hb_rf_usb_2_gpio_set_multiple(struct gpio_chip *gc, unsigned long *m
   hb_rf_usb_2_set_gpio_on_device(port, LED_GPIO_MASK, port->gpio_value << 1);
 
   spin_unlock_irqrestore(&port->gpio_lock, lock_flags);
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,17,0)
+  return 0;
+#endif
 }
 
 static int hb_rf_usb_2_start_connection(struct generic_raw_uart *raw_uart);
@@ -665,7 +681,7 @@ module_init(hb_rf_usb_2_init);
 module_exit(hb_rf_usb_2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.17");
+MODULE_VERSION("1.18");
 MODULE_DESCRIPTION("HB-RF-USB-2 raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 MODULE_ALIAS("hb_rf_usb-2");
