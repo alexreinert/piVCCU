@@ -251,7 +251,12 @@ static int hb_rf_eth_try_connect(char endpointIdentifier)
 
   hb_rf_eth_set_timeout(sock);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,19,0)
+  err = sock->ops->connect(sock, (struct sockaddr_unsized *)&remote, sizeof(remote), 0);
+#else
   err = sock->ops->connect(sock, (struct sockaddr *)&remote, sizeof(remote), 0);
+#endif
+
   if (err < 0)
   {
     dev_err(dev, "Error %d while connecting to %pI4\n", err, &remote.sin_addr);
