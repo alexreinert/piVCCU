@@ -1051,7 +1051,11 @@ static spinlock_t active_devices_lock;
 static bool active_devices[MAX_DEVICES] = {false};
 
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0))
+static int __match_i2c_client_by_address(struct device *dev, const void *addrp)
+#else
 static int __match_i2c_client_by_address(struct device *dev, void *addrp)
+#endif
 {
   struct i2c_client *client = i2c_verify_client(dev);
   int addr = *(int *)addrp;
@@ -1463,7 +1467,7 @@ EXPORT_SYMBOL(generic_raw_uart_verify_dkey);
 
 MODULE_ALIAS("platform:generic-raw-uart");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.32");
+MODULE_VERSION("1.33");
 MODULE_DESCRIPTION("generic raw uart driver for communication of debmatic and piVCCU with the HM-MOD-RPI-PCB and RPI-RF-MOD radio modules");
 MODULE_AUTHOR("Alexander Reinert <alex@areinert.de>");
 
