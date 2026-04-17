@@ -69,6 +69,16 @@ sed -i $CONFIG_FILE -e "s/<hmip_minor>/$HM_HMIP_MINOR/"
 
 command -v lxc-update-config > /dev/null && lxc-update-config -c $CONFIG_FILE
 
+# On cgroup v2 (unified hierarchy), lxc.hook.start does not work correctly:
+# the hook's find command deletes /var files, then mknod fails due to cgroup v2
+# device restrictions, and the hook aborts before writing /var/hm_mode.
+# Remove the hook and handle its logic from the host side instead.
+PIVCCU_CGROUPV2=0
+if [ -f /sys/fs/cgroup/cgroup.controllers ]; then
+  PIVCCU_CGROUPV2=1
+  sed -i '/^lxc\.hook\.start/d' $CONFIG_FILE
+fi
+
 cat > /tmp/pivccu-var/pivccu/conf << EOF
 HM_RAW_UART_MAJOR='$HM_RAW_UART_MAJOR'
 HM_RAW_UART_MINOR='$HM_RAW_UART_MINOR'
@@ -89,6 +99,63 @@ HM_HMRF_VERSION='$HM_HMRF_VERSION'
 HM_HMRF_ADDRESS='$HM_HMRF_ADDRESS'
 HM_HMRF_DEVTYPE='$HM_HMRF_DEVTYPE'
 EOF
+
+# On cgroup v2, generate /var/hm_mode and related files from the host side,
+# since the container hook cannot do it (see above).
+if [ "$PIVCCU_CGROUPV2" -eq 1 ]; then
+  HM_HMIP_DEVNODE="/dev/raw-uart"
+  HM_HMRF_DEVNODE="/dev/raw-uart"
+  if [ "$HM_HMIP_DEV" = "HMIP-RFUSB-TK" ]; then
+    HM_HMIP_DEVNODE="/dev/mmd_hmip"
+  fi
+
+  cat > /tmp/pivccu-var/hm_mode << HMEOF
+HM_HOST='rpi3'
+HM_MODE='NORMAL'
+HM_LED_GREEN=''
+HM_LED_GREEN_MODE1='none'
+HM_LED_GREEN_MODE2='none'
+HM_LED_RED=''
+HM_LED_RED_MODE1='none'
+HM_LED_RED_MODE2='none'
+HM_LED_YELLOW=''
+HM_LED_YELLOW_MODE1='none'
+HM_LED_YELLOW_MODE2='none'
+HM_HOST_GPIO_UART='/dev/raw-uart'
+HM_HOST_GPIO_RESET=''
+HM_RTC=''
+HM_HMIP_DEV='$HM_HMIP_DEV'
+HM_HMIP_DEVNODE='$HM_HMIP_DEVNODE'
+HM_HMIP_SERIAL='$HM_HMIP_SERIAL'
+HM_HMIP_VERSION='$HM_HMIP_VERSION'
+HM_HMIP_SGTIN='$HM_HMIP_SGTIN'
+HM_HMIP_ADDRESS='$HM_HMIP_ADDRESS'
+HM_HMIP_ADDRESS_ACTIVE='$HM_HMIP_ADDRESS'
+HM_HMIP_DEVTYPE='$HM_HMIP_DEVTYPE'
+HM_HMRF_DEV='$HM_HMRF_DEV'
+HM_HMRF_DEVNODE='$HM_HMRF_DEVNODE'
+HM_HMRF_SERIAL='$HM_HMRF_SERIAL'
+HM_HMRF_VERSION='$HM_HMRF_VERSION'
+HM_HMRF_ADDRESS='$HM_HMRF_ADDRESS'
+HM_HMRF_ADDRESS_ACTIVE='$HM_HMRF_ADDRESS'
+HM_HMRF_DEVTYPE='$HM_HMRF_DEVTYPE'
+HMEOF
+
+  if [ -n "$HM_HMIP_SERIAL" ]; then
+    echo -n "$HM_HMIP_SERIAL" > /tmp/pivccu-var/board_serial
+  else
+    echo -n "$HM_HMRF_SERIAL" > /tmp/pivccu-var/board_serial
+  fi
+  [ -n "$HM_HMIP_SGTIN" ] && echo -n "$HM_HMIP_SGTIN" > /tmp/pivccu-var/board_sgtin
+  echo -n "$HM_HMRF_SERIAL" > /tmp/pivccu-var/rf_board_serial
+  echo -n "$HM_HMRF_ADDRESS" > /tmp/pivccu-var/rf_address
+  echo -n "$HM_HMRF_VERSION" > /tmp/pivccu-var/rf_firmware_version
+  echo -n "$HM_HMIP_SERIAL" > /tmp/pivccu-var/hmip_board_serial
+  echo -n "$HM_HMIP_VERSION" > /tmp/pivccu-var/hmip_firmware_version
+  echo -n "$HM_HMIP_ADDRESS" > /tmp/pivccu-var/hmip_address
+  echo -n "$HM_HMIP_SGTIN" > /tmp/pivccu-var/hmip_board_sgtin
+  mkdir -p /tmp/pivccu-var/status
+fi
 
 OIFS=$IFS
 IFS=,
@@ -192,6 +259,24 @@ if [ -e /proc/sys/abi/setend ]; then
 fi
 
 /usr/bin/lxc-start --lxcpath /var/lib/piVCCU3 --name lxc --pidfile /var/run/pivccu3.pid --daemon
+
+# On cgroup v2, create device nodes via lxc-attach since the hook was disabled.
+# Use /bin/sh and full paths because PATH may not include /sbin in service context.
+if [ "$PIVCCU_CGROUPV2" -eq 1 ]; then
+  sleep 3
+  . /tmp/pivccu-var/pivccu/conf
+  lxc-attach --lxcpath /var/lib/piVCCU3/ --name lxc -- /bin/sh -c "
+    /bin/mknod -m 666 /dev/eq3loop c $HM_EQ3LOOP_MAJOR 0
+    /bin/mknod -m 666 /dev/mmd_hmip c $HM_HMIP_MAJOR $HM_HMIP_MINOR
+    /bin/mknod -m 666 /dev/mmd_bidcos c $HM_EQ3LOOP_MAJOR 2
+    /bin/mknod -m 666 /dev/raw-uart c $HM_RAW_UART_MAJOR $HM_RAW_UART_MINOR
+    /bin/mkdir -p /dev/net
+    [ ! -e /dev/net/tun ] && /bin/mknod -m 666 /dev/net/tun c 10 200
+    [ ! -e /dev/ptmx ] && /bin/mknod -m 666 /dev/ptmx c 5 2
+    [ -e /var/pivccu/create-devs ] && /bin/sh /var/pivccu/create-devs
+    [ -e /var/pivccu/create-mounts ] && /bin/sh /var/pivccu/create-mounts
+  " 2>/dev/null
+fi
 
 if [ -x /etc/piVCCU3/post-start.sh ]; then
   /etc/piVCCU3/post-start.sh
