@@ -62,6 +62,7 @@ static struct class *class = NULL;
 static struct device *dev = NULL;
 
 static char currentEndpointIdentifier = 0;
+static atomic_t consecutive_send_errors = ATOMIC_INIT(0);
 
 struct send_msg_queue_entry {
   char buffer[BUFFER_SIZE];
@@ -220,10 +221,16 @@ static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
     if (err < 0)
     {
       dev_err(dev, "Error %d on sending packet\n", err);
+      atomic_inc(&consecutive_send_errors);
     }
     else if (err != len)
     {
       dev_err(dev, "Only %d of %d bytes of packet could be sent\n", err, (int)len);
+      atomic_inc(&consecutive_send_errors);
+    }
+    else
+    {
+      atomic_set(&consecutive_send_errors, 0);
     }
   }
   else
@@ -393,9 +400,14 @@ static int hb_rf_eth_recv_threadproc(void *data)
       }
     }
 
-    if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000)))
+    if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000)) ||
+        atomic_read(&consecutive_send_errors) > 5)
     {
-      dev_err(dev, "Did not receive any packet in the last 5 seconds, terminating connection.\n");
+      atomic_set(&consecutive_send_errors, 0);
+      if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000)))
+        dev_err(dev, "Did not receive any packet in the last 5 seconds, terminating connection.\n");
+      else
+        dev_err(dev, "Too many consecutive send errors, terminating connection.\n");
       sock_release(_sock);
       _sock = NULL;
       sysfs_notify(&dev->kobj, NULL, "is_connected");
@@ -409,6 +421,7 @@ static int hb_rf_eth_recv_threadproc(void *data)
           if (hb_rf_eth_try_connect(currentEndpointIdentifier) == 0)
           {
             lastReceivedKeepAlive = jiffies;
+            atomic_set(&consecutive_send_errors, 0);
             dev_info(dev, "Successfully connected to %pI4\n", &remote.sin_addr);
             break;
           }
