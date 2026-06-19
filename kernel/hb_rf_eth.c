@@ -33,6 +33,7 @@
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <uapi/linux/sched/types.h>
 #endif
+#include <linux/mutex.h>
 #include <linux/spinlock.h>
 #include <linux/circ_buf.h>
 #include "generic_raw_uart.h"
@@ -53,6 +54,7 @@ static spinlock_t gpio_lock;
 static u8 gpio_value = 0;
 
 static struct socket *_sock = NULL;
+static DEFINE_MUTEX(sock_mutex);
 static struct sockaddr_in remote = {0};
 static atomic_t msg_cnt = ATOMIC_INIT(0);
 static struct task_struct *k_recv_thread = NULL;
@@ -62,6 +64,7 @@ static struct class *class = NULL;
 static struct device *dev = NULL;
 
 static char currentEndpointIdentifier = 0;
+static atomic_t consecutive_send_errors = ATOMIC_INIT(0);
 
 struct send_msg_queue_entry {
   char buffer[BUFFER_SIZE];
@@ -220,10 +223,16 @@ static void hb_rf_eth_send_msg(struct socket *sock, char *buffer, size_t len)
     if (err < 0)
     {
       dev_err(dev, "Error %d on sending packet\n", err);
+      atomic_inc(&consecutive_send_errors);
     }
     else if (err != len)
     {
       dev_err(dev, "Only %d of %d bytes of packet could be sent\n", err, (int)len);
+      atomic_inc(&consecutive_send_errors);
+    }
+    else
+    {
+      atomic_set(&consecutive_send_errors, 0);
     }
   }
   else
@@ -267,21 +276,26 @@ static int hb_rf_eth_try_connect(char endpointIdentifier)
   {
     hb_rf_eth_send_msg(sock, buffer, sizeof(buffer));
 
-    err = -ETIMEDOUT;
+    err = -ENOMEM;
     recv_buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
-    timeout = jiffies + msecs_to_jiffies(50);
-    while (time_before(jiffies, timeout))
+    if (recv_buffer)
     {
-      len = hb_rf_eth_recv_packet(sock, recv_buffer, BUFFER_SIZE);
-      if (len == 7)
+      err = -ETIMEDOUT;
+      timeout = jiffies + msecs_to_jiffies(50);
+      while (time_before(jiffies, timeout))
       {
-        if (recv_buffer[0] == 0 && recv_buffer[2] == HB_RF_ETH_PROTOCOL_VERSION && recv_buffer[3] == buffer[1])
+        len = hb_rf_eth_recv_packet(sock, recv_buffer, BUFFER_SIZE);
+        if (len == 7)
         {
-          currentEndpointIdentifier = recv_buffer[4];
-          err = 0;
-          break;
+          if (recv_buffer[0] == 0 && recv_buffer[2] == HB_RF_ETH_PROTOCOL_VERSION && recv_buffer[3] == buffer[1])
+          {
+            currentEndpointIdentifier = recv_buffer[4];
+            err = 0;
+            break;
+          }
         }
       }
+      kfree(recv_buffer);
     }
 
     if (err)
@@ -342,7 +356,9 @@ static int hb_rf_eth_send_threadproc(void *data)
         entry->buffer[2] = gpio_value;
       }
 
+      mutex_lock(&sock_mutex);
       hb_rf_eth_send_msg(_sock, entry->buffer, entry->len);
+      mutex_unlock(&sock_mutex);
 
       tail = (tail + 1) & (QUEUE_LENGTH - 1);
       smp_store_release(&send_msg_queue->tail, tail);
@@ -351,7 +367,9 @@ static int hb_rf_eth_send_threadproc(void *data)
     if (time_after(jiffies, nextKeepAliveSentOut))
     {
       nextKeepAliveSentOut = jiffies + msecs_to_jiffies(1000);
+      mutex_lock(&sock_mutex);
       hb_rf_eth_send_msg(_sock, buffer, 4);
+      mutex_unlock(&sock_mutex);
     }
   }
 
@@ -368,6 +386,8 @@ static int hb_rf_eth_recv_threadproc(void *data)
   hb_rf_eth_set_high_prio();
 
   buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
+  if (!buffer)
+    return -ENOMEM;
 
   while (!kthread_should_stop())
   {
@@ -393,11 +413,20 @@ static int hb_rf_eth_recv_threadproc(void *data)
       }
     }
 
-    if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000)))
+    if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000)) ||
+        atomic_read(&consecutive_send_errors) > 5)
     {
-      dev_err(dev, "Did not receive any packet in the last 5 seconds, terminating connection.\n");
-      sock_release(_sock);
+      struct socket *old_sock;
+      atomic_set(&consecutive_send_errors, 0);
+      if (time_after(jiffies, lastReceivedKeepAlive + msecs_to_jiffies(5000)))
+        dev_err(dev, "Did not receive any packet in the last 5 seconds, terminating connection.\n");
+      else
+        dev_err(dev, "Too many consecutive send errors, terminating connection.\n");
+      mutex_lock(&sock_mutex);
+      old_sock = _sock;
       _sock = NULL;
+      mutex_unlock(&sock_mutex);
+      sock_release(old_sock);
       sysfs_notify(&dev->kobj, NULL, "is_connected");
       generic_raw_uart_set_connection_state(raw_uart, false);
 
@@ -409,6 +438,7 @@ static int hb_rf_eth_recv_threadproc(void *data)
           if (hb_rf_eth_try_connect(currentEndpointIdentifier) == 0)
           {
             lastReceivedKeepAlive = jiffies;
+            atomic_set(&consecutive_send_errors, 0);
             dev_info(dev, "Successfully connected to %pI4\n", &remote.sin_addr);
             break;
           }
@@ -743,7 +773,14 @@ static int __init hb_rf_eth_init(void)
   init_waitqueue_head(&queue_wq);
 
   send_msg_queue = kzalloc(sizeof(struct send_msg_queue_t), GFP_KERNEL);
+  if (!send_msg_queue)
+    return -ENOMEM;
   send_msg_queue->entries = kcalloc(QUEUE_LENGTH, sizeof(struct send_msg_queue_entry), GFP_KERNEL);
+  if (!send_msg_queue->entries)
+  {
+    kfree(send_msg_queue);
+    return -ENOMEM;
+  }
 
   class = class_create(THIS_MODULE, "hb-rf-eth");
   if (IS_ERR(class))
@@ -791,7 +828,7 @@ static int __init hb_rf_eth_init(void)
   raw_uart = generic_raw_uart_probe(dev, &hb_rf_eth, NULL);
   if (IS_ERR(raw_uart))
   {
-    err = PTR_ERR(dev);
+    err = PTR_ERR(raw_uart);
     goto failed_raw_uart_probe;
   }
 
@@ -802,6 +839,7 @@ static int __init hb_rf_eth_init(void)
     dev_info(dev, "failed creating is_connected sysfs file: %d\n", err);
 
   err = sysfs_create_file(&dev->kobj, &dev_attr_connect.attr);
+  if (err)
     dev_info(dev, "failed creating connect sysfs file: %d\n", err);
 
   return 0;
@@ -813,6 +851,8 @@ failed_gc_create:
 failed_dev_create:
   class_destroy(class);
 failed_class_create:
+  kfree(send_msg_queue->entries);
+  kfree(send_msg_queue);
   return err;
 }
 
