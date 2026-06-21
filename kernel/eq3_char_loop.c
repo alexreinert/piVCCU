@@ -61,7 +61,7 @@
 #define CONNECTION_TYPE_MASTER 0
 #define CONNECTION_TYPE_SLAVE 1
 
-#define BUFSIZE 1024  //just use buffer size power of 2. otherwise the size and index calculation dosn't work
+#define BUFSIZE 1024  //just use buffer size power of 2. otherwise the size and index calculation doesn't work
 
 #define DUMP_READWRITE 0
 
@@ -289,7 +289,8 @@ static ssize_t eq3loop_write_slave(struct eq3loop_channel_data* channel, struct 
 	head = channel->slave2master_buf.head;
 	if(CIRC_SPACE( head, channel->slave2master_buf.tail, BUFSIZE) < count)
 	{
-		ret=-EFAULT;
+		/* no room for a whole frame yet -- let the writer retry */
+		ret=-EAGAIN;
 		goto out;
 	}
 	
@@ -360,9 +361,10 @@ static ssize_t eq3loop_write_master(struct eq3loop_channel_data* channel, struct
 	head = channel->master2slave_buf.head;
 	if(CIRC_SPACE( head, channel->master2slave_buf.tail, BUFSIZE) < count)
 	{
-		ret=-EFAULT;
+		/* no room for a whole frame yet -- let the writer retry */
+		ret=-EAGAIN;
 		count_to_end = CIRC_SPACE( head, channel->master2slave_buf.tail, BUFSIZE);
-		printk( KERN_ERR EQ3LOOP_DRIVER_NAME ": eq3loop_write_master() %s: not enough space in buffers. free space = %zu, required space = %zu", channel->name,count_to_end,count );
+		printk_ratelimited( KERN_ERR EQ3LOOP_DRIVER_NAME ": eq3loop_write_master() %s: not enough space in buffers. free space = %zu, required space = %zu", channel->name,count_to_end,count );
 		goto out;
 	}
 	/* ok, space is free, write something */
@@ -402,7 +404,7 @@ out:
 	}
 	if( ret > 0 || CIRC_CNT(channel->master2slave_buf.head,channel->master2slave_buf.tail,BUFSIZE) )
 	{
-		//send a signal to reading procces if return is ok or data in the buffer
+		//send a signal to reading process if return is ok or data in the buffer
 		wake_up_interruptible( &channel->master2slaveq );
 	}
 	
@@ -1071,4 +1073,4 @@ module_init(eq3loop_init);
 module_exit(eq3loop_exit);
 MODULE_DESCRIPTION("eQ-3 IPC loopback char driver");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.3");
+MODULE_VERSION("1.4");
