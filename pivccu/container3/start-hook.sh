@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# The hook inherits the PATH of the caller. On Debian Trixie (usrmerge)
+# systemd's default service PATH is /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+# without /bin, but the CCU rootfs is not usrmerged: busybox and the applets
+# needed below (find, rm, mknod, mkdir, cat) only exist in /bin. Without this
+# fix mknod fails and the container starts without /dev/mmd_hmip,
+# /dev/mmd_bidcos, /dev/eq3loop and /dev/raw-uart.
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 . /var/pivccu/conf
 
 find /var/* -maxdepth 0 ! -name pivccu -exec rm -rf {} \;
