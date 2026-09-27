@@ -40,7 +40,6 @@
 #include <linux/i2c.h>
 #include <linux/list.h>
 #include <linux/rtc.h>
-#include <linux/of_gpio.h>
 
 #include <linux/of.h>
 #include <linux/of_device.h>

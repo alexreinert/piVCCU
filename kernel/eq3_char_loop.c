@@ -42,6 +42,7 @@
 #include <asm/ioctls.h>
 #include <linux/serial.h>
 #include <linux/version.h>
+#include <linux/string.h>
 
 #include "stack_protector.include"
 
@@ -844,7 +845,11 @@ static long eq3loop_create_slave_dev( struct file *filp, const char* name )
 	channel = control_data->channels + channel_index;
 	memset( channel, 0, sizeof( struct eq3loop_channel_data ) );
 	channel->devnode = MKDEV(MAJOR(control_data->devnode), MINOR(control_data->devnode) + channel_index + 1);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0))
+	strscpy( channel->name, name, sizeof(channel->name) );
+#else
 	strncpy( channel->name, name, sizeof(channel->name)-1 );
+#endif
 	
 	if( !device_create(control_data->class, NULL, channel->devnode, "%s", name) )
 	{
