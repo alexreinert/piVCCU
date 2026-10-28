@@ -116,7 +116,8 @@ extern bool generic_raw_uart_verify_dkey(struct device *dev, unsigned char *dkey
     __raw_uart_driver##_raw_uart = generic_raw_uart_probe(dev, &__raw_uart_driver, NULL); \
     if (IS_ERR_OR_NULL(__raw_uart_driver##_raw_uart))                                     \
     {                                                                                     \
-      dev_err(dev, "failed to initialize generic_raw_uart module");                       \
+      if (PTR_ERR(__raw_uart_driver##_raw_uart) != -EPROBE_DEFER)                         \
+        dev_err(dev, "failed to initialize generic_raw_uart module");                     \
       return PTR_ERR(__raw_uart_driver##_raw_uart);                                       \
     }                                                                                     \
                                                                                           \
