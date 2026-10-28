@@ -101,7 +101,8 @@ struct generic_raw_uart_instance
   struct raw_uart_driver *driver;
   dev_t devid;
   struct cdev cdev;
-  struct device *dev;
+  struct device device; /*the raw-uart class device; its release frees this instance*/
+  struct device *dev;   /*points to device*/
   struct device *parent;
 
   bool dump_traffic;
@@ -420,6 +421,7 @@ static int generic_raw_uart_close(struct inode *inode, struct file *filep)
 {
   struct per_connection_data *conn = filep->private_data;
   struct generic_raw_uart_instance *instance = container_of(inode->i_cdev, struct generic_raw_uart_instance, cdev);
+  struct module *owner = instance->driver->owner;
 
   if (down_interruptible(&conn->sem))
   {
@@ -440,12 +442,17 @@ static int generic_raw_uart_close(struct inode *inode, struct file *filep)
 
   if (!instance->open_count)
   {
+    /*
+     * When the underlying device is already gone (a USB stick pulled while open), this is where the
+     * hb_rf_usb drivers drop their last reference and end up in generic_raw_uart_remove(). The instance
+     * stays valid nevertheless: this file's cdev reference holds the device until the fput() behind us.
+     */
     instance->driver->stop_connection(&instance->raw_uart);
   }
 
   up(&instance->sem);
 
-  module_put(instance->driver->owner);
+  module_put(owner);
 
   return 0;
 }
@@ -1160,6 +1167,39 @@ int generic_raw_uart_probe_rtc_device(struct device *dev, bool *rtc_detected)
   return err;
 }
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 11, 0))
+/* What the kernel offers since 4.11: the cdev referencing the class device it belongs to. */
+static int cdev_device_add(struct cdev *cdev, struct device *dev)
+{
+  int rc;
+
+  cdev->kobj.parent = &dev->kobj;
+  rc = cdev_add(cdev, dev->devt, 1);
+  if (rc)
+    return rc;
+
+  rc = device_add(dev);
+  if (rc)
+    cdev_del(cdev);
+
+  return rc;
+}
+
+static void cdev_device_del(struct cdev *cdev, struct device *dev)
+{
+  device_del(dev);
+  cdev_del(cdev);
+}
+#endif
+
+static void generic_raw_uart_device_release(struct device *dev)
+{
+  struct generic_raw_uart_instance *instance = container_of(dev, struct generic_raw_uart_instance, device);
+
+  kfree(instance->rxbuf.buf);
+  kfree(instance);
+}
+
 struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_uart_driver *drv, void *driver_data)
 {
   int err;
@@ -1196,7 +1236,7 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   if (dev_no >= MAX_DEVICES)
   {
     err = -EFAULT;
-    goto failed_inst_alloc;
+    goto failed_no_device;
   }
 
   instance = kzalloc(sizeof(struct generic_raw_uart_instance), GFP_KERNEL);
@@ -1216,25 +1256,34 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
   cdev_init(&instance->cdev, &generic_raw_uart_fops);
   instance->cdev.owner = THIS_MODULE;
 
-  err = cdev_add(&instance->cdev, instance->devid, 1);
+  /*
+   * The class device is embedded in the instance and owns its lifetime: the cdev holds a reference to it
+   * (cdev_device_add), every open file holds the cdev, so the instance is freed only when the driver has
+   * removed it and the last file has been closed - also when the underlying device disappears while open.
+   */
+  instance->dev = &instance->device;
+  device_initialize(instance->dev);
+  instance->dev->class = class;
+  instance->dev->devt = instance->devid;
+  instance->dev->release = generic_raw_uart_device_release;
+  dev_set_drvdata(instance->dev, instance);
+
+  if (dev_no == 0)
+    err = dev_set_name(instance->dev, DRIVER_NAME);
+  else
+    err = dev_set_name(instance->dev, DRIVER_NAME "%d", dev_no);
+
+  if (err != 0)
+  {
+    goto failed_device_add;
+  }
+
+  err = cdev_device_add(&instance->cdev, instance->dev);
   if (err != 0)
   {
     dev_err(dev, "unable to register device");
-    goto failed_cdev_add;
+    goto failed_device_add;
   }
-
-  if (dev_no == 0)
-    instance->dev = device_create(class, NULL, instance->devid, NULL, DRIVER_NAME);
-  else
-    instance->dev = device_create(class, NULL, instance->devid, NULL, DRIVER_NAME "%d", dev_no);
-
-  if (IS_ERR(instance->dev))
-  {
-    err = PTR_ERR(instance->dev);
-    goto failed_device_create;
-  }
-
-  dev_set_drvdata(instance->dev, instance);
 
   instance->parent = dev;
 
@@ -1291,12 +1340,13 @@ struct generic_raw_uart *generic_raw_uart_probe(struct device *dev, struct raw_u
 
   return &instance->raw_uart;
 
-failed_device_create:
-  cdev_del(&instance->cdev);
-failed_cdev_add:
-  unregister_chrdev_region(instance->devid, 1);
-  kfree(instance);
+failed_device_add:
+  put_device(instance->dev); /*frees the instance*/
 failed_inst_alloc:
+  spin_lock_irqsave(&active_devices_lock, flags);
+  active_devices[dev_no] = false;
+  spin_unlock_irqrestore(&active_devices_lock, flags);
+failed_no_device:
 failed_probe_rtc:
   return ERR_PTR(err);
 }
@@ -1342,14 +1392,17 @@ int generic_raw_uart_remove(struct generic_raw_uart *raw_uart)
     gpio_free(instance->reset_pin);
   }
 
-  device_destroy(class, instance->devid);
-  cdev_del(&instance->cdev);
+  cdev_device_del(&instance->cdev, instance->dev);
 
   spin_lock_irqsave(&active_devices_lock, flags);
   active_devices[instance->raw_uart.dev_number] = false;
   spin_unlock_irqrestore(&active_devices_lock, flags);
 
-  kfree(instance);
+  /*
+   * Drops the probe's reference. The instance is freed now, or - when a file still has the device open,
+   * i.e. the hardware disappeared while in use - after that file's last close has released the cdev.
+   */
+  put_device(instance->dev);
 
   return 0;
 }
