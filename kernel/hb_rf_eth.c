@@ -282,7 +282,14 @@ static int hb_rf_eth_try_connect(char endpointIdentifier)
           break;
         }
       }
+      else if (len < 0 && len != -EAGAIN && len != -EPROTO)
+      {
+        /* nothing listens there (ICMP refused): waiting out the window only spins */
+        break;
+      }
     }
+
+    kfree(recv_buffer);
 
     if (err)
     {
