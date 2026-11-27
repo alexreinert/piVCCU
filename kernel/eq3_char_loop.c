@@ -28,6 +28,7 @@
 #include <linux/interrupt.h>
 #include <linux/module.h>
 #include <linux/slab.h>
+#include <linux/string.h>
 #include <linux/wait.h>
 #include <linux/poll.h>
 #include <linux/device.h>
@@ -844,7 +845,7 @@ static long eq3loop_create_slave_dev( struct file *filp, const char* name )
 	channel = control_data->channels + channel_index;
 	memset( channel, 0, sizeof( struct eq3loop_channel_data ) );
 	channel->devnode = MKDEV(MAJOR(control_data->devnode), MINOR(control_data->devnode) + channel_index + 1);
-	strncpy( channel->name, name, sizeof(channel->name)-1 );
+	memcpy( channel->name, name, strnlen( name, sizeof(channel->name)-1 ) );
 	
 	if( !device_create(control_data->class, NULL, channel->devnode, "%s", name) )
 	{
